@@ -24,7 +24,6 @@ function VitalsReport() {
 
     useEffect(() => {
         const onMetric = (metric: Metric) => {
-            console.log(metric.name);
             setVitals((vitals) => ({
                 ...vitals,
                 [metric.name]: String(metric.value)
