@@ -16,6 +16,9 @@ function VitalsReport() {
         FCP: 'n/a',
         TTFB: 'n/a',
         LCP: 'n/a',
+        INP: 'n/a',
+        FID: 'n/a',
+        CLS: 'n/a',
     });
 
 
@@ -30,6 +33,9 @@ function VitalsReport() {
         onFCP(onMetric);
         onLCP(onMetric);
         onTTFB(onMetric);
+        onFID(onMetric);
+        onCLS(onMetric);
+        onINP(onMetric);
 
     }, []);
 
@@ -40,6 +46,9 @@ function VitalsReport() {
                 <li>FCP: {vitals.FCP}</li>
                 <li>LCP: {vitals.LCP}</li>
                 <li>TTFB: {vitals.TTFB}</li>
+                <li>INP: {vitals.INP}</li>
+                <li>FID: {vitals.FID}</li>
+                <li>CLS: {vitals.CLS}</li>
             </ul>
         </div>
     );
