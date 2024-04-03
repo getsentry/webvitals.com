@@ -45,7 +45,7 @@ function VitalsReport() {
                 <li>FCP: {vitals.FCP}</li>
                 <li>LCP: {vitals.LCP}</li>
                 <li>TTFB: {vitals.TTFB}</li>
-                <li>INP: {vitals.INP} (won't calculate until you change tabs)</li>
+                <li>INP: {vitals.INP} (won&apos;t calculate until you change tabs)</li>
                 <li>FID: {vitals.FID}</li>
                 <li>CLS: {vitals.CLS}</li>
             </ul>
