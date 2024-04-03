@@ -7,11 +7,11 @@ export default function INPButtons() {
     const clickButton = (speed: string) => {
 
         const delay = speed === 'fast' ? 100 : speed === 'ok' ? 500 : 1000;
-        const timeout = setTimeout(() => {
-            setHidden(false);
-        }, delay);
-        return () => clearTimeout(timeout);
-        // setHidden(false);
+        const start = Date.now();
+        do {
+
+        } while (Date.now() - start < delay);
+        setHidden(false);
     };
 
     return (
