@@ -1,4 +1,8 @@
 import INPButtons from './inpButtons';
+
+export const dynamic = 'force-dynamic';
+const revalidate = 0;
+
 const FCP_DELAY = 2000; // ms
 
 export default async function Page() {

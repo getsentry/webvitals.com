@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic';
+const revalidate = 0;
+
 async function getBlockData() {
     var value = await new Promise((resolve, reject) => {
         setTimeout(() => {

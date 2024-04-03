@@ -1,5 +1,8 @@
 const FCP_DELAY = 2000; // ms
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Page() {
     // delay first render
     const data = await new Promise((resolve, reject) => {
