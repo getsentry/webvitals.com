@@ -13,16 +13,16 @@ async function Block() {
 
     return (
         <div>
-            <div className="w-48 h-48 bg-lime-500"></div>
+            <div className="w-96 h-96 bg-lime-500">
+                <h3>LCP</h3>
+                <p>This block is the largest contentful paint.</p>
+            </div>
         </div>
     );
 }
 
 export default function Page() {
     return (
-        <main>
-            <h1>fcp demo</h1>
-            <Block />
-        </main >
+        <Block />
     );
 }

@@ -18,12 +18,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} prose`}>
         <div className="container mx-auto">
-          <div className="flex flex-row flex-wrap py-4">
-
-            <div className="px-2">
-              <h1>Web Vitals Demos</h1>
-              {children}
-            </div>
+          <div className="px-2">
+            {children}
           </div>
         </div>
       </body>

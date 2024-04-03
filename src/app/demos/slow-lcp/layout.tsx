@@ -5,7 +5,7 @@ export default function DashboardLayout({
 }) {
     return (
         <main>
-            <h2>Slow LCP</h2>
+
             <p>This demo illustrates a slow LCP.</p>
 
             {children}
