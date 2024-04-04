@@ -1,8 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter as FontSans } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+import { cn } from "@/lib/utils"
+
+import Nav from "./nav";
+
+const fontSans = FontSans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+})
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,13 +23,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} prose`}>
-        <div className="container mx-auto">
-          <div className="px-2">
-            {children}
+      <body className={cn(
+        "min-h-screen bg-background font-sans antialiased",
+        fontSans.variable
+      )}>
+        <div className="container p-12 mx-auto">
+          <div className="flex flex-row flex-wrap">
+            <nav className="w-full sm:w-1/3 md:w-1/4 bg-slate-50 mr-8 p-4 rounded-lg">
+              <Nav />
+            </nav>
+            <main role="main" className="prose w-full sm:w-2/3 md:w-3/4">
+              {children}
+
+            </main>
           </div>
         </div>
       </body>
-    </html>
+    </html >
   );
 }
