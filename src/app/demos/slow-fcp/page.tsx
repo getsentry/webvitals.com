@@ -6,13 +6,17 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 import { useLoadState } from "@/app/loadState";
+import { useEffect } from 'react';
 
 export default function Page() {
     // delay first render
     const { setLoading, loading } = useLoadState();
-    setTimeout(() => {
-        setLoading(false);
-    }, FCP_DELAY);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false);
+        }, FCP_DELAY);
+    }, [setLoading]);
 
     return loading ? null : (
         <div>

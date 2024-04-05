@@ -1,20 +1,28 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useLoadState } from "@/app/loadState";
+
 export const dynamic = 'force-dynamic';
-const revalidate = 0;
+export const revalidate = 0;
 
-async function getBlockData() {
-    var value = await new Promise((resolve, reject) => {
+const LCP_DELAY = 2000; // ms
+
+export default function Page() {
+    const { setLoading } = useLoadState();
+    const [visible, setVisible] = useState(false);
+
+    useEffect(() => {
         setTimeout(() => {
-            resolve({ value: 'block data' });
-        }, 2000);
-    });
+            setLoading(false);
+        }, 0);
 
-    return value;
+        setTimeout(() => {
+            setVisible(true);
+        }, LCP_DELAY);
+    }, [setLoading]);
 
-}
-async function Block() {
-    const data = await getBlockData();
-
-    return (
+    return visible ? (
         <div>
             <div className="w-96 h-96 bg-lime-500">
                 <h3>LCP</h3>
@@ -24,11 +32,5 @@ async function Block() {
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
             </div>
         </div>
-    );
-}
-
-export default function Page() {
-    return (
-        <Block />
-    );
+    ) : "Loading...";
 }

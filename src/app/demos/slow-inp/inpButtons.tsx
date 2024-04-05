@@ -1,7 +1,17 @@
 "use client";
 import { useState, useEffect } from "react";
 
+import { useLoadState } from "@/app/loadState";
+
 export default function INPButtons() {
+
+    const { setLoading } = useLoadState();
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false);
+        }, 0);
+    }, [setLoading]);
+
     const [hidden, setHidden] = useState(true);
 
     const clickButton = (speed: string) => {

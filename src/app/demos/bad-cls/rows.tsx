@@ -11,7 +11,6 @@ export default function Rows() {
 
     useEffect(() => {
         const callback = () => {
-            console.log(count);
             setCount(count + 1);
         }
 

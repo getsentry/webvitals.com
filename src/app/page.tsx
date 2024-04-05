@@ -1,11 +1,19 @@
 "use client";
-import Nav from "./nav";
 
 import { useLoadState } from "./loadState";
+import { useEffect } from "react";
 
 export default function Home() {
-  const { loading } = useLoadState();
-  return loading ? null : (
+  const { setLoading } = useLoadState();
+
+
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 0);
+  }, [setLoading]);
+
+  return (
     <main>
       <h1>Web Vitals Demos</h1>
     </main>
