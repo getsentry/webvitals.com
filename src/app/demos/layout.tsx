@@ -12,8 +12,10 @@ export default function DemoLayout({
 
             <VitalsReport />
 
+            {/*
             <h3>More demos</h3>
             <Nav />
+    */}
         </div>
     )
 }

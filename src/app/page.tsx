@@ -1,10 +1,13 @@
+"use client";
 import Nav from "./nav";
 
+import { useLoadState } from "./loadState";
+
 export default function Home() {
-  return (
+  const { loading } = useLoadState();
+  return loading ? null : (
     <main>
       <h1>Web Vitals Demos</h1>
-      <Nav />
     </main>
   );
 }

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
 import "./globals.css";
 
+import { useLoadState } from "./loadState";
+
 import { cn } from "@/lib/utils"
 
 import Nav from "./nav";
@@ -21,6 +23,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html lang="en">
       <body className={cn(

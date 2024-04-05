@@ -10,7 +10,11 @@ import {
     onTTFB,
 } from 'web-vitals'
 
+import { useLoadState } from "@/app/loadState";
+
 function VitalsReport() {
+
+    const { loading } = useLoadState();
 
     const [vitals, setVitals] = useState({
         FCP: 'n/a',
@@ -39,7 +43,7 @@ function VitalsReport() {
     }, []);
 
 
-    return (
+    return loading ? null : (
         <div>
             <ul>
                 <li>FCP: {vitals.FCP}</li>
