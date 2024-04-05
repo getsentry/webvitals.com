@@ -9,7 +9,7 @@ export default async function Page() {
     return (
         <div>
             <h2 className="mt-0">Slow INP</h2>
-            <p>This demo demonstrates a slow INP (Interaction to First Paint).</p>
+            <p>This demo demonstrates a slow INP (Interaction to Next Paint).</p>
 
             <INPButtons />
 
