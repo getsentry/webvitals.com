@@ -32,9 +32,11 @@ export default function RootLayout({
       )}>
         <div className="container p-12 mx-auto">
           <div className="flex flex-row flex-wrap">
-            <nav className="w-full sm:w-1/3 md:w-1/4 bg-slate-50 mr-8 p-4 rounded-lg">
-              <Nav />
-            </nav>
+            <div className="w-full sm:w-1/3 md:w-1/4 bg-slate-50 mr-8 p-4 rounded-lg">
+              <nav className="">
+                <Nav />
+              </nav>
+            </div>
             <main role="main" className="prose w-full sm:w-2/3 md:w-3/4">
               {children}
 

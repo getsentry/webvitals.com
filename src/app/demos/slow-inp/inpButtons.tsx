@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 
 import { useLoadState } from "@/app/loadState";
 
+import { triggerVisibilityChange } from "@/lib/utils";
 export default function INPButtons() {
 
     const { setLoading } = useLoadState();
@@ -22,6 +23,9 @@ export default function INPButtons() {
 
         } while (Date.now() - start < delay);
         setHidden(false);
+
+        triggerVisibilityChange(document, true);
+        triggerVisibilityChange(document, false);
     };
 
     return (

@@ -24,17 +24,32 @@ const Vital: React.FC<VitalProps> = ({ name, score, thresholds, formatter }) => 
         colorClass = 'text-red-500';
     }
 
-    const formattedScore = formatter ? formatter(score) : parseInt(score, 10);
+    let formattedScore = formatter ? formatter(score) : ((scoreStr: string) => {
+        if (scoreStr === 'n/a') {
+            return scoreStr;
+        }
+
+        let score = parseInt(scoreStr, 10);
+        if (score > 1000) {
+            return `${score / 1000}s`;
+        } else {
+            return `${score.toFixed(0)} ms`;
+        }
+    })(score);
+
     return (
-        <div>
-            <p className={colorClass}>
-                <div className="mr-2 inline-block">
+        <div className="inline-block">
+            <div className={`grid grid-cols-[2rem_auto]`}>
+                <div className={`text-xl mr-2inline-block ${colorClass} `}>
                     {scoreValue < thresholds.good && <span>●</span>}
                     {scoreValue >= thresholds.good && scoreValue < thresholds.needsImprovement && <span>■</span>}
                     {scoreValue >= thresholds.needsImprovement && <span>▲</span>}
                 </div>
-                {name}: {formattedScore}
-            </p>
+                <div>
+                    <div>{name}</div>
+                    <div className={`text-2xl ${colorClass} `}>{formattedScore}</div>
+                </div>
+            </div>
         </div>
     );
 };
