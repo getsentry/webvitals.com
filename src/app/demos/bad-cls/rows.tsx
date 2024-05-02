@@ -4,7 +4,11 @@ import { useEffect, useState } from 'react';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default function Rows() {
+interface RowsPropTypes {
+    onload: Function,
+};
+
+const Rows: React.FC<RowsPropTypes> = ({ onload }) => {
     // delay first render
 
     const [count, setCount] = useState(0);
@@ -16,8 +20,10 @@ export default function Rows() {
 
         if (count < 5) {
             setTimeout(callback, 500);
+        } else {
+            onload();
         }
-    }, [count]);
+    }, [count, onload]);
 
     return (
         <div>
@@ -28,3 +34,6 @@ export default function Rows() {
         </div>
     );
 }
+
+
+export default Rows;

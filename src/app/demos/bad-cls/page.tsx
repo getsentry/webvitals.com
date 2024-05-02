@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 import { useLoadState } from '@/app/loadState';
+import { triggerVisibilityChange } from '@/lib/utils';
 import { useEffect } from 'react';
 
 export default function Page() {
@@ -22,7 +23,7 @@ export default function Page() {
             <h2 className="mt-0">Bad CLS</h2>
             <p>This demo demonstrates a bad CLS (Cumulative Layout Shift) score.</p>
 
-            <Rows />
+            <Rows onload={() => triggerVisibilityChange(document, true)} />
         </div>
     );
 }

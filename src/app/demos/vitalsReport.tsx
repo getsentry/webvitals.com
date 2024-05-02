@@ -56,12 +56,12 @@ function VitalsReport() {
                     needsImprovement: 4000
                 }} /></li>
                 <li><Vital name="TTFB" score={vitals.TTFB} thresholds={{
-                    good: 100,
-                    needsImprovement: 300
+                    good: 800,
+                    needsImprovement: 1800
                 }} /></li>
                 <li><Vital name="INP" score={vitals.INP} thresholds={{
-                    good: 50,
-                    needsImprovement: 250
+                    good: 200,
+                    needsImprovement: 500
                 }} /></li>
                 <li><Vital name="FID" score={vitals.FID} thresholds={{
                     good: 100,
@@ -69,8 +69,8 @@ function VitalsReport() {
                 }} /></li>
                 <li><Vital name="CLS" score={vitals.CLS} thresholds={{
                     good: 0.1,
-                    needsImprovement: 0.25
-                }} /></li>
+                    needsImprovement: 0.25,
+                }} formatter={(score: string) => Number(score).toFixed(2)} /></li>
             </ul>
         </div>
     );

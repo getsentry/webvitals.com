@@ -7,12 +7,13 @@ interface VitalProps {
         good: number;
         needsImprovement: number;
     };
+    formatter?: Function;
 }
 
-const Vital: React.FC<VitalProps> = ({ name, score, thresholds }) => {
+const Vital: React.FC<VitalProps> = ({ name, score, thresholds, formatter }) => {
     let colorClass = '';
 
-    let scoreValue = parseInt(score, 10);
+    let scoreValue = Number(score);
     if (score === 'n/a') {
     }
     else if (scoreValue < thresholds.good) {
@@ -23,6 +24,7 @@ const Vital: React.FC<VitalProps> = ({ name, score, thresholds }) => {
         colorClass = 'text-red-500';
     }
 
+    const formattedScore = formatter ? formatter(score) : parseInt(score, 10);
     return (
         <div>
             <p className={colorClass}>
@@ -31,7 +33,7 @@ const Vital: React.FC<VitalProps> = ({ name, score, thresholds }) => {
                     {scoreValue >= thresholds.good && scoreValue < thresholds.needsImprovement && <span>■</span>}
                     {scoreValue >= thresholds.needsImprovement && <span>▲</span>}
                 </div>
-                {name}: {scoreValue}
+                {name}: {formattedScore}
             </p>
         </div>
     );
