@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useLoadState } from "@/app/loadState";
 
+import { triggerVisibilityChange } from "@/lib/utils";
+
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -19,6 +21,7 @@ export default function Page() {
 
         setTimeout(() => {
             setVisible(true);
+            triggerVisibilityChange(document, true);
         }, LCP_DELAY);
     }, [setLoading]);
 

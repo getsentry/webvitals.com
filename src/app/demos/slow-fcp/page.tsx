@@ -5,6 +5,7 @@ const FCP_DELAY = 2000; // ms
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+import { triggerVisibilityChange } from "@/lib/utils";
 import { useLoadState } from "@/app/loadState";
 import { useEffect } from 'react';
 
@@ -15,6 +16,11 @@ export default function Page() {
     useEffect(() => {
         setTimeout(() => {
             setLoading(false);
+
+            // need to wait 100ms or vitals calculations won't be ready (?)
+            setTimeout(() => {
+                triggerVisibilityChange(document, true);
+            }, 100);
         }, FCP_DELAY);
     }, [setLoading]);
 

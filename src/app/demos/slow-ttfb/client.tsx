@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from 'react';
 import { useLoadState } from '@/app/loadState';
+import { triggerVisibilityChange } from '@/lib/utils';
 
 // this component exists solely to trigger "loading = false"
 export default function InnerPage() {
@@ -10,9 +11,10 @@ export default function InnerPage() {
     useEffect(() => {
         setTimeout(() => {
             setLoading(false);
+            triggerVisibilityChange(document, true);
         }, 0);
     }, [setLoading]);
 
-    return "<div></div>";
+    return null;
 
 }

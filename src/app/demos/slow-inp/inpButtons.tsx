@@ -25,7 +25,6 @@ export default function INPButtons() {
         setHidden(false);
 
         triggerVisibilityChange(document, true);
-        triggerVisibilityChange(document, false);
     };
 
     return (
