@@ -10,26 +10,26 @@ interface VitalProps {
 }
 
 const Vital: React.FC<VitalProps> = ({ name, score, thresholds }) => {
-    let color = '';
+    let colorClass = '';
 
     let scoreValue = parseInt(score, 10);
     if (score === 'n/a') {
     }
     else if (scoreValue < thresholds.good) {
-        color = 'green';
+        colorClass = 'text-green-500';
     } else if (scoreValue < thresholds.needsImprovement) {
-        color = 'yellow';
+        colorClass = 'text-yellow-500';
     } else {
-        color = 'red';
+        colorClass = 'text-red-500';
     }
 
     return (
         <div>
-            <p style={{ color }}>
+            <p className={colorClass}>
                 <div className="mr-2 inline-block">
-                    {scoreValue < thresholds.good && <span style={{ color }}>●</span>}
-                    {scoreValue >= thresholds.good && scoreValue < thresholds.needsImprovement && <span style={{ color }}>■</span>}
-                    {scoreValue >= thresholds.needsImprovement && <span style={{ color }}>▲</span>}
+                    {scoreValue < thresholds.good && <span>●</span>}
+                    {scoreValue >= thresholds.good && scoreValue < thresholds.needsImprovement && <span>■</span>}
+                    {scoreValue >= thresholds.needsImprovement && <span>▲</span>}
                 </div>
                 {name}: {scoreValue}
             </p>
