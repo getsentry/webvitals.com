@@ -10,6 +10,7 @@ import {
     onTTFB,
 } from 'web-vitals'
 
+import Vital from "@/app/components/vital";
 import { useLoadState } from "@/app/loadState";
 
 function VitalsReport() {
@@ -45,13 +46,31 @@ function VitalsReport() {
 
     return loading ? null : (
         <div>
-            <ul>
-                <li>FCP: {vitals.FCP}</li>
-                <li>LCP: {vitals.LCP}</li>
-                <li>TTFB: {vitals.TTFB}</li>
-                <li>INP: {vitals.INP} (won&apos;t calculate until you change tabs)</li>
-                <li>FID: {vitals.FID}</li>
-                <li>CLS: {vitals.CLS}</li>
+            <ul className="list-none">
+                <li><Vital name="FCP" score={vitals.FCP} thresholds={{
+                    good: 1000,
+                    needsImprovement: 2500
+                }} /></li>
+                <li><Vital name="LCP" score={vitals.LCP} thresholds={{
+                    good: 2500,
+                    needsImprovement: 4000
+                }} /></li>
+                <li><Vital name="TTFB" score={vitals.TTFB} thresholds={{
+                    good: 100,
+                    needsImprovement: 300
+                }} /></li>
+                <li><Vital name="INP" score={vitals.INP} thresholds={{
+                    good: 50,
+                    needsImprovement: 250
+                }} /></li>
+                <li><Vital name="FID" score={vitals.FID} thresholds={{
+                    good: 100,
+                    needsImprovement: 300
+                }} /></li>
+                <li><Vital name="CLS" score={vitals.CLS} thresholds={{
+                    good: 0.1,
+                    needsImprovement: 0.25
+                }} /></li>
             </ul>
         </div>
     );
