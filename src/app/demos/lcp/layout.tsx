@@ -6,8 +6,9 @@ export default function DashboardLayout({
 }) {
     return (
         <div>
-            <h2 className="mt-0">Slow LCP</h2>
-            <p>This demo illustrates a slow LCP.</p>
+            <h2 className="text-2xl font-semibold leading-none tracking-tight mb-4">Slow LCP</h2>
+
+            <p className="mb-4">This demo illustrates a slow LCP.</p>
 
             {children}
 

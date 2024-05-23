@@ -28,16 +28,16 @@ export default function Page() {
     }, [setLoading]);
 
     return visible ? (
-        <div>
-            <div className="w-128 h-128 p-8 bg-lime-500">
-                <h3>LCP</h3>
-                <p>This block is the largest contentful paint.</p>
+        <div className="w-128 h-128 p-8 bg-lime-500 mb-8">
+            <h3 className="text-xl font-semibold mb-4">This block is the largest contentful paint</h3>
 
-                {/* add some content to make this large */}
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            {/* intentionally add content to make this large */}
 
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-            </div>
+            <p className="mb-4">The largest contentful paint (LCP) is determined by finding the element with the largest area that is visible within the viewport. It represents the point at which the main content of the web page becomes visible to the user. This can be an image, a video, or any other visible element on the page.</p>
+
+            <p className="mb-4">To optimize the LCP, it is important to ensure that the largest element is loaded and rendered quickly. This can be achieved by optimizing the size and format of images, lazy loading non-critical content, and minimizing render-blocking resources.</p>
+
+            <p className="mb-4">By improving the LCP, you can enhance the user experience and reduce bounce rates, as users are more likely to engage with a web page when the main content is visible quickly.</p>
         </div>
     ) : "Loading...";
 }
