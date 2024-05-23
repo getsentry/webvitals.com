@@ -30,9 +30,9 @@ export default function INPButtons() {
     return (
 
         <ul className="list-none p-0">
-            <li className="bg-green-200" onClick={() => clickButton('fast')}>Click me (fast)</li>
-            <li className="bg-green-300" onClick={() => clickButton('ok')}>Click me (ok)</li>
-            <li className="bg-green-500" onClick={() => clickButton('slow')}>Click me (slow)</li>
+            <li className="rounded p-4 mb-4 bg-green-200" onClick={() => clickButton('fast')}>Click me (fast)</li>
+            <li className="rounded p-4 mb-4 bg-green-300" onClick={() => clickButton('ok')}>Click me (ok)</li>
+            <li className="rounded p-4 mb-4 bg-green-500" onClick={() => clickButton('slow')}>Click me (slow)</li>
 
             <li className={hidden ? "hidden" : ""}>I am now revealed!</li>
         </ul>

@@ -45,7 +45,7 @@ function VitalsReport() {
 
 
     return loading ? null : (
-        <div className="border-black border mt-4 rounded">
+        <div className="border-black border mt-4 rounded p-4">
             <ul className="list-none grid grid-cols-2">
                 <li><Vital name="First Contentful Paint" score={vitals.FCP} thresholds={{
                     good: 1000,
