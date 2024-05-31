@@ -74,7 +74,7 @@ function VitalsReport() {
                     needsImprovement: 300
                 }} /></li>
             </ul>
-            <p className="p-4">NOTE: Interaction web vitals (INP and FID) won&apos;t show until you change tabs.</p>
+            <p className="p-4 pl-12">NOTE: Interaction web vitals (INP and FID) won&apos;t show until you change tabs.</p>
         </div>
     );
 };
