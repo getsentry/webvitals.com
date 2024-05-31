@@ -28,16 +28,33 @@ export default function Page() {
     }, [setLoading]);
 
     return visible ? (
-        <div className="w-128 h-128 p-8 bg-green-300 mb-8">
-            <h3 className="text-xl font-semibold mb-4">This block is the largest contentful paint</h3>
+        <div className="p-8 rounded bg-blue-200 mb-8 prose">
+            <h3 className="text-lg font-semibold mb-4">How is LCP Calculated?</h3>
 
             {/* intentionally add content to make this large */}
 
-            <p className="mb-4">The largest contentful paint (LCP) is determined by finding the element with the largest area that is visible within the viewport. It represents the point at which the main content of the web page becomes visible to the user. This can be an image, a video, or any other visible element on the page.</p>
+            <ul className="list-disc ml-4">
+                <li className="mb-4"><strong>Navigation Start</strong>: Similar to other performance metrics, LCP measurement starts when the user initiates navigation to the webpage, marked by the browser&apos;s navigationStart event.</li>
 
-            <p className="mb-4">To optimize the LCP, it is important to ensure that the largest element is loaded and rendered quickly. This can be achieved by optimizing the size and format of images, lazy loading non-critical content, and minimizing render-blocking resources.</p>
+                <li className="mb-4"><strong>Resource Loading and DOM Parsing</strong>: The browser begins loading resources (HTML, CSS, JavaScript, images) and parsing the HTML to build the DOM (Document Object Model).</li>
 
-            <p className="mb-4">By improving the LCP, you can enhance the user experience and reduce bounce rates, as users are more likely to engage with a web page when the main content is visible quickly.</p>
+                <li className="mb-4"><strong>Identifying LCP Candidates</strong>: The browser identifies elements that could be considered for LCP. These elements typically include:
+
+                    <ol className="list-decimal ml-8 mt-4">
+                        <li><code>&lt;img&gt;</code> elements</li>
+                        <li><code>&lt;image&gt;</code> elements inside an &lt;svg&gt; element</li>
+                        <li><code>&lt;video&gt;</code> elements (the poster image)</li>
+                        <li>Block-level elements containing text nodes or other inline-level text elements</li>
+                        <li>The browser continuously monitors these elements as the page loads.</li>
+                    </ol>
+                </li>
+                <li className="mb-4"><strong>Rendering Elements</strong>: As the page loads and elements are rendered, the browser tracks the largest visible content element in the viewport. The size of the element is determined by its area in pixels.</li>
+
+
+                <li className="mb-4"><strong>Final LCP Value</strong>: The final LCP value is the time (in seconds) from the navigationStart event to the time when the largest content element is rendered.
+                    This value can be captured using the PerformanceObserver API.
+                </li>
+            </ul>
         </div>
     ) : "Loading...";
 }

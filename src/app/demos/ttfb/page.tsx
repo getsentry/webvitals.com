@@ -22,7 +22,7 @@ export default async function Page() {
 
             <p className="mb-4">Nothing is transmitted over the network until after a delay.</p>
 
-            <div className="bg-green-300 rounded p-8">
+            <div className="bg-blue-200 rounded p-8">
                 <h3 className="text-lg font-semibold mb-4">How TTFB is Calculated</h3>
 
                 <ul className="list-disc ml-8">
