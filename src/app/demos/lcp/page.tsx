@@ -28,7 +28,7 @@ export default function Page() {
     }, [setLoading]);
 
     return visible ? (
-        <div className="w-128 h-128 p-8 bg-lime-500 mb-8">
+        <div className="w-128 h-128 p-8 bg-green-300 mb-8">
             <h3 className="text-xl font-semibold mb-4">This block is the largest contentful paint</h3>
 
             {/* intentionally add content to make this large */}
