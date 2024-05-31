@@ -3,6 +3,7 @@ const FCP_DELAY = 2000; // ms
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+import { Header } from "../header";
 import InnerPage from "./client";
 
 export default async function Page() {
@@ -15,7 +16,7 @@ export default async function Page() {
 
     return (
         <div>
-            <h2 className="text-2xl font-semibold leading-none tracking-tight mb-4 border-b border-black pb-2">Slow TTFB</h2>
+            <Header>Slow TTFB</Header>
 
             <p className="mb-4">This demo demonstrates a slow TTFB (Time to First Byte).</p>
 
