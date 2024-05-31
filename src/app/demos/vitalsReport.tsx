@@ -59,7 +59,13 @@ function VitalsReport() {
                     good: 800,
                     needsImprovement: 1800
                 }} /></li>
-                <li><Vital name="Input Delay" score={vitals.INP} thresholds={{
+                <li><Vital name="Cumulative Layout Shift" score={vitals.CLS} thresholds={{
+                    good: 0.1,
+                    needsImprovement: 0.25,
+                }} formatter={(score: string) => Number(score).toFixed(2)} /></li>
+            </ul>
+            <ul className="list-none grid grid-cols-2 border-t mt-4 pt-4">
+                <li><Vital name="Interaction to Next Paint" score={vitals.INP} thresholds={{
                     good: 200,
                     needsImprovement: 500
                 }} /></li>
@@ -67,11 +73,8 @@ function VitalsReport() {
                     good: 100,
                     needsImprovement: 300
                 }} /></li>
-                <li><Vital name="Cumulative Layout Shift" score={vitals.CLS} thresholds={{
-                    good: 0.1,
-                    needsImprovement: 0.25,
-                }} formatter={(score: string) => Number(score).toFixed(2)} /></li>
             </ul>
+            <p className="p-4">NOTE: Interaction web vitals (INP and FID) won&apos;t show until you change tabs.</p>
         </div>
     );
 };

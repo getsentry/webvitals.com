@@ -39,7 +39,7 @@ const Vital: React.FC<VitalProps> = ({ name, score, thresholds, formatter }) => 
 
     return (
         <div className="inline-block">
-            <div className={`grid grid-cols-[2rem_auto]`}>
+            <div className={`grid grid-cols-[2rem_auto] p-4`}>
                 <div className={`text-xl mr-2inline-block ${colorClass} `}>
                     {scoreValue < thresholds.good && <span>●</span>}
                     {scoreValue >= thresholds.good && scoreValue < thresholds.needsImprovement && <span>■</span>}
