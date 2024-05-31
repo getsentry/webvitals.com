@@ -8,6 +8,7 @@ export const revalidate = 0;
 import { useLoadState } from '@/app/loadState';
 import { triggerVisibilityChange } from '@/lib/utils';
 import { useEffect } from 'react';
+import { Header } from '../header';
 
 export default function Page() {
     const { setLoading } = useLoadState();
@@ -20,8 +21,8 @@ export default function Page() {
 
     return (
         <div>
-            <h2 className="mt-0">Bad CLS</h2>
-            <p>This demo demonstrates a bad CLS (Cumulative Layout Shift) score.</p>
+            <Header>Bad CLS</Header>
+            <p className="mb-4">This demo demonstrates a bad CLS (Cumulative Layout Shift) score.</p>
 
             <Rows onload={() => triggerVisibilityChange(document, true)} />
         </div>

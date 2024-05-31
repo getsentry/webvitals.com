@@ -29,7 +29,7 @@ const Rows: React.FC<RowsPropTypes> = ({ onload }) => {
         <div>
             {/* output a row up to count*/}
             {Array.from({ length: count }, (v, k) => k).map((i) => (
-                <div key={i} className={`bg-green-100 h-96`}>This block is shifting content ...</div>
+                <div key={i} className={`p-8 mb-4 rounded bg-green-100 h-96`}>This block is shifting content ...</div>
             ))}
         </div>
     );

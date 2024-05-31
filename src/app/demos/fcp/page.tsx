@@ -8,6 +8,7 @@ export const revalidate = 0;
 import { triggerVisibilityChange } from "@/lib/utils";
 import { useLoadState } from "@/app/loadState";
 import { useEffect } from 'react';
+import { Header } from "../header";
 
 export default function Page() {
     // delay first render
@@ -26,10 +27,10 @@ export default function Page() {
 
     return loading ? null : (
         <div>
-            <h2 className="mt-0">Slow FCP</h2>
-            <p>This demo demonstrates a slow FCP (First Contentful Paint).</p>
+            <Header>Slow FCP</Header>
+            <p className="mb-4">This demo demonstrates a slow FCP (First Contentful Paint).</p>
 
-            <p>Nothing is painted until after a delay.</p>
+            <p className="mb-4">Nothing is painted until after a delay.</p>
         </div>
     );
 }
