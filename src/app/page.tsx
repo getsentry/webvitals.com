@@ -29,25 +29,35 @@ export default function Home() {
 
       <div className="flex flex-wrap gap-4">
         <Link className="flex-grow basis-1/3" href="/demos/lcp">
-          <Card>
+          <Card className="hover:bg-slate-50">
             <CardHeader>
-              <CardTitle className="text-xl">Largest Contentful Paint (LCP)</CardTitle>
+              <CardTitle className="text-xl">
+                <div className="text-5xl mb-2 text-teal-500">
+                  LCP
+                </div>
+                <div className="text-xl font-normal">Largest Contentful Paint</div>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="mb-4">Largest Contentful Paint (LCP) measures the time it takes for the largest text or image element to render on a webpage.</p>
+              <p className="mb-8">Measures the time it takes for the largest text or image element to render on a webpage.</p>
               <BrowserIcons width={48} height={48} supportedBrowsers={{ safari: false }} />
             </CardContent>
           </Card>
         </Link>
 
         <Link className="flex-grow basis-1/3" href="/demos/fcp">
-          <Card>
+          <Card className="hover:bg-slate-50">
             <CardHeader>
-              <CardTitle className="text-xl">First Contentful Paint (FCP)</CardTitle>
+              <CardTitle className="text-xl">
+                <div className="text-5xl mb-2 text-amber-600">
+                  FCP
+                </div>
+                <div className="text-xl font-normal">First Contentful Paint</div>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="mb-4">
-                First Contentful Paint (FCP) measures the time from when a page starts loading to when any part of the page&apos;s content is first displayed.
+              <p className="mb-8">
+                Measures the time from when a page starts loading to when <span className="italic">any</span> part of the page&apos;s content is first displayed.
               </p>
               <BrowserIcons width={48} height={48} />
             </CardContent>
@@ -55,24 +65,36 @@ export default function Home() {
         </Link>
 
         <Link className="flex-grow basis-1/3" href="/demos/ttfb">
-          <Card>
+          <Card className="hover:bg-slate-50">
             <CardHeader>
-              <CardTitle className="text-xl">Time to First Byte (TTFB)</CardTitle>
+              <CardTitle className="text-xl">
+                <div className="text-5xl mb-2 text-blue-600">
+                  TTFB
+                </div>
+                <div className="text-xl font-normal">Time to First Byte</div>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="mb-4">Time to First Byte (TTFB) measures the duration from when a page starts loading to when the first byte of content is received from the server.</p>
+              <p className="mb-8">Measures the duration from when a page starts loading to when the first byte of content is received from the server.</p>
               <BrowserIcons width={48} height={48} />
             </CardContent>
           </Card>
         </Link>
 
         <Link className="flex-grow basis-1/3" href="/demos/cls">
-          <Card>
+          <Card className="hover:bg-slate-50">
             <CardHeader>
-              <CardTitle className="text-xl">Cumulative Layout Shift (CLS)</CardTitle>
+              <CardTitle className="text-xl">
+                <CardTitle className="text-xl">
+                  <div className="text-5xl mb-2 text-purple-600">
+                    CLS
+                  </div>
+                  <div className="text-xl font-normal">Cumulative Layout Shift</div>
+                </CardTitle>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="mb-4">Cumulative Layout Shift (CLS) measures the total amount of unexpected layout shifts that occur during the entire lifespan of a webpage.</p>
+              <p className="mb-8">Measures the total amount of unexpected layout shifts that occur during the entire lifespan of a webpage.</p>
               <BrowserIcons width={48} height={48} supportedBrowsers={{ safari: false, firefox: false }} />
             </CardContent>
           </Card>
@@ -80,9 +102,14 @@ export default function Home() {
 
 
         <Link className="flex-grow basis-1/3" href="/demos/inp">
-          <Card>
+          <Card className="hover:bg-slate-50">
             <CardHeader>
-              <CardTitle className="text-xl">Interaction to Next Paint (INP)</CardTitle>
+              <CardTitle className="text-xl">
+                <div className="text-5xl mb-2 text-yellow-600">
+                  INP
+                </div>
+                <div className="text-xl font-normal">Interaction to Next Paint</div>
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="mb-4">Interaction to Next Paint (INP) measures the time from when a user interacts with a page to when the browser renders the visual response to that interaction.</p>
