@@ -38,8 +38,8 @@ export default function Home() {
                 <div className="text-xl font-normal">Largest Contentful Paint</div>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="mb-8">Measures the time it takes for the largest text or image element to render on a webpage.</p>
+            <CardContent className="grid grid-rows-[4lh,auto] gap-y-4">
+              <p>Measures the time it takes for the largest text or image element to render on a webpage.</p>
               <BrowserIcons width={48} height={48} supportedBrowsers={{ safari: false }} />
             </CardContent>
           </Card>
@@ -55,8 +55,8 @@ export default function Home() {
                 <div className="text-xl font-normal">First Contentful Paint</div>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="mb-8">
+            <CardContent className="grid grid-rows-[4lh,auto] gap-y-4">
+              <p>
                 Measures the time from when a page starts loading to when <span className="italic">any</span> part of the page&apos;s content is first displayed.
               </p>
               <BrowserIcons width={48} height={48} />
@@ -74,8 +74,8 @@ export default function Home() {
                 <div className="text-xl font-normal">Time to First Byte</div>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="mb-8">Measures the duration from when a page starts loading to when the first byte of content is received from the server.</p>
+            <CardContent className="grid grid-rows-[4lh,auto] gap-y-4">
+              <p>Measures the duration from when a page starts loading to when the first byte of content is received from the server.</p>
               <BrowserIcons width={48} height={48} />
             </CardContent>
           </Card>
@@ -93,8 +93,8 @@ export default function Home() {
                 </CardTitle>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="mb-8">Measures the total amount of unexpected layout shifts that occur during the entire lifespan of a webpage.</p>
+            <CardContent className="grid grid-rows-[4lh,auto] gap-y-4">
+              <p>Measures the total amount of unexpected layout shifts that occur during the entire lifespan of a webpage.</p>
               <BrowserIcons width={48} height={48} supportedBrowsers={{ safari: false, firefox: false }} />
             </CardContent>
           </Card>
@@ -111,8 +111,8 @@ export default function Home() {
                 <div className="text-xl font-normal">Interaction to Next Paint</div>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="mb-4">Interaction to Next Paint (INP) measures the time from when a user interacts with a page to when the browser renders the visual response to that interaction.</p>
+            <CardContent className="grid grid-rows-[4lh,auto] gap-y-4">
+              <p>Interaction to Next Paint (INP) measures the time from when a user interacts with a page to when the browser renders the visual response to that interaction.</p>
               <BrowserIcons width={48} height={48} supportedBrowsers={{ safari: false, firefox: false }} />
             </CardContent>
           </Card>
