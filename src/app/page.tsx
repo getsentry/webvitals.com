@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
+import BrowserIcons from "./components/BrowserIcons";
 export default function Home() {
   const { setLoading } = useLoadState();
 
@@ -33,7 +34,8 @@ export default function Home() {
               <CardTitle className="text-xl">Largest Contentful Paint (LCP)</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Largest Contentful Paint (LCP) measures the time it takes for the largest text or image element to render on a webpage.</p>
+              <p className="mb-4">Largest Contentful Paint (LCP) measures the time it takes for the largest text or image element to render on a webpage.</p>
+              <BrowserIcons width={48} height={48} supportedBrowsers={{ safari: false }} />
             </CardContent>
           </Card>
         </Link>
@@ -44,9 +46,10 @@ export default function Home() {
               <CardTitle className="text-xl">First Contentful Paint (FCP)</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>
+              <p className="mb-4">
                 First Contentful Paint (FCP) measures the time from when a page starts loading to when any part of the page&apos;s content is first displayed.
               </p>
+              <BrowserIcons width={48} height={48} />
             </CardContent>
           </Card>
         </Link>
@@ -57,7 +60,8 @@ export default function Home() {
               <CardTitle className="text-xl">Time to First Byte (TTFB)</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Time to First Byte (TTFB) measures the duration from when a page starts loading to when the first byte of content is received from the server.</p>
+              <p className="mb-4">Time to First Byte (TTFB) measures the duration from when a page starts loading to when the first byte of content is received from the server.</p>
+              <BrowserIcons width={48} height={48} />
             </CardContent>
           </Card>
         </Link>
@@ -68,7 +72,8 @@ export default function Home() {
               <CardTitle className="text-xl">Cumulative Layout Shift (CLS)</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Cumulative Layout Shift (CLS) measures the total amount of unexpected layout shifts that occur during the entire lifespan of a webpage.</p>
+              <p className="mb-4">Cumulative Layout Shift (CLS) measures the total amount of unexpected layout shifts that occur during the entire lifespan of a webpage.</p>
+              <BrowserIcons width={48} height={48} supportedBrowsers={{ safari: false, firefox: false }} />
             </CardContent>
           </Card>
         </Link>
@@ -80,7 +85,8 @@ export default function Home() {
               <CardTitle className="text-xl">Interaction to Next Paint (INP)</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Interaction to Next Paint (INP) measures the time from when a user interacts with a page to when the browser renders the visual response to that interaction.</p>
+              <p className="mb-4">Interaction to Next Paint (INP) measures the time from when a user interacts with a page to when the browser renders the visual response to that interaction.</p>
+              <BrowserIcons width={48} height={48} supportedBrowsers={{ safari: false, firefox: false }} />
             </CardContent>
           </Card>
         </Link>
