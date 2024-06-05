@@ -18,6 +18,12 @@ const config = {
       },
     },
     extend: {
+      flexBasis: {
+        "1/3-gap-4": "calc(33.3% - (2/3 * 1rem))",
+        "2/3-gap-4": "calc(66.6% - (1/3 * 1rem))",
+        "1/4-gap-4": "calc(25% - (3/4 * 1rem))",
+        "3/4-gap-4": "calc(75% - (1/4 * 1rem))",
+      },
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
       },

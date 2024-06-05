@@ -28,7 +28,7 @@ export default function Home() {
       <h1 className="mb-8 text-3xl font-bold">Web Vitals Demos</h1>
 
       <div className="flex flex-wrap gap-4">
-        <Link className="flex-grow basis-1/3" href="/demos/lcp">
+        <Link className="flex-grow lg:basis-1/3 basis-full" href="/demos/lcp">
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl">
@@ -45,7 +45,7 @@ export default function Home() {
           </Card>
         </Link>
 
-        <Link className="flex-grow basis-1/3" href="/demos/fcp">
+        <Link className="flex-grow lg:basis-1/3 basis-full" href="/demos/fcp">
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl">
@@ -64,7 +64,7 @@ export default function Home() {
           </Card>
         </Link>
 
-        <Link className="flex-grow basis-1/3" href="/demos/ttfb">
+        <Link className="flex-grow lg:basis-1/3 basis-full" href="/demos/ttfb">
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl">
@@ -81,7 +81,7 @@ export default function Home() {
           </Card>
         </Link>
 
-        <Link className="flex-grow basis-1/3" href="/demos/cls">
+        <Link className="flex-grow lg:basis-1/3 basis-full" href="/demos/cls">
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl">
@@ -101,7 +101,7 @@ export default function Home() {
         </Link>
 
 
-        <Link className="flex-grow basis-1/3" href="/demos/inp">
+        <Link className="flex-grow lg:basis-1/3 basis-full" href="/demos/inp">
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl">
