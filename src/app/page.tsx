@@ -85,12 +85,10 @@ export default function Home() {
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl">
-                <CardTitle className="text-xl">
-                  <div className="text-5xl mb-2 text-purple-600">
-                    CLS
-                  </div>
-                  <div className="text-xl font-normal">Cumulative Layout Shift</div>
-                </CardTitle>
+                <div className="text-5xl mb-2 text-purple-600">
+                  CLS
+                </div>
+                <div className="text-xl font-normal">Cumulative Layout Shift</div>
               </CardTitle>
             </CardHeader>
             <CardContent className="grid grid-rows-[4lh,auto] gap-y-4">
