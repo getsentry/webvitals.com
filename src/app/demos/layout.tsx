@@ -1,5 +1,6 @@
 import VitalsReport from './vitalsReport';
 import Nav from '../nav';
+import Link from 'next/link';
 
 export default function DemoLayout({
     children, // will be a page or nested layout
@@ -8,6 +9,10 @@ export default function DemoLayout({
 }) {
     return (
         <div>
+
+            <nav className="mb-8 text-gray-500">
+                <Link href="/">← Home</Link>
+            </nav>
             {children}
 
             <VitalsReport />

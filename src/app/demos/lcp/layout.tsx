@@ -1,4 +1,8 @@
-import { Header } from "../header"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+import BrowserIcons from "@/app/components/BrowserIcons"
+
+import DemoHeader from "@/app/components/DemoHeader"; // Import the DemoHeader component
 
 export default function DashboardLayout({
     children, // will be a page or nested layout
@@ -7,12 +11,13 @@ export default function DashboardLayout({
 }) {
     return (
         <div>
-            <Header>Slow LCP</Header>
+            <DemoHeader vitalName="LCP" vitalDesc="Largest Contentful Paint" vitalColor="text-teal-500" supportedBrowsers={{ safari: false }}>
+                Measures the time it takes for the largest text or image element to render on a webpage.
+            </DemoHeader>
 
-            <p className="mb-4">This demo illustrates a slow LCP.</p>
 
             {children}
 
-        </div>
+        </div >
     )
 }

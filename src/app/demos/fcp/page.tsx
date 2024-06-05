@@ -8,7 +8,7 @@ export const revalidate = 0;
 import { triggerVisibilityChange } from "@/lib/utils";
 import { useLoadState } from "@/app/loadState";
 import { useEffect } from 'react';
-import { Header } from "../header";
+import DemoHeader from "../../components/DemoHeader";
 
 export default function Page() {
     // delay first render
@@ -27,8 +27,9 @@ export default function Page() {
 
     return loading ? null : (
         <div>
-            <Header>Slow FCP</Header>
-            <p className="mb-8">This demo demonstrates a slow FCP (First Contentful Paint).</p>
+            <DemoHeader vitalName="FCP" vitalDesc="First Contentful Paint" vitalColor="text-amber-600">
+                Measures the time from when a page starts loading to when <span className="italic">any</span> part of the page&apos;s content is first displayed.
+            </DemoHeader>
 
             <div className="mb-8 p-8 rounded bg-blue-200">
                 <h3 className="mb-4 text-lg font-semibold">How is FCP Calculated?</h3>

@@ -3,7 +3,7 @@ const FCP_DELAY = 2000; // ms
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-import { Header } from "../header";
+import DemoHeader from "../../components/DemoHeader";
 import InnerPage from "./client";
 
 export default async function Page() {
@@ -16,11 +16,9 @@ export default async function Page() {
 
     return (
         <div>
-            <Header>Slow TTFB</Header>
-
-            <p className="mb-4">This demo demonstrates a slow TTFB (Time to First Byte).</p>
-
-            <p className="mb-4">Nothing is transmitted over the network until after a delay.</p>
+            <DemoHeader vitalName="TTFB" vitalDesc="Time to first Byte" vitalColor="text-blue-600">
+                Measures the duration from when a page starts loading to when the first byte of content is received from the server.
+            </DemoHeader>
 
             <div className="bg-blue-200 rounded p-8">
                 <h3 className="text-lg font-semibold mb-4">How TTFB is Calculated</h3>

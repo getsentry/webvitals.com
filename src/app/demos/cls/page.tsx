@@ -8,7 +8,7 @@ export const revalidate = 0;
 import { useLoadState } from '@/app/loadState';
 import { triggerVisibilityChange } from '@/lib/utils';
 import { useEffect } from 'react';
-import { Header } from '../header';
+import DemoHeader from '../../components/DemoHeader';
 
 export default function Page() {
     const { setLoading } = useLoadState();
@@ -21,8 +21,9 @@ export default function Page() {
 
     return (
         <div>
-            <Header>Bad CLS</Header>
-            <p className="mb-4">This demo demonstrates a bad CLS (Cumulative Layout Shift) score.</p>
+            <DemoHeader vitalName="CLS" vitalDesc="Cumulative Layout Shift" vitalColor="text-purple-600" supportedBrowsers={{ safari: false, firefox: false }}>
+                Measures the total amount of unexpected layout shifts that occur during the entire lifespan of a webpage.
+            </DemoHeader>
 
             <Rows onload={() => triggerVisibilityChange(document, true)} />
         </div>
