@@ -9,18 +9,9 @@ export default function DemoLayout({
 }) {
     return (
         <div>
-
-            <nav className="mb-8 text-gray-500">
-                <Link href="/">← Home</Link>
-            </nav>
             {children}
 
             <VitalsReport />
-
-            {/*
-            <h3>More demos</h3>
-            <Nav />
-    */}
         </div>
     )
 }
