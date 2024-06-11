@@ -3,8 +3,6 @@
 import { useLoadState } from "./loadState";
 import { useEffect } from "react";
 
-import Link from "next/link";
-
 import {
   Card,
   CardContent,
@@ -28,7 +26,8 @@ export default function Home() {
       <h1 className="mb-8 text-5xl font-md tracking-tighter text-gray-500">Web Vitals Playground</h1>
 
       <div className="flex flex-wrap gap-4">
-        <Link className="flex-grow lg:basis-1/3 basis-full" href="/demos/lcp">
+
+        <a href="/demos/lcp" className="flex-grow lg:basis-1/3 basis-full">
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl relative">
@@ -44,9 +43,9 @@ export default function Home() {
               <p>Measures the time it takes for the largest text or image element to render on a webpage.</p>
             </CardContent>
           </Card>
-        </Link>
+        </a>
 
-        <Link className="flex-grow lg:basis-1/3 basis-full" href="/demos/fcp">
+        <a href="/demos/fcp" className="flex-grow lg:basis-1/3 basis-full">
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl relative">
@@ -65,9 +64,9 @@ export default function Home() {
               </p>
             </CardContent>
           </Card>
-        </Link>
+        </a>
 
-        <Link className="flex-grow lg:basis-1/3 basis-full" href="/demos/ttfb">
+        <a href="/demos/ttfb" className="flex-grow lg:basis-1/3 basis-full">
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl relative">
@@ -84,9 +83,10 @@ export default function Home() {
               <p>Measures the duration from when a page starts loading to when the first byte of content is received from the server.</p>
             </CardContent>
           </Card>
-        </Link>
+        </a>
 
-        <Link className="flex-grow lg:basis-1/3 basis-full" href="/demos/cls">
+
+        <a href="/demos/cls" className="flex-grow lg:basis-1/3 basis-full">
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl relative">
@@ -103,10 +103,10 @@ export default function Home() {
               <p>Measures the total amount of unexpected layout shifts that occur during the entire lifespan of a webpage.</p>
             </CardContent>
           </Card>
-        </Link>
+        </a>
 
 
-        <Link className="flex-grow lg:basis-1/3 basis-full" href="/demos/inp">
+        <a href="/demos/inp" className="flex-grow lg:basis-1/3 basis-full">
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl relative">
@@ -123,7 +123,7 @@ export default function Home() {
               <p>Interaction to Next Paint (INP) measures the time from when a user interacts with a page to when the browser renders the visual response to that interaction.</p>
             </CardContent>
           </Card>
-        </Link>
+        </a>
       </div>
     </div>
   );
