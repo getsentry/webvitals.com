@@ -38,8 +38,8 @@ export default function Home() {
                 </div>
                 <div className="text-xl font-normal">Largest Contentful Paint</div>
                 <div className="top-0 right-0 absolute">
-                  <BrowserIcons width={44} height={44} supportedBrowsers={{ safari: false }} />
-                  <div className="mt-2 text-right">
+                  <BrowserIcons width={48} height={48} supportedBrowsers={{ safari: false }} />
+                  <div className="text-right" style={{ marginTop: "6px" }}>
                     <div className="inline-block">
                       <Badge variant="secondary">Core Web Vital</Badge>
                     </div>
@@ -48,7 +48,7 @@ export default function Home() {
 
               </CardTitle>
             </CardHeader>
-            <CardContent className="mt-4 grid grid-rows-[4lh,auto] gap-y-4 relative">
+            <CardContent className="grid grid-rows-[4lh,auto] gap-y-4">
               <p>
                 Measures the time it takes for the largest text or image element to render on a webpage.
               </p>
@@ -65,8 +65,8 @@ export default function Home() {
                 </div>
                 <div className="text-xl font-normal">Interaction to Next Paint</div>
                 <div className="top-0 right-0 absolute">
-                  <BrowserIcons width={44} height={44} supportedBrowsers={{ safari: false, firefox: false }} />
-                  <div className="mt-2 text-right">
+                  <BrowserIcons width={48} height={48} supportedBrowsers={{ safari: false, firefox: false }} />
+                  <div className="text-right" style={{ marginTop: "6px" }}>
                     <div className="inline-block">
                       <Badge variant="secondary">Core Web Vital</Badge>
                     </div>
@@ -91,8 +91,8 @@ export default function Home() {
                 </div>
                 <div className="text-xl font-normal">Cumulative Layout Shift</div>
                 <div className="top-0 right-0 absolute">
-                  <BrowserIcons width={44} height={44} supportedBrowsers={{ safari: false, firefox: false }} />
-                  <div className="mt-2 text-right">
+                  <BrowserIcons width={48} height={48} supportedBrowsers={{ safari: false, firefox: false }} />
+                  <div className="text-right" style={{ marginTop: "6px" }}>
                     <div className="inline-block">
                       <Badge variant="secondary">Core Web Vital</Badge>
                     </div>
@@ -115,8 +115,8 @@ export default function Home() {
                 </div>
                 <div className="text-xl font-normal">First Contentful Paint</div>
                 <div className="top-0 right-0 absolute">
-                  <BrowserIcons width={44} height={44} />
-                  <div className="mt-2 text-right">
+                  <BrowserIcons width={48} height={48} />
+                  <div className="text-right" style={{ marginTop: "6px" }}>
                     <div className="inline-block">
                       <Badge variant="secondary">Other Vital</Badge>
                     </div>
@@ -141,8 +141,8 @@ export default function Home() {
                 </div>
                 <div className="text-xl font-normal">Time to First Byte</div>
                 <div className="top-0 right-0 absolute">
-                  <BrowserIcons width={44} height={44} />
-                  <div className="mt-2 text-right">
+                  <BrowserIcons width={48} height={48} />
+                  <div className="text-right" style={{ marginTop: "6px" }}>
                     <div className="inline-block">
                       <Badge variant="secondary">Other Vital</Badge>
                     </div>
