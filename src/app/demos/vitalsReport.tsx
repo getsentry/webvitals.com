@@ -62,7 +62,7 @@ function VitalsReport() {
                 <li><Vital name="Cumulative Layout Shift" score={vitals.CLS} thresholds={{
                     good: 0.1,
                     needsImprovement: 0.25,
-                }} formatter={(score: string) => Number(score).toFixed(2)} /></li>
+                }} formatter={(score: string) => !isNaN(Number(score)) ? Number(score).toFixed(2) : score} /></li>
             </ul>
             <ul className="list-none grid grid-cols-2 border-t mt-4 pt-4">
                 <li><Vital name="Interaction to Next Paint" score={vitals.INP} thresholds={{
