@@ -11,7 +11,13 @@ export default function DashboardLayout({
 }) {
     return (
         <div>
-            <DemoHeader vitalName="LCP" vitalDesc="Largest Contentful Paint" vitalColor="text-teal-500" supportedBrowsers={{ safari: false }}>
+            <DemoHeader
+                vitalName="LCP"
+                vitalDesc="Largest Contentful Paint"
+                vitalColor="text-teal-500"
+                supportedBrowsers={{ safari: false }}
+                isCore={true}
+            >
                 Measures the time it takes for the largest text or image element to render on a webpage.
             </DemoHeader>
 

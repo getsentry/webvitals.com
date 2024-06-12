@@ -21,7 +21,13 @@ export default function Page() {
 
     return (
         <div>
-            <DemoHeader vitalName="CLS" vitalDesc="Cumulative Layout Shift" vitalColor="text-purple-600" supportedBrowsers={{ safari: false, firefox: false }}>
+            <DemoHeader
+                vitalName="CLS"
+                vitalDesc="Cumulative Layout Shift"
+                vitalColor="text-purple-600"
+                supportedBrowsers={{ safari: false, firefox: false }}
+                isCore={true}
+            >
                 Measures the total amount of unexpected layout shifts that occur during the entire lifespan of a webpage.
             </DemoHeader>
 
