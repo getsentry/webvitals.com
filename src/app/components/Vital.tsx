@@ -7,10 +7,11 @@ interface VitalProps {
         good: number;
         needsImprovement: number;
     };
+    href?: string;
     formatter?: Function;
 }
 
-const Vital: React.FC<VitalProps> = ({ name, score, thresholds, formatter }) => {
+const Vital: React.FC<VitalProps> = ({ name, score, thresholds, formatter, href }) => {
     let colorClass = '';
 
     let scoreValue = Number(score);
@@ -46,7 +47,7 @@ const Vital: React.FC<VitalProps> = ({ name, score, thresholds, formatter }) => 
                     {scoreValue >= thresholds.needsImprovement && <span>▲</span>}
                 </div>
                 <div>
-                    <div>{name}</div>
+                    <div><a className="hover:underline" href={href}>{name}</a></div>
                     <div className={`text-2xl ${colorClass} `}>{formattedScore}</div>
                 </div>
             </div>
