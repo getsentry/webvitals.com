@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import VitalsReport from './vitalsReport';
+import VitalsReport from './VitalsReport';
 import Nav from '../nav';
 import Link from 'next/link';
 
