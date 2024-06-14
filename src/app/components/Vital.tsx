@@ -1,8 +1,17 @@
 import React from 'react';
 
+import {
+    HoverCard,
+    HoverCardContent,
+    HoverCardTrigger,
+} from "@/components/ui/hover-card"
+
+import { InfoIcon } from "lucide-react";
+
 interface VitalProps {
     score: string;
     name: string;
+    tooltip?: string;
     thresholds: {
         good: number;
         needsImprovement: number;
@@ -11,7 +20,7 @@ interface VitalProps {
     formatter?: Function;
 }
 
-const Vital: React.FC<VitalProps> = ({ name, score, thresholds, formatter, href }) => {
+const Vital: React.FC<VitalProps> = ({ name, score, tooltip, thresholds, formatter, href }) => {
     let colorClass = '';
 
     let scoreValue = Number(score);
@@ -47,7 +56,19 @@ const Vital: React.FC<VitalProps> = ({ name, score, thresholds, formatter, href 
                     {scoreValue >= thresholds.needsImprovement && <span>▲</span>}
                 </div>
                 <div>
-                    <div><a className="hover:underline" href={href}>{name}</a></div>
+                    <div>
+                        <a className="hover:underline" href={href}>{name}</a>
+                        {tooltip ?
+                            <HoverCard>
+                                <HoverCardTrigger>
+                                    <InfoIcon className="inline-block text-gray-400 ml-1 -mt-1" size="18" strokeWidth="1" />
+                                </HoverCardTrigger>
+                                <HoverCardContent>
+                                    <p className="text-sm">{tooltip}</p>
+                                </HoverCardContent>
+                            </HoverCard> : null
+                        }
+                    </div>
                     <div className={`text-2xl ${colorClass} `}>{formattedScore}</div>
                 </div>
             </div>

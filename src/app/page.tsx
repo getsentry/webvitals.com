@@ -75,7 +75,7 @@ export default function Home() {
               </CardTitle>
             </CardHeader>
             <CardContent className="grid grid-rows-[4lh,auto] gap-y-4">
-              <p>Interaction to Next Paint (INP) measures the time from when a user interacts with a page to when the browser renders the visual response to that interaction.</p>
+              <p>Measures the time from when a user interacts with a page to when the browser renders the visual response to that interaction.</p>
 
             </CardContent>
           </Card>

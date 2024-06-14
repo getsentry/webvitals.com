@@ -17,7 +17,7 @@ export default async function Page() {
                     supportedBrowsers={{ safari: false, firefox: false }}
                     isCore={true}
                 >
-                    Interaction to Next Paint (INP) measures the time from when a user interacts with a page to when the browser renders the visual response to that interaction.
+                    Measures the time from when a user interacts with a page to when the browser renders the visual response to that interaction.
                 </DemoHeader>
 
 
