@@ -29,7 +29,7 @@ export default function Home() {
 
       <div className="flex flex-wrap gap-4">
 
-        <a href="/demos/lcp" className="flex-grow lg:basis-1/3 basis-full">
+        <a href="/lcp" className="flex-grow lg:basis-1/3 basis-full">
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl relative">
@@ -56,7 +56,7 @@ export default function Home() {
           </Card>
         </a>
 
-        <a href="/demos/inp" className="flex-grow lg:basis-1/3 basis-full">
+        <a href="/inp" className="flex-grow lg:basis-1/3 basis-full">
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl relative">
@@ -82,7 +82,7 @@ export default function Home() {
         </a>
 
 
-        <a href="/demos/cls" className="flex-grow lg:basis-1/3 basis-full">
+        <a href="/cls" className="flex-grow lg:basis-1/3 basis-full">
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl relative">
@@ -106,7 +106,7 @@ export default function Home() {
           </Card>
         </a>
 
-        <a href="/demos/fcp" className="flex-grow lg:basis-1/3 basis-full">
+        <a href="/fcp" className="flex-grow lg:basis-1/3 basis-full">
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl relative">
@@ -132,7 +132,7 @@ export default function Home() {
           </Card>
         </a>
 
-        <a href="/demos/ttfb" className="flex-grow lg:basis-1/3 basis-full">
+        <a href="/ttfb" className="flex-grow lg:basis-1/3 basis-full">
           <Card className="hover:bg-slate-50">
             <CardHeader>
               <CardTitle className="text-xl relative">
