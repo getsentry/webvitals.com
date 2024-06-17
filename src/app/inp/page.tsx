@@ -22,6 +22,8 @@ export default async function Page() {
 
 
                 <INPButtons />
+
+                <p className="mt-8 mb-8">NOTE: Your browser may freeze temporarily.</p>
             </div >
         </DemoLayout>
     );

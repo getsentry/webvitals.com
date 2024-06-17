@@ -1,19 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, MouseEvent, useRef } from "react";
 
-import { useLoadState } from "@/app/loadState";
+import { ChevronDown } from "lucide-react";
 
-import { triggerVisibilityChange } from "@/lib/utils";
-export default function INPButtons() {
 
-    const { setLoading } = useLoadState();
-    useEffect(() => {
-        setTimeout(() => {
-            setLoading(false);
-        }, 0);
-    }, [setLoading]);
-
-    const [hidden, setHidden] = useState(true);
+function INPListItem({ speed, children }: { speed: string, children: React.ReactNode }) {
+    const [isHidden, setHidden] = useState(true);
 
     const clickButton = (speed: string) => {
 
@@ -24,17 +16,63 @@ export default function INPButtons() {
         } while (Date.now() - start < delay);
         setHidden(false);
 
-        triggerVisibilityChange(document, true);
+        setTimeout(() => {
+            triggerVisibilityChange(document, true);
+        }, 100);
     };
 
     return (
+        <li className="border-b border-blue-900" data-orientation="vertical" onClick={() => clickButton(speed)}>
+            <div className="flex">
+                <button className="flex flex-1 items-center justify-between py-4 font-medium transition-all [&[data-state=open]>svg]:rotate-180">
+                    <div className="text-left">
+                        <div className="hover:underline">
+                            {children}
+                        </div>
 
-        <ul className="list-none p-0">
-            <li className="rounded p-4 mb-4 bg-green-200" onClick={() => clickButton('fast')}>Click me (fast)</li>
-            <li className="rounded p-4 mb-4 bg-green-300" onClick={() => clickButton('ok')}>Click me (ok)</li>
-            <li className="rounded p-4 mb-4 bg-green-500" onClick={() => clickButton('slow')}>Click me (slow)</li>
+                        <p className={`${isHidden ? "hidden" : ""} mt-2 text-sm`}>
+                            The elapsed time between your click and this content appearing is the INP.
+                        </p>
+                    </div>
+                    <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+                </button>
+            </div>
+        </li>
+    );
+}
 
-            <li className={hidden ? "hidden" : ""}>I am now revealed!</li>
-        </ul>
+import { useLoadState } from "@/app/loadState";
+
+import { triggerVisibilityChange } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+export default function INPButtons() {
+
+    const { setLoading } = useLoadState();
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false);
+        }, 0);
+    }, [setLoading]);
+
+    return (
+
+        <Card className="bg-blue-200">
+            <CardContent>
+                <ul className="list-none p-0">
+                    <INPListItem speed="fast">
+                        Click to expand (fast)
+                    </INPListItem>
+                    <INPListItem speed="ok">
+                        Click to expand (slow)
+                    </INPListItem>
+                    <INPListItem speed="slow">
+                        Click to expand (slowest)
+                    </INPListItem>
+                </ul >
+            </CardContent>
+        </Card >
+
+
+
     )
 }
