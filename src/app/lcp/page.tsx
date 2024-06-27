@@ -60,7 +60,7 @@ export default function Page() {
 
                 {/* intentionally add content to make this large */}
 
-                <ul className="list-disc ml-4">
+                <ul className="list-decimal ml-4">
                     <li className="mb-4"><strong>Navigation Start</strong>: Similar to other performance metrics, LCP measurement starts when the user initiates navigation to the webpage, marked by the browser&apos;s navigationStart event.</li>
 
                     <li className="mb-4"><strong>Resource Loading and DOM Parsing</strong>: The browser begins loading resources (HTML, CSS, JavaScript, images) and parsing the HTML to build the DOM (Document Object Model).</li>

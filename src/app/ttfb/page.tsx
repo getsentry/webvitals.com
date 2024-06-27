@@ -25,7 +25,7 @@ export default async function Page() {
                 <div className="bg-blue-200 rounded p-8">
                     <h3 className="text-lg font-semibold mb-4">How TTFB is Calculated</h3>
 
-                    <ul className="list-disc ml-8">
+                    <ul className="list-decimal ml-8">
                         <li className="mb-4"><strong>Client sends a request</strong>: The client (e.g., a web browser) sends a request to the server for a specific resource, such as a webpage or an API endpoint.</li>
                         <li className="mb-4"><strong>Server processes the request</strong>: The server receives the request and starts processing it. This may involve executing server-side code, accessing databases, or performing other operations to generate the response.</li>
                         <li className="mb-4"><strong>Server prepares the response</strong>: Once the server has processed the request, it prepares the response by generating the necessary data and headers.</li>
