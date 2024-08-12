@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { useEffect, useState } from 'react';
 
 export const dynamic = 'force-dynamic';
@@ -6,7 +7,7 @@ export const revalidate = 0;
 
 interface RowsPropTypes {
     onload: Function,
-};
+}
 
 const Rows: React.FC<RowsPropTypes> = ({ onload }) => {
     // delay first render

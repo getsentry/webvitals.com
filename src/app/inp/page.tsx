@@ -4,7 +4,7 @@ import DemoLayout from '../components/DemoLayout';
 import INPButtons from './inpButtons';
 
 export const dynamic = 'force-dynamic';
-const revalidate = 0;
+export const revalidate = 0;
 
 export default async function Page() {
     return (

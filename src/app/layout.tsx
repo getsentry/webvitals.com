@@ -1,14 +1,11 @@
+import React from "react";
 import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
 import "./globals.css";
 
-import { useLoadState } from "./loadState";
-
 import { cn } from "@/lib/utils"
 
-import Nav from "./nav";
 import Head from "next/head";
-import Link from "next/link";
 
 const fontSans = FontSans({
   subsets: ["latin"],

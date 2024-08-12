@@ -25,6 +25,7 @@ const Vital: React.FC<VitalProps> = ({ name, score, tooltip, thresholds, formatt
 
     let scoreValue = Number(score);
     if (score === 'n/a') {
+        // eslint-disable-line no-empty
     }
     else if (scoreValue < thresholds.good) {
         colorClass = 'text-green-500';

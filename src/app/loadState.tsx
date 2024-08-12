@@ -1,8 +1,10 @@
 import { create } from "zustand";
-import { useEffect } from "react";
 
 interface LoadState {
     loading: boolean;
+    // unsure why this is complaining about loading being unused, given its an interface
+    // possibly     
+    // eslint-disable-next-line no-unused-vars
     setLoading: (loading: boolean) => void;
 }
 

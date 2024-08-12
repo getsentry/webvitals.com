@@ -9,7 +9,7 @@ import DemoLayout from "../components/DemoLayout";
 
 export default async function Page() {
     // delay first render
-    const data = await new Promise((resolve, reject) => {
+    await new Promise((resolve,) => {
         setTimeout(() => {
             resolve(null);
         }, FCP_DELAY);

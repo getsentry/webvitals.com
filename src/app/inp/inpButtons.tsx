@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect, MouseEvent, useRef } from "react";
+import React from "react";
+import { useState, useEffect } from "react";
 
 import { ChevronDown } from "lucide-react";
 
@@ -12,7 +13,7 @@ function INPListItem({ speed, children }: { speed: string, children: React.React
         const delay = speed === 'fast' ? 100 : speed === 'ok' ? 500 : 1000;
         const start = Date.now();
         do {
-
+            // eslint-disable-line no-empty
         } while (Date.now() - start < delay);
         setHidden(false);
 
