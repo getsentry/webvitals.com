@@ -14,6 +14,9 @@ export default function DemoLayout({
             {children}
 
             <VitalsReport />
+            <footer className="w-full text-center text-gray-500 mt-4">
+                Web Vitals Playground brought to you by <a className="underline" href="https://sentry.io">Sentry</a>
+            </footer>
         </div>
     )
 }
