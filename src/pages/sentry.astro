@@ -1,0 +1,35 @@
+---
+import '../styles/global.css';
+
+import { Button } from "@/components/ui/button"
+---
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Sentry Test</title>
+	</head>
+
+	<body>
+		<div class="grid place-items-center h-screen content-center">
+			<Button id="error-button">Throw test error</Button>
+		</div>
+	</body>
+  <script>
+    import * as Sentry from "@sentry/astro";
+    function handleClick () {
+      // Send a log before throwing the error
+      Sentry.logger.info(Sentry.logger.fmt`User ${"sentry-test"} triggered test error button`, {
+        action: "test_error_button_click",
+      });
+      throw new Error('This is a test error');
+    }
+    document?.querySelector("#error-button")?.addEventListener("click", handleClick);
+  </script>
+</html>
+
+  
+
+  
