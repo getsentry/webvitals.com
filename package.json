@@ -5,9 +5,10 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
+    "check": "astro check",
     "format": "biome check .",
     "format:fix": "biome check --write .",
     "lint": "biome lint .",
@@ -79,9 +80,11 @@
     "zod": "^4.1.5"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.4",
     "@biomejs/biome": "2.2.2",
     "shadcn": "^3.1.0",
-    "tw-animate-css": "^1.3.8"
+    "tw-animate-css": "^1.3.8",
+    "typescript": "^5.9.2"
   },
   "volta": {
     "node": "22.19.0"

@@ -55,7 +55,6 @@ src/
 ├── layouts/             # Page layouts with view transitions
 ├── pages/               # File-based routing
 ├── lib/                 # Utilities and services
-│   ├── lighthouse-tech-detection.ts  # Tech stack detection
 │   └── utils.ts         # Shared utilities
 └── styles/              # Global CSS
 
@@ -65,4 +64,4 @@ CLAUDE.md               # Development guidelines
 
 ---
 
-*Building the future of actionable web performance analysis.*
+_Building the future of actionable web performance analysis._

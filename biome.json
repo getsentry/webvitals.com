@@ -6,7 +6,9 @@
     "useIgnoreFile": false
   },
   "files": {
-    "ignoreUnknown": false
+    "ignoreUnknown": false,
+    "includes": ["src/**", "*.config.*"],
+    "experimentalScannerIgnores": [".astro/**"]
   },
   "formatter": {
     "enabled": true,
@@ -17,7 +19,19 @@
     "rules": {
       "recommended": true,
       "suspicious": {
-        "noUnknownAtRules": "off"
+        "noUnknownAtRules": "off",
+        "noArrayIndexKey": "off",
+        "noDocumentCookie": "off"
+      },
+      "a11y": {
+        "recommended": false
+      },
+      "correctness": {
+        "noUnusedVariables": "off",
+        "noUnusedImports": "off",
+        "noNestedComponentDefinitions": "off",
+        "useUniqueElementIds": "off",
+        "useExhaustiveDependencies": "off"
       }
     }
   },

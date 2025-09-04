@@ -1,0 +1,155 @@
+---
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+---
+
+<section class="py-24 px-4 bg-background">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+        Understanding Core Web Vitals
+      </h2>
+      <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+        Google's Core Web Vitals are essential metrics that measure real-world user experience on your website
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8 mb-16">
+      <Card className="relative overflow-hidden border-border/50 hover:border-border transition-colors">
+        <CardHeader className="pb-4">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-blue-500">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12,6 12,12 16,14"/>
+              </svg>
+            </div>
+            <Badge variant="secondary" className="text-xs">LCP</Badge>
+          </div>
+          <CardTitle className="text-xl">Largest Contentful Paint</CardTitle>
+          <CardDescription>
+            Measures loading performance - should occur within 2.5 seconds
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p class="text-sm text-muted-foreground">
+            The render time of the largest image or text block visible within the viewport, relative to when the page first started loading.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="relative overflow-hidden border-border/50 hover:border-border transition-colors">
+        <CardHeader className="pb-4">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green-500">
+                <path d="M9 12l2 2 4-4"/>
+                <circle cx="12" cy="12" r="9"/>
+              </svg>
+            </div>
+            <Badge variant="secondary" className="text-xs">FID</Badge>
+          </div>
+          <CardTitle className="text-xl">First Input Delay</CardTitle>
+          <CardDescription>
+            Measures interactivity - should be less than 100 milliseconds
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p class="text-sm text-muted-foreground">
+            The time from when a user first interacts with your page to when the browser responds to that interaction.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="relative overflow-hidden border-border/50 hover:border-border transition-colors">
+        <CardHeader className="pb-4">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-purple-500">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+            </div>
+            <Badge variant="secondary" className="text-xs">CLS</Badge>
+          </div>
+          <CardTitle className="text-xl">Cumulative Layout Shift</CardTitle>
+          <CardDescription>
+            Measures visual stability - should be less than 0.1
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p class="text-sm text-muted-foreground">
+            The sum of all individual layout shift scores for every unexpected layout shift during the page's lifespan.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      <Card className="border-border/50">
+        <CardHeader>
+          <CardTitle className="text-xl">Why Core Web Vitals Matter</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div class="flex items-start gap-3">
+            <div class="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+            <div>
+              <h4 class="font-medium text-sm mb-1">SEO Rankings</h4>
+              <p class="text-sm text-muted-foreground">Google uses Core Web Vitals as a ranking factor for search results</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+            <div>
+              <h4 class="font-medium text-sm mb-1">User Experience</h4>
+              <p class="text-sm text-muted-foreground">Better metrics directly correlate with improved user satisfaction</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+            <div>
+              <h4 class="font-medium text-sm mb-1">Conversion Rates</h4>
+              <p class="text-sm text-muted-foreground">Faster sites typically see higher conversion and engagement rates</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-border/50">
+        <CardHeader>
+          <CardTitle className="text-xl">What We Analyze</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div class="flex items-start gap-3">
+            <div class="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0"></div>
+            <div>
+              <h4 class="font-medium text-sm mb-1">Performance Metrics</h4>
+              <p class="text-sm text-muted-foreground">Complete Lighthouse audit with detailed performance insights</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0"></div>
+            <div>
+              <h4 class="font-medium text-sm mb-1">Accessibility</h4>
+              <p class="text-sm text-muted-foreground">Comprehensive accessibility checks and recommendations</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0"></div>
+            <div>
+              <h4 class="font-medium text-sm mb-1">Best Practices</h4>
+              <p class="text-sm text-muted-foreground">SEO optimization and modern web development practices</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+</section>
