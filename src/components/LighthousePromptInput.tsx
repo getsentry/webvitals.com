@@ -2,7 +2,9 @@
 
 import type { ChatStatus } from "ai";
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { z } from "zod";
+import { AnimatePresence, motion } from "motion/react";
 import {
   PromptInput,
   PromptInputModelSelect,
@@ -15,6 +17,10 @@ import {
   PromptInputToolbar,
   PromptInputTools,
 } from "@/components/ui/ai-elements/prompt-input";
+import {
+  Suggestion,
+  Suggestions,
+} from "@/components/ui/ai-elements/suggestion";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -43,6 +49,22 @@ import {
   THROTTLING_PRESETS,
 } from "@/types/lighthouse";
 
+const SUGGESTED_URLS = [
+  "https://claude.ai",
+  "linear.app",
+  "https://tailwindcss.com",
+  "shadcn.com",
+  "openai.com",
+];
+
+// URL validation schema that accepts URLs with or without protocol
+const urlSchema = z
+  .string()
+  .regex(
+    /^(https?:\/\/)?([\w-]+\.)+[a-z]{2,}(\/.*)?$/i,
+    "Please enter a valid URL",
+  );
+
 interface LighthousePromptInputProps {
   onSubmit: (domain: string, config: LighthouseConfig) => Promise<void>;
   disabled?: boolean;
@@ -59,10 +81,51 @@ export default function LighthousePromptInput({
   const [config, setConfig] = useState<LighthouseConfig>(
     DEFAULT_LIGHTHOUSE_CONFIG,
   );
+  const [showLeftFade, setShowLeftFade] = useState(false);
+  const [showRightFade, setShowRightFade] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Validate URL using zod schema
+  const isValidUrl = useMemo(() => {
+    return urlSchema.safeParse(domain).success;
+  }, [domain]);
+
+  // Check scroll position to show/hide fade borders
+  const checkScroll = () => {
+    if (!scrollRef.current) return;
+    
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+    setShowLeftFade(scrollLeft > 0);
+    setShowRightFade(scrollLeft < scrollWidth - clientWidth - 1);
+  };
+
+  useEffect(() => {
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) return;
+
+    // Delay initial check to let DOM settle after suggestions appear/disappear
+    const timeoutId = setTimeout(checkScroll, 10);
+
+    // Add scroll listener
+    scrollElement.addEventListener("scroll", checkScroll);
+    
+    // Check on resize
+    const resizeObserver = new ResizeObserver(() => {
+      // Also delay resize checks
+      setTimeout(checkScroll, 10);
+    });
+    resizeObserver.observe(scrollElement);
+
+    return () => {
+      clearTimeout(timeoutId);
+      scrollElement.removeEventListener("scroll", checkScroll);
+      resizeObserver.disconnect();
+    };
+  }, [domain]); // Re-run when domain changes (suggestions visibility)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!domain.trim() || status === "submitted" || disabled) return;
+    if (!isValidUrl || status === "submitted" || disabled) return;
 
     setStatus("submitted");
     try {
@@ -80,109 +143,163 @@ export default function LighthousePromptInput({
   };
 
   return (
-    <PromptInput onSubmit={handleSubmit} className={className}>
-      <PromptInputTextarea
-        onChange={(e) => setDomain(e.target.value)}
-        value={domain}
-        placeholder="Enter your domain (e.g., example.com)"
-        className="min-h-0"
-        rows={1}
-        disabled={disabled || status === "submitted"}
-      />
-      <PromptInputToolbar>
-        <PromptInputTools>
-          <PromptInputModelSelect
-            value={config.formFactor}
-            onValueChange={(value: LighthouseFormFactor) =>
-              setConfig({ ...config, formFactor: value })
-            }
-          >
-            <PromptInputModelSelectTrigger>
-              <PromptInputModelSelectValue />
-            </PromptInputModelSelectTrigger>
-            <PromptInputModelSelectContent>
-              {Object.entries(FORM_FACTOR_LABELS).map(([value, label]) => (
-                <PromptInputModelSelectItem key={value} value={value}>
-                  {label}
-                </PromptInputModelSelectItem>
-              ))}
-            </PromptInputModelSelectContent>
-          </PromptInputModelSelect>
-
-          <PromptInputModelSelect
-            value={config.throttling.preset}
-            onValueChange={(value: ThrottlingPreset) =>
-              setConfig({
-                ...config,
-                throttling: { ...THROTTLING_PRESETS[value] },
-              })
-            }
-          >
-            <PromptInputModelSelectTrigger>
-              <PromptInputModelSelectValue />
-            </PromptInputModelSelectTrigger>
-            <PromptInputModelSelectContent>
-              {Object.entries(THROTTLING_LABELS).map(([value, label]) => (
-                <PromptInputModelSelectItem key={value} value={value}>
-                  {label}
-                </PromptInputModelSelectItem>
-              ))}
-            </PromptInputModelSelectContent>
-          </PromptInputModelSelect>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                role="combobox"
-                className="shrink-0 gap-1.5 rounded-lg text-muted-foreground justify-between px-3"
-              >
-                <span className="flex items-center gap-1.5">
-                  <span>{config.categories.length} Categories</span>
-                </span>
-                <ChevronDownIcon size={16} />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-0" align="start">
-              <Command>
-                <CommandList>
-                  <CommandEmpty>No categories found.</CommandEmpty>
-                  <CommandGroup>
-                    {Object.entries(CATEGORY_LABELS).map(
-                      ([category, label]) => (
-                        <CommandItem
-                          key={category}
-                          value={category}
-                          onSelect={() =>
-                            toggleCategory(category as LighthouseCategory)
-                          }
-                          className="cursor-pointer"
-                        >
-                          <CheckIcon
-                            className={cn(
-                              "mr-2 size-4",
-                              config.categories.includes(
-                                category as LighthouseCategory,
-                              )
-                                ? "opacity-100"
-                                : "opacity-0",
-                            )}
-                          />
-                          {label}
-                        </CommandItem>
-                      ),
-                    )}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        </PromptInputTools>
-        <PromptInputSubmit
-          disabled={!domain.trim() || disabled}
-          status={status}
+    <div className={className}>
+      <PromptInput onSubmit={handleSubmit}>
+        <PromptInputTextarea
+          onChange={(e) => setDomain(e.target.value)}
+          value={domain}
+          placeholder="Enter your domain"
+          className="min-h-0"
+          rows={1}
+          disabled={disabled || status === "submitted"}
         />
-      </PromptInputToolbar>
-    </PromptInput>
+        <PromptInputToolbar>
+          <PromptInputTools>
+            <PromptInputModelSelect
+              value={config.formFactor}
+              onValueChange={(value: LighthouseFormFactor) =>
+                setConfig({ ...config, formFactor: value })
+              }
+            >
+              <PromptInputModelSelectTrigger>
+                <PromptInputModelSelectValue />
+              </PromptInputModelSelectTrigger>
+              <PromptInputModelSelectContent>
+                {Object.entries(FORM_FACTOR_LABELS).map(([value, label]) => (
+                  <PromptInputModelSelectItem key={value} value={value}>
+                    {label}
+                  </PromptInputModelSelectItem>
+                ))}
+              </PromptInputModelSelectContent>
+            </PromptInputModelSelect>
+
+            <PromptInputModelSelect
+              value={config.throttling.preset}
+              onValueChange={(value: ThrottlingPreset) =>
+                setConfig({
+                  ...config,
+                  throttling: { ...THROTTLING_PRESETS[value] },
+                })
+              }
+            >
+              <PromptInputModelSelectTrigger>
+                <PromptInputModelSelectValue />
+              </PromptInputModelSelectTrigger>
+              <PromptInputModelSelectContent>
+                {Object.entries(THROTTLING_LABELS).map(([value, label]) => (
+                  <PromptInputModelSelectItem key={value} value={value}>
+                    {label}
+                  </PromptInputModelSelectItem>
+                ))}
+              </PromptInputModelSelectContent>
+            </PromptInputModelSelect>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  role="combobox"
+                  className="shrink-0 gap-1.5 rounded-lg text-muted-foreground justify-between px-3"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span>{config.categories.length} Categories</span>
+                  </span>
+                  <ChevronDownIcon size={16} />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-0" align="start">
+                <Command>
+                  <CommandList>
+                    <CommandEmpty>No categories found.</CommandEmpty>
+                    <CommandGroup>
+                      {Object.entries(CATEGORY_LABELS).map(
+                        ([category, label]) => (
+                          <CommandItem
+                            key={category}
+                            value={category}
+                            onSelect={() =>
+                              toggleCategory(category as LighthouseCategory)
+                            }
+                            className="cursor-pointer"
+                          >
+                            <CheckIcon
+                              className={cn(
+                                "mr-2 size-4",
+                                config.categories.includes(
+                                  category as LighthouseCategory,
+                                )
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            {label}
+                          </CommandItem>
+                        ),
+                      )}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </PromptInputTools>
+          <PromptInputSubmit
+            disabled={!isValidUrl || disabled}
+            status={status}
+          />
+        </PromptInputToolbar>
+      </PromptInput>
+
+      <div className="mt-3 relative">
+        <AnimatePresence>
+          {showLeftFade && (
+            <motion.div
+              key="left-fade"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ 
+                type: "spring",
+                bounce: 0.1,
+                duration: 0.2
+              }}
+              className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-background to-transparent pointer-events-none z-10"
+            />
+          )}
+          {showRightFade && (
+            <motion.div
+              key="right-fade"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ 
+                type: "spring",
+                bounce: 0.1,
+                duration: 0.2
+              }}
+              className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-background to-transparent pointer-events-none z-10"
+            />
+          )}
+        </AnimatePresence>
+        <div 
+          ref={scrollRef} 
+          className="overflow-x-auto [&::-webkit-scrollbar]:hidden"
+          style={{
+            scrollbarWidth: 'none', // Firefox
+            msOverflowStyle: 'none', // IE and Edge
+          }}
+        >
+          <div className="flex w-max flex-nowrap items-center gap-2">
+            <h2 className="sr-only">Suggested URLs</h2>
+            {SUGGESTED_URLS.map((url) => (
+              <Suggestion
+                key={url}
+                suggestion={url}
+                onClick={(suggestion) => setDomain(suggestion)}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

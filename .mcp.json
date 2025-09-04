@@ -11,6 +11,14 @@
     "kibo-ui": {
       "command": "npx",
       "args": ["-y", "mcp-remote", "https://www.kibo-ui.com/api/mcp/mcp"]
+    },
+    "motion": {
+      "command": "npx",
+      "args": ["-y", "motion-ai@latest"]
+    },
+    "inkeepMcp": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.inkeep.com/zod/mcp"]
     }
   }
 }
