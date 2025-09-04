@@ -4,6 +4,7 @@ import type { ChatStatus } from "ai";
 import { useState } from "react";
 import type { LighthouseConfig } from "@/types/lighthouse";
 import LighthousePromptInput from "./LighthousePromptInput";
+import { ThemeToggle } from "./ThemeToggle";
 
 export default function HeroSection() {
   const [status, setStatus] = useState<ChatStatus>("ready");
@@ -20,6 +21,10 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 py-20 bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
+      
       <div
         className="absolute inset-0 opacity-10"
         style={{

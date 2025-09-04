@@ -14,7 +14,7 @@ import {
   PromptInputTextarea,
   PromptInputToolbar,
   PromptInputTools,
-} from "@/components/ai-elements/prompt-input";
+} from "@/components/ui/ai-elements/prompt-input";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -85,7 +85,7 @@ export default function LighthousePromptInput({
         onChange={(e) => setDomain(e.target.value)}
         value={domain}
         placeholder="Enter your domain (e.g., example.com)"
-        className="min-h-[3rem] text-base"
+        className="min-h-0"
         rows={1}
         disabled={disabled || status === "submitted"}
       />
