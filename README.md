@@ -1,13 +1,68 @@
-# Astro with Tailwind
+# WebVitals.com
 
-```sh
-pnpm create astro@latest -- --template with-tailwindcss
+**From Score to Solution** - The most actionable web performance analysis tool.
+
+## What is WebVitals.com?
+
+WebVitals.com transforms confusing performance metrics into clear, implementable action items. Unlike traditional tools that just give you a score, we provide:
+
+- **Tech-aware recommendations** tailored to your framework (React, Next.js, Vue, etc.)
+- **AI-powered insights** that understand your specific site architecture
+- **Implementation guides** with step-by-step code examples
+- **Sentry integration** to bridge synthetic analysis with real user monitoring
+
+## Key Features
+
+🎯 **Contextual Analysis** - Recommendations based on your detected tech stack  
+🤖 **AI-Powered Suggestions** - Smart insights beyond generic advice  
+📊 **Real User Monitoring** - Seamless Sentry integration for ongoing performance tracking  
+📚 **Educational Content** - Learn why optimizations matter and how to implement them  
+⚡ **Actionable Results** - Clear priorities with effort vs. impact scoring
+
+## Tech Stack
+
+- **Astro 5** - Fast static site generation with view transitions
+- **React 19** - Interactive dashboard components
+- **TailwindCSS 4** - Utility-first styling
+- **TypeScript** - Type-safe development
+- **Vercel** - Deployment and serverless functions
+- **Sentry** - Error monitoring and performance tracking
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Format code
+pnpm format:fix
+
+# Lint code
+pnpm lint:fix
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/with-tailwindcss)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/with-tailwindcss)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/with-tailwindcss/devcontainer.json)
+## Project Structure
 
-Astro comes with [Tailwind](https://tailwindcss.com) support out of the box. This example showcases how to style your Astro project with Tailwind.
+```
+src/
+├── components/           # Reusable UI components
+├── layouts/             # Page layouts with view transitions
+├── pages/               # File-based routing
+├── lib/                 # Utilities and services
+│   ├── lighthouse-tech-detection.ts  # Tech stack detection
+│   └── utils.ts         # Shared utilities
+└── styles/              # Global CSS
 
-For complete setup instructions, please see our [Tailwind Integration Guide](https://docs.astro.build/en/guides/integrations-guide/tailwind).
+PRODUCT_SPEC.md          # Detailed product specification
+CLAUDE.md               # Development guidelines
+```
+
+---
+
+*Building the future of actionable web performance analysis.*
