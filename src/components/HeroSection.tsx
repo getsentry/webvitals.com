@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/astro";
 import type { ChatStatus } from "ai";
 import { useState } from "react";
 import type { LighthouseConfig } from "@/types/lighthouse";
@@ -14,8 +15,9 @@ export default function HeroSection() {
     config: LighthouseConfig,
   ) => {
     setStatus("submitted");
+    Sentry.logger.info("Lighthouse analysis started", { domain, ...config });
     // TODO: Implement Lighthouse analysis with domain and config
-    console.log("Analyzing:", domain, "with config:", config);
+
     setTimeout(() => setStatus("ready"), 3000);
   };
 
@@ -24,7 +26,7 @@ export default function HeroSection() {
       <div className="absolute top-4 right-4 z-20">
         <ThemeToggle />
       </div>
-      
+
       <div
         className="absolute inset-0 opacity-10"
         style={{

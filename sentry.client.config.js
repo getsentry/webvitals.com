@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/astro";
 
 Sentry.init({
+  debug: import.meta.env.DEV,
   dsn: import.meta.env.PUBLIC_SENTRY_DSN,
   // Adds request headers and IP for users, for more info visit:
   // https://docs.sentry.io/platforms/javascript/guides/astro/configuration/options/#sendDefaultPii
@@ -8,6 +9,7 @@ Sentry.init({
   integrations: [
     Sentry.browserTracingIntegration(),
     Sentry.replayIntegration(),
+    Sentry.consoleLoggingIntegration(),
   ],
   // Enable logs to be sent to Sentry
   enableLogs: true,

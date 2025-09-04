@@ -1,10 +1,16 @@
 "use client";
 
 import type { ChatStatus } from "ai";
-import { CheckIcon, ChevronDownIcon } from "lucide-react";
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  ListIcon,
+  MonitorIcon,
+  WifiIcon,
+} from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
-import { AnimatePresence, motion } from "motion/react";
 import {
   PromptInput,
   PromptInputModelSelect,
@@ -93,7 +99,7 @@ export default function LighthousePromptInput({
   // Check scroll position to show/hide fade borders
   const checkScroll = () => {
     if (!scrollRef.current) return;
-    
+
     const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
     setShowLeftFade(scrollLeft > 0);
     setShowRightFade(scrollLeft < scrollWidth - clientWidth - 1);
@@ -108,7 +114,7 @@ export default function LighthousePromptInput({
 
     // Add scroll listener
     scrollElement.addEventListener("scroll", checkScroll);
-    
+
     // Check on resize
     const resizeObserver = new ResizeObserver(() => {
       // Also delay resize checks
@@ -154,15 +160,24 @@ export default function LighthousePromptInput({
           disabled={disabled || status === "submitted"}
         />
         <PromptInputToolbar>
-          <PromptInputTools>
+          <PromptInputTools
+            className="flex-nowrap gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden"
+            style={{
+              scrollbarWidth: "none", // Firefox
+              msOverflowStyle: "none", // IE and Edge
+            }}
+          >
             <PromptInputModelSelect
               value={config.formFactor}
               onValueChange={(value: LighthouseFormFactor) =>
                 setConfig({ ...config, formFactor: value })
               }
             >
-              <PromptInputModelSelectTrigger>
-                <PromptInputModelSelectValue />
+              <PromptInputModelSelectTrigger className="sm:min-w-0">
+                <MonitorIcon size={16} className="sm:hidden" />
+                <span className="hidden sm:inline">
+                  <PromptInputModelSelectValue />
+                </span>
               </PromptInputModelSelectTrigger>
               <PromptInputModelSelectContent>
                 {Object.entries(FORM_FACTOR_LABELS).map(([value, label]) => (
@@ -182,8 +197,11 @@ export default function LighthousePromptInput({
                 })
               }
             >
-              <PromptInputModelSelectTrigger>
-                <PromptInputModelSelectValue />
+              <PromptInputModelSelectTrigger className="sm:min-w-0">
+                <WifiIcon size={16} className="sm:hidden" />
+                <span className="hidden sm:inline">
+                  <PromptInputModelSelectValue />
+                </span>
               </PromptInputModelSelectTrigger>
               <PromptInputModelSelectContent>
                 {Object.entries(THROTTLING_LABELS).map(([value, label]) => (
@@ -199,9 +217,10 @@ export default function LighthousePromptInput({
                 <Button
                   variant="ghost"
                   role="combobox"
-                  className="shrink-0 gap-1.5 rounded-lg text-muted-foreground justify-between px-3"
+                  className="shrink-0 gap-1.5 rounded-lg text-muted-foreground justify-between px-2 sm:px-3 text-sm sm:min-w-0"
                 >
-                  <span className="flex items-center gap-1.5">
+                  <ListIcon size={16} className="sm:hidden" />
+                  <span className="hidden sm:flex items-center gap-1.5">
                     <span>{config.categories.length} Categories</span>
                   </span>
                   <ChevronDownIcon size={16} />
@@ -249,7 +268,7 @@ export default function LighthousePromptInput({
         </PromptInputToolbar>
       </PromptInput>
 
-      <div className="mt-3 relative">
+      <div className="mt-3 relative grid w-full">
         <AnimatePresence>
           {showLeftFade && (
             <motion.div
@@ -257,10 +276,10 @@ export default function LighthousePromptInput({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ 
+              transition={{
                 type: "spring",
                 bounce: 0.1,
-                duration: 0.2
+                duration: 0.2,
               }}
               className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-background to-transparent pointer-events-none z-10"
             />
@@ -271,34 +290,25 @@ export default function LighthousePromptInput({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ 
+              transition={{
                 type: "spring",
                 bounce: 0.1,
-                duration: 0.2
+                duration: 0.2,
               }}
               className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-background to-transparent pointer-events-none z-10"
             />
           )}
         </AnimatePresence>
-        <div 
-          ref={scrollRef} 
-          className="overflow-x-auto [&::-webkit-scrollbar]:hidden"
-          style={{
-            scrollbarWidth: 'none', // Firefox
-            msOverflowStyle: 'none', // IE and Edge
-          }}
-        >
-          <div className="flex w-max flex-nowrap items-center gap-2">
-            <h2 className="sr-only">Suggested URLs</h2>
-            {SUGGESTED_URLS.map((url) => (
-              <Suggestion
-                key={url}
-                suggestion={url}
-                onClick={(suggestion) => setDomain(suggestion)}
-              />
-            ))}
-          </div>
-        </div>
+        <Suggestions ref={scrollRef}>
+          <h2 className="sr-only">Suggested URLs</h2>
+          {SUGGESTED_URLS.map((url) => (
+            <Suggestion
+              key={url}
+              suggestion={url}
+              onClick={(suggestion) => setDomain(suggestion)}
+            />
+          ))}
+        </Suggestions>
       </div>
     </div>
   );

@@ -1,24 +1,35 @@
 "use client";
 
 import type { ComponentProps } from "react";
+import { forwardRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
-export type SuggestionsProps = ComponentProps<typeof ScrollArea>;
+export type SuggestionsProps = Omit<ComponentProps<"div">, "ref"> & {
+  className?: string;
+};
 
-export const Suggestions = ({
+export const Suggestions = forwardRef<HTMLDivElement, SuggestionsProps>(({
   className,
   children,
   ...props
-}: SuggestionsProps) => (
-  <ScrollArea className="w-full overflow-x-auto whitespace-nowrap" {...props}>
-    <div className={cn("flex w-max flex-nowrap items-center gap-2", className)}>
+}, ref) => (
+  <div
+    ref={ref}
+    className="overflow-x-auto [&::-webkit-scrollbar]:hidden"
+    style={{
+      scrollbarWidth: "none", // Firefox
+      msOverflowStyle: "none", // IE and Edge
+    }}
+    {...props}
+  >
+    <div className={cn("flex flex-nowrap items-center gap-2 w-max", className)}>
       {children}
     </div>
-    <ScrollBar className="hidden" orientation="horizontal" />
-  </ScrollArea>
-);
+  </div>
+));
+
+Suggestions.displayName = "Suggestions";
 
 export type SuggestionProps = Omit<ComponentProps<typeof Button>, "onClick"> & {
   suggestion: string;
