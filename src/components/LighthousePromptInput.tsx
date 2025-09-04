@@ -13,6 +13,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import {
   PromptInput,
+  PromptInputButton,
   PromptInputModelSelect,
   PromptInputModelSelectContent,
   PromptInputModelSelectItem,
@@ -27,7 +28,7 @@ import {
   Suggestion,
   Suggestions,
 } from "@/components/ui/ai-elements/suggestion";
-import { Button } from "@/components/ui/button";
+import { ComboboxTrigger } from "@/components/ui/combobox-trigger";
 import {
   Command,
   CommandEmpty,
@@ -214,17 +215,13 @@ export default function LighthousePromptInput({
 
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  role="combobox"
-                  className="shrink-0 gap-1.5 rounded-lg text-muted-foreground justify-between px-2 sm:px-3 text-sm sm:min-w-0"
-                >
+                <ComboboxTrigger className="sm:!min-w-0">
                   <ListIcon size={16} className="sm:hidden" />
                   <span className="hidden sm:flex items-center gap-1.5">
                     <span>{config.categories.length} Categories</span>
                   </span>
                   <ChevronDownIcon size={16} />
-                </Button>
+                </ComboboxTrigger>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-0" align="start">
                 <Command>

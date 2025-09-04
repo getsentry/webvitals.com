@@ -1,5 +1,7 @@
 ---
 import "../styles/global.css";
+import { ThemeToggle } from "../components/ThemeToggle";
+
 export interface Props {
   title: string;
   description?: string;
@@ -41,6 +43,9 @@ const {
     <meta name="description" content={description} />
   </head>
   <body>
+    <div class="absolute top-4 right-4 z-50">
+      <ThemeToggle client:load />
+    </div>
     <slot />
   </body>
 </html>
