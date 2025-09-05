@@ -12,12 +12,6 @@ import { useMemo, useState } from "react";
 import { z } from "zod";
 import {
   PromptInput,
-  PromptInputButton,
-  PromptInputModelSelect,
-  PromptInputModelSelectContent,
-  PromptInputModelSelectItem,
-  PromptInputModelSelectTrigger,
-  PromptInputModelSelectValue,
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputToolbar,
@@ -54,11 +48,14 @@ import {
 } from "@/types/pagespeed";
 
 const SUGGESTED_URLS = [
-  "https://claude.ai",
+  "vercel.com",
+  "claude.ai",
   "linear.app",
-  "https://tailwindcss.com",
+  "tailwindcss.com",
   "shadcn.com",
   "openai.com",
+  "sentry.io",
+  "cloudflare.com",
 ];
 
 // URL validation schema that accepts URLs with or without protocol
@@ -85,13 +82,13 @@ export default function PageSpeedPromptInput({
   const [config, setConfig] = useState<PageSpeedConfig>(
     DEFAULT_PAGESPEED_CONFIG,
   );
+  const [strategyPopoverOpen, setStrategyPopoverOpen] = useState(false);
   const { scrollRef, showLeftFade, showRightFade } = useScrollFade(domain);
 
   // Validate URL using zod schema
   const isValidUrl = useMemo(() => {
     return urlSchema.safeParse(domain).success;
   }, [domain]);
-
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -124,33 +121,55 @@ export default function PageSpeedPromptInput({
           disabled={disabled || status === "submitted"}
         />
         <PromptInputToolbar>
-          <PromptInputTools
-            className="flex-nowrap gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden"
-            style={{
-              scrollbarWidth: "none", // Firefox
-              msOverflowStyle: "none", // IE and Edge
-            }}
-          >
-            <PromptInputModelSelect
-              value={config.strategy}
-              onValueChange={(value: PageSpeedStrategy) =>
-                setConfig({ ...config, strategy: value })
-              }
+          <PromptInputTools>
+            <Popover
+              open={strategyPopoverOpen}
+              onOpenChange={setStrategyPopoverOpen}
             >
-              <PromptInputModelSelectTrigger className="sm:min-w-0">
-                <MonitorIcon size={16} className="sm:hidden" />
-                <span className="hidden sm:inline">
-                  <PromptInputModelSelectValue />
-                </span>
-              </PromptInputModelSelectTrigger>
-              <PromptInputModelSelectContent>
-                {Object.entries(STRATEGY_LABELS).map(([value, label]) => (
-                  <PromptInputModelSelectItem key={value} value={value}>
-                    {label}
-                  </PromptInputModelSelectItem>
-                ))}
-              </PromptInputModelSelectContent>
-            </PromptInputModelSelect>
+              <PopoverTrigger asChild>
+                <ComboboxTrigger className="sm:!min-w-0">
+                  <MonitorIcon size={16} className="sm:hidden" />
+                  <span className="hidden sm:flex items-center gap-1.5">
+                    <span>{STRATEGY_LABELS[config.strategy]}</span>
+                  </span>
+                  <ChevronDownIcon size={16} />
+                </ComboboxTrigger>
+              </PopoverTrigger>
+              <PopoverContent className="w-32 p-0" align="start">
+                <Command>
+                  <CommandList>
+                    <CommandGroup>
+                      {Object.entries(STRATEGY_LABELS).map(
+                        ([strategy, label]) => (
+                          <CommandItem
+                            key={strategy}
+                            value={strategy}
+                            onSelect={() => {
+                              setConfig({
+                                ...config,
+                                strategy: strategy as PageSpeedStrategy,
+                              });
+                              setStrategyPopoverOpen(false);
+                            }}
+                            className="cursor-pointer"
+                          >
+                            <CheckIcon
+                              className={cn(
+                                "mr-2 size-4",
+                                config.strategy === strategy
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            {label}
+                          </CommandItem>
+                        ),
+                      )}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
 
             <Popover>
               <PopoverTrigger asChild>
@@ -213,9 +232,8 @@ export default function PageSpeedPromptInput({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{
-                type: "spring",
-                bounce: 0.1,
                 duration: 0.2,
+                ease: [0.25, 0.46, 0.45, 0.94], // ease-out-quad
               }}
               className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-background to-transparent pointer-events-none z-10"
             />
@@ -227,9 +245,8 @@ export default function PageSpeedPromptInput({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{
-                type: "spring",
-                bounce: 0.1,
                 duration: 0.2,
+                ease: [0.25, 0.46, 0.45, 0.94], // ease-out-quad
               }}
               className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-background to-transparent pointer-events-none z-10"
             />

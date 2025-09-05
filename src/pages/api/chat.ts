@@ -1,18 +1,8 @@
 import { openai } from "@ai-sdk/openai";
 import * as Sentry from "@sentry/astro";
-import {
-  convertToModelMessages,
-  InvalidToolInputError,
-  NoSuchToolError,
-  stepCountIs,
-  streamText,
-  ToolCallRepairError,
-} from "ai";
+import { convertToModelMessages, stepCountIs, streamText } from "ai";
 import type { APIRoute } from "astro";
 import { pageSpeedTool } from "@/tools/pagespeed-tool";
-
-// Allow streaming responses up to 60 seconds for Lighthouse analysis
-export const maxDuration = 60;
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -31,15 +21,14 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    console.log("Chat request received with config:", pageSpeedConfig);
-    console.log("Received messages:", JSON.stringify(messages, null, 2));
+    Sentry.logger.info("Chat request received", {
+      messageCount: messages.length,
+      hasPageSpeedConfig: !!pageSpeedConfig,
+      strategy: pageSpeedConfig?.strategy,
+      categories: pageSpeedConfig?.categories,
+    });
 
-    // Convert UI messages to model messages
     const modelMessages = convertToModelMessages(messages);
-    console.log(
-      "Converted model messages:",
-      JSON.stringify(modelMessages, null, 2)
-    );
 
     const result = streamText({
       model: openai("gpt-4o"),
@@ -47,27 +36,23 @@ export const POST: APIRoute = async ({ request }) => {
       tools: {
         analyzePageSpeed: pageSpeedTool,
       },
-      stopWhen: stepCountIs(2), // Tool call + analysis response
+      stopWhen: stepCountIs(2),
       experimental_telemetry: {
         isEnabled: true,
         functionId: "pagespeed-analysis-chat",
       },
       onStepFinish: (step) => {
-        console.log("Step finished:", {
+        Sentry.logger.debug("AI step finished", {
           toolCalls: step.toolCalls?.length || 0,
           toolResults: step.toolResults?.length || 0,
-          text: `${step.text?.slice(0, 100)}...`,
           hasToolCalls: !!step.toolCalls?.length,
           hasToolResults: !!step.toolResults?.length,
         });
 
-        // Handle tool execution errors
         if (step.toolResults) {
           step.toolResults.forEach((result, index) => {
             if ("error" in result) {
-              console.error(`Tool execution error in step:`, result.error);
 
-              // Report tool errors to Sentry
               Sentry.captureException(
                 new Error(`Tool execution failed: ${result.error}`),
                 {
@@ -125,13 +110,12 @@ IMPORTANT: Only call the analyzePageSpeed tool ONCE per analysis request. Do not
 Configuration: ${JSON.stringify(pageSpeedConfig || {})}`,
     });
 
-    // Return streaming response using AI SDK v5 method
-    // toUIMessageStreamResponse works with useChat hook
     return result.toUIMessageStreamResponse();
   } catch (error) {
-    console.error("Chat API error:", error);
+    Sentry.logger.error("Chat API error", {
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
 
-    // Report API error to Sentry with additional context
     Sentry.captureException(error, {
       tags: {
         area: "api-chat",
