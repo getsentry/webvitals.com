@@ -1,5 +1,5 @@
 ---
-import CoreWebVitalsSection from "../components/CoreWebVitalsSection.astro";
+import CoreWebVitalsSection from "../components/CoreWebVitalsSection";
 import HeroSection from "../components/HeroSection";
 import Layout from "../layouts/Layout.astro";
 ---
@@ -7,6 +7,6 @@ import Layout from "../layouts/Layout.astro";
 <Layout title="WebVitals - Analyze Your Site's Performance">
   <main>
     <HeroSection client:load />
-    <CoreWebVitalsSection />
+    <CoreWebVitalsSection client:load />
   </main>
 </Layout>

@@ -1,5 +1,12 @@
 import { openai } from "@ai-sdk/openai";
-import { convertToModelMessages, stepCountIs, streamText } from "ai";
+import {
+  convertToModelMessages,
+  InvalidToolInputError,
+  NoSuchToolError,
+  stepCountIs,
+  streamText,
+  ToolCallRepairError,
+} from "ai";
 import type { APIRoute } from "astro";
 import { pageSpeedTool } from "@/tools/pagespeed-tool";
 
@@ -86,7 +93,26 @@ Configuration: ${JSON.stringify(pageSpeedConfig || {})}`,
     });
 
     // Return streaming response that can handle tool calls and results
-    return result.toUIMessageStreamResponse();
+    // Try multiple methods for AI SDK compatibility
+    return result.toUIMessageStreamResponse({
+      onError: (error) => {
+        console.error("Streaming error:", error);
+
+        if (NoSuchToolError.isInstance(error)) {
+          return "The model tried to call an unknown tool. Please try again.";
+        }
+
+        if (InvalidToolInputError.isInstance(error)) {
+          return "The model called a tool with invalid inputs. Please provide a valid URL.";
+        }
+
+        if (ToolCallRepairError.isInstance(error)) {
+          return "There was an error repairing the tool call. Please try again.";
+        }
+
+        return "An error occurred during analysis. Please try again.";
+      },
+    });
   } catch (error) {
     console.error("Chat API error:", error);
 
