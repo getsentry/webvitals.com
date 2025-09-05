@@ -62,8 +62,8 @@ export default function HeroSection() {
         hasToolCalls: message.message.parts?.some((part) =>
           part.type?.includes("tool"),
         ),
-        messageId: message.id,
-        role: message.role,
+        messageId: message.message.id,
+        role: message.message.role,
       });
     },
     onError: (error) => {
