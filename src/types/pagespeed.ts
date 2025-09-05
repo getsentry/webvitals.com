@@ -54,23 +54,15 @@ export interface CoreWebVitalMetric {
   distributions: MetricDistribution[];
 }
 
-export interface FieldMetrics {
-  CUMULATIVE_LAYOUT_SHIFT_SCORE: CoreWebVitalMetric;
-  EXPERIMENTAL_TIME_TO_FIRST_BYTE: CoreWebVitalMetric;
-  FIRST_CONTENTFUL_PAINT_MS: CoreWebVitalMetric;
-  INTERACTION_TO_NEXT_PAINT: CoreWebVitalMetric;
-  LARGEST_CONTENTFUL_PAINT_MS: CoreWebVitalMetric;
-}
-
 export interface FieldData {
   overallCategory: PerformanceCategory;
-  metrics: FieldMetrics;
+  metrics: Record<string, CoreWebVitalMetric>;
   id: string;
 }
 
 export interface OriginData {
   overallCategory: PerformanceCategory;
-  metrics: FieldMetrics;
+  metrics: Record<string, CoreWebVitalMetric>;
   id: string;
 }
 
@@ -114,9 +106,9 @@ export interface PageSpeedToolOutput {
   url: string;
   strategy: PageSpeedStrategy;
   timestamp: string;
-  fieldData: FieldData;
-  originData: OriginData;
-  labData: LabData;
+  fieldData: FieldData | null;
+  originData: OriginData | null;
+  labData: LabData | null;
   captchaResult: string;
   version: string;
 }

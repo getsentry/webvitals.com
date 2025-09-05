@@ -1,6 +1,53 @@
 import * as Sentry from "@sentry/astro";
 import { tool } from "ai";
 import { z } from "zod";
+import type {
+  CoreWebVitalMetric,
+  PageSpeedCategory,
+  PerformanceCategory,
+} from "@/types/pagespeed";
+
+// Raw API response interfaces for the untyped data from PageSpeed Insights
+interface RawMetricValue {
+  percentile: number;
+  category: PerformanceCategory;
+  distributions: Array<{
+    min: number;
+    max?: number;
+    proportion: number;
+  }>;
+}
+
+interface RawFieldData {
+  overall_category: string;
+  metrics?: Record<string, RawMetricValue>;
+  id: string;
+}
+
+interface LighthouseAudit {
+  title: string;
+  description: string;
+  score: number;
+  numericValue?: number;
+  displayValue?: string;
+  scoreDisplayMode: string;
+}
+
+// Valid PageSpeed Insights categories
+const VALID_CATEGORIES: PageSpeedCategory[] = [
+  "performance",
+  "accessibility",
+  "best-practices",
+  "seo",
+  "pwa",
+];
+
+const DEFAULT_CATEGORIES: PageSpeedCategory[] = [
+  "performance",
+  "accessibility",
+  "best-practices",
+  "seo",
+];
 
 const pageSpeedInputSchema = z.object({
   url: z.string().describe("The URL to analyze (with or without protocol)"),
@@ -11,29 +58,38 @@ const pageSpeedInputSchema = z.object({
     .describe("Analysis strategy - mobile or desktop"),
   categories: z
     .array(
-      z.enum(["performance", "accessibility", "best-practices", "seo", "pwa"])
+      z.enum(["performance", "accessibility", "best-practices", "seo", "pwa"]),
     )
     .optional()
-    .default(["performance", "accessibility", "best-practices", "seo"])
+    .default(DEFAULT_CATEGORIES)
     .describe("Categories to analyze"),
 });
+
+// Helper function to transform raw metrics to typed format
+function transformMetrics(
+  metrics: Record<string, RawMetricValue>,
+): Record<string, CoreWebVitalMetric> {
+  return Object.entries(metrics).reduce(
+    (acc, [key, value]) => {
+      acc[key] = {
+        percentile: value.percentile,
+        category: value.category,
+        distributions: value.distributions,
+      };
+      return acc;
+    },
+    {} as Record<string, CoreWebVitalMetric>,
+  );
+}
 
 async function runPageSpeedAnalysis(
   url: string,
   strategy: "mobile" | "desktop" = "desktop",
-  categories: string[] = [
-    "performance",
-    "accessibility",
-    "best-practices",
-    "seo",
-  ]
+  categories: string[] = DEFAULT_CATEGORIES,
 ) {
   const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
-
   const validCategories = categories.filter((cat) =>
-    ["performance", "accessibility", "best-practices", "seo", "pwa"].includes(
-      cat
-    )
+    VALID_CATEGORIES.includes(cat as PageSpeedCategory),
   );
 
   try {
@@ -54,39 +110,32 @@ async function runPageSpeedAnalysis(
     }
 
     const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(
-      normalizedUrl
+      normalizedUrl,
     )}&strategy=${strategy}&${categoryParams}&key=${apiKey}`;
 
     const response = await fetch(apiUrl);
 
     if (!response.ok) {
       throw new Error(
-        `PageSpeed Insights API failed: ${response.status} ${response.statusText}`
+        `PageSpeed Insights API failed: ${response.status} ${response.statusText}`,
       );
     }
 
     const data = await response.json();
 
-    const fieldData = data.loadingExperience;
-    const originData = data.originLoadingExperience;
-    const labData = data.lighthouseResult;
+    const fieldData = data.loadingExperience as RawFieldData | undefined;
+    const originData = data.originLoadingExperience as RawFieldData | undefined;
+    const labData = data.lighthouseResult as
+      | {
+          categories?: Record<string, { score?: number }>;
+          audits?: Record<string, LighthouseAudit>;
+        }
+      | undefined;
 
     const realUserExperience = fieldData
       ? {
           overallCategory: fieldData.overall_category,
-          metrics: fieldData.metrics
-            ? Object.entries(fieldData.metrics).reduce(
-                (acc, [key, value]: [string, any]) => {
-                  acc[key] = {
-                    percentile: value.percentile,
-                    category: value.category,
-                    distributions: value.distributions,
-                  };
-                  return acc;
-                },
-                {} as Record<string, any>
-              )
-            : {},
+          metrics: fieldData.metrics ? transformMetrics(fieldData.metrics) : {},
           id: fieldData.id,
         }
       : null;
@@ -95,17 +144,7 @@ async function runPageSpeedAnalysis(
       ? {
           overallCategory: originData.overall_category,
           metrics: originData.metrics
-            ? Object.entries(originData.metrics).reduce(
-                (acc, [key, value]: [string, any]) => {
-                  acc[key] = {
-                    percentile: value.percentile,
-                    category: value.category,
-                    distributions: value.distributions,
-                  };
-                  return acc;
-                },
-                {} as Record<string, any>
-              )
+            ? transformMetrics(originData.metrics)
             : {},
           id: originData.id,
         }
@@ -115,13 +154,13 @@ async function runPageSpeedAnalysis(
       ? {
           scores: {
             performance: Math.round(
-              (labData.categories?.performance?.score ?? 0) * 100
+              (labData.categories?.performance?.score ?? 0) * 100,
             ),
             accessibility: Math.round(
-              (labData.categories?.accessibility?.score ?? 0) * 100
+              (labData.categories?.accessibility?.score ?? 0) * 100,
             ),
             "best-practices": Math.round(
-              (labData.categories?.["best-practices"]?.score ?? 0) * 100
+              (labData.categories?.["best-practices"]?.score ?? 0) * 100,
             ),
             seo: Math.round((labData.categories?.seo?.score ?? 0) * 100),
             pwa: Math.round((labData.categories?.pwa?.score ?? 0) * 100),
@@ -136,19 +175,19 @@ async function runPageSpeedAnalysis(
             "total-blocking-time":
               labData.audits?.["total-blocking-time"]?.numericValue ?? 0,
             "speed-index": labData.audits?.["speed-index"]?.numericValue ?? 0,
-            interactive: labData.audits?.["interactive"]?.numericValue ?? 0,
+            interactive: labData.audits?.interactive?.numericValue ?? 0,
           },
           opportunities: labData.audits
             ? Object.values(labData.audits)
                 .filter(
-                  (audit: any) =>
+                  (audit): audit is LighthouseAudit =>
                     audit &&
                     typeof audit === "object" &&
                     audit.scoreDisplayMode === "numeric" &&
                     typeof audit.score === "number" &&
-                    audit.score < 0.9
+                    audit.score < 0.9,
                 )
-                .map((audit: any) => ({
+                .map((audit) => ({
                   title: audit.title,
                   description: audit.description,
                   score: audit.score,
@@ -194,7 +233,7 @@ async function runPageSpeedAnalysis(
     throw new Error(
       `PageSpeed Insights analysis failed: ${
         error instanceof Error ? error.message : "Unknown error"
-      }`
+      }`,
     );
   }
 }

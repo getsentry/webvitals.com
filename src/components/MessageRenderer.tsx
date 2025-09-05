@@ -11,7 +11,10 @@ import {
   ToolInput,
   ToolOutput,
 } from "@/components/ui/ai-elements/tool";
-import type { PageSpeedToolInput, PageSpeedToolOutput } from "@/types/pagespeed";
+import type {
+  PageSpeedToolInput,
+  PageSpeedToolOutput,
+} from "@/types/pagespeed";
 
 type PageSpeedToolUIPart = ToolUIPart<{
   analyzePageSpeed: {
@@ -23,7 +26,7 @@ type PageSpeedToolUIPart = ToolUIPart<{
 interface MessageRendererProps {
   message: {
     id: string;
-    role: string;
+    role: "system" | "user" | "assistant";
     parts?: Array<{
       type: string;
       text?: string;
@@ -49,15 +52,10 @@ export default function MessageRenderer({ message }: MessageRendererProps) {
       {message.parts?.map((part, i) => {
         if (part.type === "text") {
           return (
-            <Message
-              key={`${message.id}-${i}`}
-              from={message.role}
-            >
+            <Message key={`${message.id}-${i}`} from={message.role}>
               <MessageContent>
                 {message.role === "user" ? (
-                  <div className="whitespace-pre-wrap">
-                    {part.text}
-                  </div>
+                  <div className="whitespace-pre-wrap">{part.text}</div>
                 ) : (
                   <Response>{part.text}</Response>
                 )}
@@ -71,9 +69,7 @@ export default function MessageRenderer({ message }: MessageRendererProps) {
           return (
             <Tool
               key={`${message.id}-${i}`}
-              defaultOpen={
-                pageSpeedTool.state === "output-available"
-              }
+              defaultOpen={pageSpeedTool.state === "output-available"}
             >
               <ToolHeader
                 type="tool-analyzePageSpeed"
@@ -85,11 +81,7 @@ export default function MessageRenderer({ message }: MessageRendererProps) {
                   output={
                     pageSpeedTool.output ? (
                       <pre className="text-xs overflow-auto p-4 font-mono">
-                        {JSON.stringify(
-                          pageSpeedTool.output,
-                          null,
-                          2,
-                        )}
+                        {JSON.stringify(pageSpeedTool.output, null, 2)}
                       </pre>
                     ) : null
                   }

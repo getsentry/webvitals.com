@@ -117,17 +117,17 @@
   body {
     @apply bg-background text-foreground;
   }
-  
+
   /* Markdown content styling */
   .streamdown {
     & a {
       @apply text-blue-600 dark:text-blue-400 underline hover:no-underline;
     }
-    
+
     & code {
       @apply bg-muted text-muted-foreground px-1 py-0.5 rounded text-sm font-mono;
     }
-    
+
     & pre code {
       @apply bg-transparent p-0 text-inherit;
     }

@@ -9,25 +9,25 @@ export type SuggestionsProps = Omit<ComponentProps<"div">, "ref"> & {
   className?: string;
 };
 
-export const Suggestions = forwardRef<HTMLDivElement, SuggestionsProps>(({
-  className,
-  children,
-  ...props
-}, ref) => (
-  <div
-    ref={ref}
-    className="overflow-x-auto [&::-webkit-scrollbar]:hidden"
-    style={{
-      scrollbarWidth: "none", // Firefox
-      msOverflowStyle: "none", // IE and Edge
-    }}
-    {...props}
-  >
-    <div className={cn("flex flex-nowrap items-center gap-2 w-max", className)}>
-      {children}
+export const Suggestions = forwardRef<HTMLDivElement, SuggestionsProps>(
+  ({ className, children, ...props }, ref) => (
+    <div
+      ref={ref}
+      className="overflow-x-auto [&::-webkit-scrollbar]:hidden"
+      style={{
+        scrollbarWidth: "none", // Firefox
+        msOverflowStyle: "none", // IE and Edge
+      }}
+      {...props}
+    >
+      <div
+        className={cn("flex flex-nowrap items-center gap-2 w-max", className)}
+      >
+        {children}
+      </div>
     </div>
-  </div>
-));
+  ),
+);
 
 Suggestions.displayName = "Suggestions";
 

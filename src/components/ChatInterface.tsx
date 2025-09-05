@@ -12,7 +12,7 @@ import WebVitalsFacts from "./WebVitalsFacts";
 interface ChatInterfaceProps {
   messages: Array<{
     id: string;
-    role: string;
+    role: "system" | "user" | "assistant";
     parts?: Array<{
       type: string;
       text?: string;
@@ -64,31 +64,31 @@ export default function ChatInterface({
                 {status === "streaming" && (
                   <motion.div
                     key="streaming-facts"
-                    initial={{ 
-                      opacity: 0, 
+                    initial={{
+                      opacity: 0,
                       y: -20,
-                      scaleY: 0 
+                      scaleY: 0,
                     }}
-                    animate={{ 
-                      opacity: 1, 
+                    animate={{
+                      opacity: 1,
                       y: 0,
                       scaleY: 1,
                       transition: {
                         duration: 0.25,
                         ease: [0.25, 0.46, 0.45, 0.94], // ease-out-quad
-                      }
+                      },
                     }}
-                    exit={{ 
-                      opacity: 0, 
+                    exit={{
+                      opacity: 0,
                       y: -10,
                       scaleY: 0,
                       transition: {
                         duration: 0.2,
                         ease: [0.55, 0.085, 0.68, 0.53], // ease-in-quad
-                      }
+                      },
                     }}
-                    style={{ 
-                      transformOrigin: "top" 
+                    style={{
+                      transformOrigin: "top",
                     }}
                     className="p-4 bg-muted/30 rounded-lg border"
                   >

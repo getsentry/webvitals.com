@@ -52,7 +52,6 @@ export const POST: APIRoute = async ({ request }) => {
         if (step.toolResults) {
           step.toolResults.forEach((result, index) => {
             if ("error" in result) {
-
               Sentry.captureException(
                 new Error(`Tool execution failed: ${result.error}`),
                 {
@@ -68,7 +67,7 @@ export const POST: APIRoute = async ({ request }) => {
                       toolError: step.toolCalls?.[index]?.error,
                     },
                   },
-                }
+                },
               );
             }
           });
@@ -137,7 +136,7 @@ Configuration: ${JSON.stringify(pageSpeedConfig || {})}`,
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 };
