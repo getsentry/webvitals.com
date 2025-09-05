@@ -1,4 +1,5 @@
 import { openai } from "@ai-sdk/openai";
+import * as Sentry from "@sentry/astro";
 import {
   convertToModelMessages,
   InvalidToolInputError,
@@ -47,6 +48,10 @@ export const POST: APIRoute = async ({ request }) => {
         analyzePageSpeed: pageSpeedTool,
       },
       stopWhen: stepCountIs(2), // Tool call + analysis response
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: "pagespeed-analysis-chat",
+      },
       onStepFinish: (step) => {
         console.log("Step finished:", {
           toolCalls: step.toolCalls?.length || 0,
@@ -55,6 +60,34 @@ export const POST: APIRoute = async ({ request }) => {
           hasToolCalls: !!step.toolCalls?.length,
           hasToolResults: !!step.toolResults?.length,
         });
+
+        // Handle tool execution errors
+        if (step.toolResults) {
+          step.toolResults.forEach((result, index) => {
+            if ("error" in result) {
+              console.error(`Tool execution error in step:`, result.error);
+
+              // Report tool errors to Sentry
+              Sentry.captureException(
+                new Error(`Tool execution failed: ${result.error}`),
+                {
+                  tags: {
+                    area: "ai-tool-execution",
+                    function: "pagespeed-analysis-chat",
+                    tool: step.toolCalls?.[index]?.toolName,
+                  },
+                  contexts: {
+                    ai: {
+                      model: "gpt-4o",
+                      tool: step.toolCalls?.[index]?.toolName,
+                      toolError: step.toolCalls?.[index]?.error,
+                    },
+                  },
+                }
+              );
+            }
+          });
+        }
       },
       system: `You are a web performance expert assistant specializing in Google PageSpeed Insights analysis. When a user asks you to analyze a website:
 
@@ -92,29 +125,25 @@ IMPORTANT: Only call the analyzePageSpeed tool ONCE per analysis request. Do not
 Configuration: ${JSON.stringify(pageSpeedConfig || {})}`,
     });
 
-    // Return streaming response that can handle tool calls and results
-    // Try multiple methods for AI SDK compatibility
-    return result.toUIMessageStreamResponse({
-      onError: (error) => {
-        console.error("Streaming error:", error);
-
-        if (NoSuchToolError.isInstance(error)) {
-          return "The model tried to call an unknown tool. Please try again.";
-        }
-
-        if (InvalidToolInputError.isInstance(error)) {
-          return "The model called a tool with invalid inputs. Please provide a valid URL.";
-        }
-
-        if (ToolCallRepairError.isInstance(error)) {
-          return "There was an error repairing the tool call. Please try again.";
-        }
-
-        return "An error occurred during analysis. Please try again.";
-      },
-    });
+    // Return streaming response using AI SDK v5 method
+    // toUIMessageStreamResponse works with useChat hook
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error("Chat API error:", error);
+
+    // Report API error to Sentry with additional context
+    Sentry.captureException(error, {
+      tags: {
+        area: "api-chat",
+        endpoint: "/api/chat",
+      },
+      contexts: {
+        request: {
+          method: "POST",
+          endpoint: "/api/chat",
+        },
+      },
+    });
 
     return new Response(
       JSON.stringify({

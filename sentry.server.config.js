@@ -10,4 +10,11 @@ Sentry.init({
   // Define how likely traces are sampled. Adjust this value in production,
   // or use tracesSampler for greater control.
   tracesSampleRate: 1.0,
+  // Add Vercel AI integration for agent monitoring
+  integrations: [
+    Sentry.vercelAIIntegration({
+      recordInputs: true,
+      recordOutputs: true,
+    }),
+  ],
 });

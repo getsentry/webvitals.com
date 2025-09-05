@@ -9,7 +9,6 @@ import {
   ConversationContent,
   ConversationScrollButton,
 } from "@/components/ui/ai-elements/conversation";
-import WebVitalsFacts from "./WebVitalsFacts";
 import { Message, MessageContent } from "@/components/ui/ai-elements/message";
 import { Response } from "@/components/ui/ai-elements/response";
 import {
@@ -22,6 +21,7 @@ import {
 import type { PageSpeedConfig } from "@/types/pagespeed";
 import Background from "./Background";
 import PageSpeedPromptInput from "./PageSpeedPromptInput";
+import WebVitalsFacts from "./WebVitalsFacts";
 
 type PageSpeedToolInput = {
   url: string;
@@ -57,9 +57,29 @@ export default function HeroSection() {
   const { messages, sendMessage, status, error } = useChat({
     onFinish: (message) => {
       console.log("Chat finished:", message);
+      Sentry.logger.info("Chat analysis completed", {
+        messageCount: messages.length + 1,
+        hasToolCalls: message.message.parts?.some((part) =>
+          part.type?.includes("tool"),
+        ),
+        messageId: message.id,
+        role: message.role,
+      });
     },
     onError: (error) => {
       console.log("Chat error:", error);
+      Sentry.captureException(error, {
+        tags: {
+          area: "frontend-chat",
+          component: "HeroSection",
+        },
+        contexts: {
+          chat: {
+            messageCount: messages.length,
+            status,
+          },
+        },
+      });
     },
   });
 
@@ -71,9 +91,15 @@ export default function HeroSection() {
     domain: string,
     config: PageSpeedConfig,
   ) => {
-    Sentry.logger.info("PageSpeed Insights analysis started", {
+    // Enhanced Sentry tracking for analysis requests
+    Sentry.setTag("analysis.domain", domain);
+    Sentry.setTag("analysis.strategy", config.strategy);
+
+    Sentry.logger.info("PageSpeed analysis initiated", {
       domain,
-      ...config,
+      strategy: config.strategy,
+      categories: config.categories,
+      timestamp: new Date().toISOString(),
     });
 
     // Send message with config in the request body
