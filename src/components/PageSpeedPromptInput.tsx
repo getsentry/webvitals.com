@@ -6,10 +6,9 @@ import {
   ChevronDownIcon,
   ListIcon,
   MonitorIcon,
-  WifiIcon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { z } from "zod";
 import {
   PromptInput,
@@ -41,20 +40,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useScrollFade } from "@/hooks/useScrollFade";
 import { cn } from "@/lib/utils";
 import type {
-  LighthouseCategory,
-  LighthouseConfig,
-  LighthouseFormFactor,
-  ThrottlingPreset,
-} from "@/types/lighthouse";
+  PageSpeedCategory,
+  PageSpeedConfig,
+  PageSpeedStrategy,
+} from "@/types/pagespeed";
 import {
   CATEGORY_LABELS,
-  DEFAULT_LIGHTHOUSE_CONFIG,
-  FORM_FACTOR_LABELS,
-  THROTTLING_LABELS,
-  THROTTLING_PRESETS,
-} from "@/types/lighthouse";
+  DEFAULT_PAGESPEED_CONFIG,
+  STRATEGY_LABELS,
+} from "@/types/pagespeed";
 
 const SUGGESTED_URLS = [
   "https://claude.ai",
@@ -72,63 +69,29 @@ const urlSchema = z
     "Please enter a valid URL",
   );
 
-interface LighthousePromptInputProps {
-  onSubmit: (domain: string, config: LighthouseConfig) => Promise<void>;
+interface PageSpeedPromptInputProps {
+  onSubmit: (domain: string, config: PageSpeedConfig) => Promise<void>;
   disabled?: boolean;
   className?: string;
 }
 
-export default function LighthousePromptInput({
+export default function PageSpeedPromptInput({
   onSubmit,
   disabled = false,
   className,
-}: LighthousePromptInputProps) {
+}: PageSpeedPromptInputProps) {
   const [domain, setDomain] = useState("");
   const [status, setStatus] = useState<ChatStatus>("ready");
-  const [config, setConfig] = useState<LighthouseConfig>(
-    DEFAULT_LIGHTHOUSE_CONFIG,
+  const [config, setConfig] = useState<PageSpeedConfig>(
+    DEFAULT_PAGESPEED_CONFIG,
   );
-  const [showLeftFade, setShowLeftFade] = useState(false);
-  const [showRightFade, setShowRightFade] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const { scrollRef, showLeftFade, showRightFade } = useScrollFade(domain);
 
   // Validate URL using zod schema
   const isValidUrl = useMemo(() => {
     return urlSchema.safeParse(domain).success;
   }, [domain]);
 
-  // Check scroll position to show/hide fade borders
-  const checkScroll = () => {
-    if (!scrollRef.current) return;
-
-    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-    setShowLeftFade(scrollLeft > 0);
-    setShowRightFade(scrollLeft < scrollWidth - clientWidth - 1);
-  };
-
-  useEffect(() => {
-    const scrollElement = scrollRef.current;
-    if (!scrollElement) return;
-
-    // Delay initial check to let DOM settle after suggestions appear/disappear
-    const timeoutId = setTimeout(checkScroll, 10);
-
-    // Add scroll listener
-    scrollElement.addEventListener("scroll", checkScroll);
-
-    // Check on resize
-    const resizeObserver = new ResizeObserver(() => {
-      // Also delay resize checks
-      setTimeout(checkScroll, 10);
-    });
-    resizeObserver.observe(scrollElement);
-
-    return () => {
-      clearTimeout(timeoutId);
-      scrollElement.removeEventListener("scroll", checkScroll);
-      resizeObserver.disconnect();
-    };
-  }, [domain]); // Re-run when domain changes (suggestions visibility)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -142,7 +105,7 @@ export default function LighthousePromptInput({
     }
   };
 
-  const toggleCategory = (category: LighthouseCategory) => {
+  const toggleCategory = (category: PageSpeedCategory) => {
     const categories = config.categories.includes(category)
       ? config.categories.filter((c) => c !== category)
       : [...config.categories, category];
@@ -169,9 +132,9 @@ export default function LighthousePromptInput({
             }}
           >
             <PromptInputModelSelect
-              value={config.formFactor}
-              onValueChange={(value: LighthouseFormFactor) =>
-                setConfig({ ...config, formFactor: value })
+              value={config.strategy}
+              onValueChange={(value: PageSpeedStrategy) =>
+                setConfig({ ...config, strategy: value })
               }
             >
               <PromptInputModelSelectTrigger className="sm:min-w-0">
@@ -181,31 +144,7 @@ export default function LighthousePromptInput({
                 </span>
               </PromptInputModelSelectTrigger>
               <PromptInputModelSelectContent>
-                {Object.entries(FORM_FACTOR_LABELS).map(([value, label]) => (
-                  <PromptInputModelSelectItem key={value} value={value}>
-                    {label}
-                  </PromptInputModelSelectItem>
-                ))}
-              </PromptInputModelSelectContent>
-            </PromptInputModelSelect>
-
-            <PromptInputModelSelect
-              value={config.throttling.preset}
-              onValueChange={(value: ThrottlingPreset) =>
-                setConfig({
-                  ...config,
-                  throttling: { ...THROTTLING_PRESETS[value] },
-                })
-              }
-            >
-              <PromptInputModelSelectTrigger className="sm:min-w-0">
-                <WifiIcon size={16} className="sm:hidden" />
-                <span className="hidden sm:inline">
-                  <PromptInputModelSelectValue />
-                </span>
-              </PromptInputModelSelectTrigger>
-              <PromptInputModelSelectContent>
-                {Object.entries(THROTTLING_LABELS).map(([value, label]) => (
+                {Object.entries(STRATEGY_LABELS).map(([value, label]) => (
                   <PromptInputModelSelectItem key={value} value={value}>
                     {label}
                   </PromptInputModelSelectItem>
@@ -234,7 +173,7 @@ export default function LighthousePromptInput({
                             key={category}
                             value={category}
                             onSelect={() =>
-                              toggleCategory(category as LighthouseCategory)
+                              toggleCategory(category as PageSpeedCategory)
                             }
                             className="cursor-pointer"
                           >
@@ -242,7 +181,7 @@ export default function LighthousePromptInput({
                               className={cn(
                                 "mr-2 size-4",
                                 config.categories.includes(
-                                  category as LighthouseCategory,
+                                  category as PageSpeedCategory,
                                 )
                                   ? "opacity-100"
                                   : "opacity-0",

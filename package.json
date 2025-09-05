@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.23",
+    "@ai-sdk/react": "^2.0.32",
     "@astrojs/mdx": "^4.3.4",
     "@astrojs/react": "^4.3.0",
     "@astrojs/vercel": "^8.2.7",
@@ -70,7 +71,6 @@
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.62.0",
     "react-resizable-panels": "^3.0.5",
-    "react-syntax-highlighter": "^15.6.6",
     "recharts": "2.15.4",
     "sonner": "^2.0.7",
     "streamdown": "^1.1.10",
