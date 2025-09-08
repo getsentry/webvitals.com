@@ -1,68 +1,16 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.2/schema.json",
   "vcs": {
-    "enabled": false,
+    "enabled": true,
     "clientKind": "git",
-    "useIgnoreFile": false
-  },
-  "files": {
-    "ignoreUnknown": false,
-    "includes": ["src/**", "*.config.*"],
-    "experimentalScannerIgnores": [".astro/**"]
+    "useIgnoreFile": true
   },
   "formatter": {
-    "enabled": true,
     "indentStyle": "space"
   },
   "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
-      "suspicious": {
-        "noUnknownAtRules": "off",
-        "noArrayIndexKey": "off",
-        "noDocumentCookie": "off"
-      },
-      "a11y": {
-        "recommended": false
-      },
-      "correctness": {
-        "noUnusedVariables": "off",
-        "noUnusedImports": "off",
-        "noNestedComponentDefinitions": "off",
-        "useUniqueElementIds": "off",
-        "useExhaustiveDependencies": "off"
-      }
+    "domains": {
+      "next": "recommended",
+      "react": "recommended"
     }
-  },
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "double"
-    }
-  },
-  "assist": {
-    "enabled": true,
-    "actions": {
-      "source": {
-        "organizeImports": "on"
-      }
-    }
-  },
-  "overrides": [
-    {
-      "includes": ["**/*.svelte", "**/*.astro", "**/*.vue"],
-      "linter": {
-        "rules": {
-          "style": {
-            "useConst": "off",
-            "useImportType": "off"
-          },
-          "correctness": {
-            "noUnusedVariables": "off",
-            "noUnusedImports": "off"
-          }
-        }
-      }
-    }
-  ]
+  }
 }

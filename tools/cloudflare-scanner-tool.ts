@@ -20,7 +20,7 @@ const cloudflareScantoolInputSchema = z.object({
     .optional()
     .default(DEFAULT_VISIBILITY)
     .describe(
-      "Scan visibility - Public appears in recent scans, Unlisted is private"
+      "Scan visibility - Public appears in recent scans, Unlisted is private",
     ),
   screenshotResolutions: z
     .array(z.enum(["desktop", "mobile", "tablet"]))
@@ -42,7 +42,7 @@ const cloudflareSearchInputSchema = z.object({
   query: z
     .string()
     .describe(
-      "Search query using ElasticSearch syntax (e.g., 'page.domain:example.com', 'verdicts.malicious:true')"
+      "Search query using ElasticSearch syntax (e.g., 'page.domain:example.com', 'verdicts.malicious:true')",
     ),
   limit: z
     .number()
@@ -70,7 +70,7 @@ class CloudflareScannerClient {
 
   private async makeRequest<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers = {
@@ -87,7 +87,7 @@ class CloudflareScannerClient {
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(
-        `Cloudflare URL Scanner API failed: ${response.status} ${response.statusText} - ${errorText}`
+        `Cloudflare URL Scanner API failed: ${response.status} ${response.statusText} - ${errorText}`,
       );
     }
 
@@ -115,7 +115,7 @@ class CloudflareScannerClient {
   async waitForScanCompletion(
     scanId: string,
     maxWaitTime = 300000, // 5 minutes
-    pollInterval = 15000 // 15 seconds
+    pollInterval = 15000, // 15 seconds
   ): Promise<ScanResult> {
     const startTime = Date.now();
 
@@ -155,7 +155,7 @@ class CloudflareScannerClient {
 
   async getScreenshot(
     scanId: string,
-    resolution: ScreenshotResolution = "desktop"
+    resolution: ScreenshotResolution = "desktop",
   ): Promise<ArrayBuffer> {
     const url = `${this.baseUrl}/result/${scanId}/screenshot?resolution=${resolution}`;
     const response = await fetch(url, {
@@ -166,7 +166,7 @@ class CloudflareScannerClient {
 
     if (!response.ok) {
       throw new Error(
-        `Failed to get screenshot: ${response.status} ${response.statusText}`
+        `Failed to get screenshot: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -183,7 +183,7 @@ async function runCloudflareUrlScan(
   visibility: ScanVisibility = DEFAULT_VISIBILITY,
   screenshotResolutions: ScreenshotResolution[] = DEFAULT_SCREENSHOT_RESOLUTIONS,
   customHeaders?: Record<string, string>,
-  waitForResults = false
+  waitForResults = false,
 ): Promise<CloudflareScannerToolOutput> {
   const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
 
@@ -192,7 +192,7 @@ async function runCloudflareUrlScan(
 
   if (!accountId || !apiToken) {
     throw new Error(
-      "CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN environment variables are required"
+      "CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN environment variables are required",
     );
   }
 
@@ -250,7 +250,7 @@ async function runCloudflareUrlScan(
     throw new Error(
       `Cloudflare URL Scanner analysis failed: ${
         error instanceof Error ? error.message : "Unknown error"
-      }`
+      }`,
     );
   }
 }
@@ -258,14 +258,14 @@ async function runCloudflareUrlScan(
 async function searchCloudflareScans(
   query: string,
   limit = 20,
-  offset = 0
+  offset = 0,
 ): Promise<ScanSearchResponse> {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
   const apiToken = process.env.CLOUDFLARE_API_TOKEN;
 
   if (!accountId || !apiToken) {
     throw new Error(
-      "CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN environment variables are required"
+      "CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN environment variables are required",
     );
   }
 
@@ -295,7 +295,7 @@ async function searchCloudflareScans(
     throw new Error(
       `Cloudflare URL Scanner search failed: ${
         error instanceof Error ? error.message : "Unknown error"
-      }`
+      }`,
     );
   }
 }
@@ -316,7 +316,7 @@ export const cloudflareUrlScannerTool = tool({
       visibility,
       screenshotResolutions,
       customHeaders,
-      waitForResults
+      waitForResults,
     );
   },
 });
