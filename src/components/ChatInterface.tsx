@@ -54,7 +54,7 @@ export default function ChatInterface({
         </div>
 
         <div className="flex-1 min-h-0">
-          <Conversation className="h-full max-h-[calc(60vh-4rem)] min-h-[266px]">
+          <Conversation className="h-full max-h-[calc(60vh-4rem)] min-h-[310px]">
             <ConversationContent>
               {messages.map((message) => (
                 <MessageRenderer key={message.id} message={message} />

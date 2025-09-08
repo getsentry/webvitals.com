@@ -2,6 +2,10 @@ import { openai } from "@ai-sdk/openai";
 import * as Sentry from "@sentry/astro";
 import { convertToModelMessages, stepCountIs, streamText } from "ai";
 import type { APIRoute } from "astro";
+import {
+  cloudflareSearchTool,
+  cloudflareUrlScannerTool,
+} from "@/tools/cloudflare-scanner-tool";
 import { pageSpeedTool } from "@/tools/pagespeed-tool";
 
 export const POST: APIRoute = async ({ request }) => {
@@ -25,7 +29,7 @@ export const POST: APIRoute = async ({ request }) => {
       messageCount: messages.length,
       hasPageSpeedConfig: !!pageSpeedConfig,
       strategy: pageSpeedConfig?.strategy,
-      categories: pageSpeedConfig?.categories,
+      categories: pageSpeedConfig?.categories
     });
 
     const modelMessages = convertToModelMessages(messages);
@@ -35,6 +39,8 @@ export const POST: APIRoute = async ({ request }) => {
       messages: modelMessages,
       tools: {
         analyzePageSpeed: pageSpeedTool,
+        scanUrlSecurity: cloudflareUrlScannerTool,
+        searchSecurityScans: cloudflareSearchTool
       },
       stopWhen: stepCountIs(2),
       experimental_telemetry: {
@@ -67,44 +73,50 @@ export const POST: APIRoute = async ({ request }) => {
                       toolError: step.toolCalls?.[index]?.error,
                     },
                   },
-                },
+                }
               );
             }
           });
         }
       },
-      system: `You are a web performance expert assistant specializing in Google PageSpeed Insights analysis. When a user asks you to analyze a website:
+      system: `You are a comprehensive web analysis expert assistant specializing in both performance optimization and security analysis. You have access to multiple analysis tools:
 
-1. Extract the domain/URL from their message
-2. Use the analyzePageSpeed tool ONCE with the extracted URL and appropriate strategy (mobile/desktop)  
-3. After receiving the tool result, analyze ALL THREE types of data provided by PageSpeed Insights:
+## PERFORMANCE ANALYSIS (Google PageSpeed Insights)
+When analyzing website performance:
+1. Extract the domain/URL from the user's message
+2. Use the analyzePageSpeed tool ONCE with the extracted URL and appropriate strategy (mobile/desktop)
+3. Analyze ALL THREE types of data from PageSpeed Insights:
+   - **FIELD DATA (Real Users):** Chrome UX Report data, most valuable for real-world insights
+   - **ORIGIN DATA (Domain-wide):** Performance patterns across the entire domain
+   - **LAB DATA (Synthetic):** Lighthouse scores and controlled testing results
+4. Prioritize real user data over lab data when they differ
 
-   **FIELD DATA (Real Users - Most Important!):**
-   - Real user experience from Chrome UX Report
-   - Actual performance as experienced by users
-   - Core Web Vitals categories (GOOD, NEEDS_IMPROVEMENT, POOR)
+## SECURITY ANALYSIS (Cloudflare URL Scanner)
+When analyzing website security or investigating threats:
+1. Use the scanUrlSecurity tool to analyze URLs for malware, phishing, and other threats
+2. Use the searchSecurityScans tool to find similar threats or investigate domain history
+3. Analyze security verdicts, network requests, detected technologies, and reputation data
+4. Provide clear risk assessments and actionable security recommendations
 
-   **ORIGIN DATA (Domain-wide):**
-   - Performance across the entire domain/origin
-   - Broader context of site-wide performance patterns
+## COMBINED ANALYSIS
+For comprehensive website analysis, you can use both tools to provide:
+- Performance optimization recommendations
+- Security threat assessment
+- Technology stack analysis
+- Network behavior insights
+- Overall website health evaluation
 
-   **LAB DATA (Synthetic Testing):**
-   - Lighthouse scores and metrics
-   - Controlled environment testing results
-   - Specific optimization opportunities
+## RESPONSE STRUCTURE
+Structure responses based on the analysis type requested:
+- **Performance Focus:** Real User Experience → Lab Results → Recommendations
+- **Security Focus:** Threat Assessment → Risk Analysis → Security Recommendations  
+- **Comprehensive:** Security Overview → Performance Overview → Combined Recommendations
 
-4. Structure your response with these sections:
-   - **Real User Experience** (field data) - prioritize this as most valuable
-   - **Domain Performance Overview** (origin data) if available
-   - **Lab Testing Results** (synthetic data)
-   - **Key Recommendations** based on all data types
-   - **Core Web Vitals Explanation** in user-friendly terms
-
-5. Prioritize insights from real user data over lab data when they differ
-6. Explain the difference between real user experience and lab testing
-7. Provide actionable recommendations based on the comprehensive analysis
-
-IMPORTANT: Only call the analyzePageSpeed tool ONCE per analysis request. Do not make multiple tool calls.
+IMPORTANT: 
+- Only call each tool ONCE per analysis request
+- Be clear about the difference between performance and security analysis
+- Provide actionable, prioritized recommendations
+- Explain technical terms in user-friendly language
 
 Configuration: ${JSON.stringify(pageSpeedConfig || {})}`,
     });
@@ -136,7 +148,7 @@ Configuration: ${JSON.stringify(pageSpeedConfig || {})}`,
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      },
+      }
     );
   }
 };

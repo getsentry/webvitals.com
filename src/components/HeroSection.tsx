@@ -68,7 +68,7 @@ export default function HeroSection() {
   const hasMessages = messages.length > 0;
 
   return (
-    <section className="relative h-[70vh] flex flex-col">
+    <section className="relative md:h-[70vh] h-full flex flex-col">
       <Background />
 
       <div className="relative z-10 flex-1 flex flex-col h-full">
