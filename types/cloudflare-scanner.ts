@@ -19,7 +19,7 @@ export interface ScanSubmissionRequest {
 }
 
 /**
- * Scan submission response (matches Create URL Scan API)
+ * Scan submission response for new scans (matches Create URL Scan API)
  */
 export interface ScanSubmissionResponse {
   api: string;
@@ -30,6 +30,30 @@ export interface ScanSubmissionResponse {
   visibility: string;
   options?: {
     useragent?: string;
+  };
+}
+
+/**
+ * Response when URL was recently scanned (409 status)
+ */
+export interface RecentScanResponse {
+  message: string;
+  description: string;
+  status: number;
+  errors: Array<{
+    title: string;
+    status: number;
+  }>;
+  result: {
+    tasks: Array<{
+      uuid: string;
+      url: string;
+      effectiveUrl: string;
+      status: string;
+      time: string;
+      visibility: string;
+      clientType: string;
+    }>;
   };
 }
 
@@ -605,7 +629,6 @@ export interface ScanResult {
     url: string;
     uuid: string;
     visibility: string;
-    status?: ScanStatus;
   };
   verdicts: {
     overall: {
@@ -687,39 +710,28 @@ export interface CloudflareScannerToolOutput {
   status: ScanStatus;
   result?: ScanResult;
   summary?: {
-    // Security Assessment
+    // Security Assessment (most important)
     malicious: boolean;
-    hasVerdicts: boolean;
     riskLevel: "SAFE" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
     securityScore: number; // 0-100
-    threats: string[];
+    threats: string[]; // All threats - no limit
 
-    // Site Information
+    // Essential Site Information
     domain: string;
     finalUrl: string;
-    country?: string;
-    server?: string;
-    ip?: string;
 
-    // Network Analysis
-    totalRequests: number;
-    uniqueDomains: number;
-    thirdPartyRequests: number;
-    httpRequests: number;
-    httpsRequests: number;
+    // All Technologies (important for security analysis)
+    technologies: Array<{
+      name: string;
+      confidence: number;
+      categories: string[];
+    }>; // All technologies - no limit
 
-    // Technology Stack
-    technologies: {
-      detected: string[];
-      webServer?: string;
-      framework?: string;
-      analytics: string[];
-      security: string[];
-    };
+    // Critical scan metadata
+    scanId: string;
+    scanTime: string;
 
-    // Resources
-    reportUrl?: string;
-    screenshotUrl?: string;
-    hasScreenshot: boolean;
+    // Metadata
+    isRecentScan?: boolean;
   };
 }

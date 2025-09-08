@@ -1,16 +1,10 @@
 import * as Sentry from "@sentry/nextjs";
 import { tool } from "ai";
 import { z } from "zod";
-import {
-  analyzeNetworkRequests,
-  calculateSecurityScore,
-  extractTechStack,
-  generateSecuritySummary,
-  getScanOverview,
-  getSecurityRiskLevel,
-} from "@/lib/cloudflare-scanner-utils";
+import { generateSecuritySummary } from "@/lib/cloudflare-scanner-utils";
 import type {
   CloudflareScannerToolOutput,
+  RecentScanResponse,
   ScanResult,
   ScanSearchResponse,
   ScanStatus,
@@ -40,11 +34,6 @@ const cloudflareScantoolInputSchema = z.object({
     .record(z.string(), z.string())
     .optional()
     .describe("Custom HTTP headers to include in the scan"),
-  waitForResults: z
-    .boolean()
-    .optional()
-    .default(true)
-    .describe("Whether to wait for scan completion and return results"),
 });
 
 const cloudflareSearchInputSchema = z.object({
@@ -71,8 +60,10 @@ const cloudflareSearchInputSchema = z.object({
 class CloudflareScannerClient {
   private apiToken: string;
   private baseUrl: string;
+  private accountId: string;
 
   constructor(accountId: string, apiToken: string) {
+    this.accountId = accountId;
     this.apiToken = apiToken;
     this.baseUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/urlscanner/v2`;
   }
@@ -82,6 +73,8 @@ class CloudflareScannerClient {
     options: RequestInit = {},
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
+    const method = options.method || "GET";
+
     const headers = {
       Authorization: `Bearer ${this.apiToken}`,
       "Content-Type": "application/json",
@@ -94,13 +87,64 @@ class CloudflareScannerClient {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Cloudflare URL Scanner API failed: ${response.status} ${response.statusText} - ${errorText}`,
+      const errorData = await response.json();
+
+      // Handle 409 "recently scanned" - return existing scan info
+      if (response.status === 409 && errorData.result?.tasks) {
+        Sentry.logger.info("Cloudflare API: Using recent scan", {
+          endpoint,
+          tasksCount: errorData.result.tasks.length,
+        });
+        return errorData as T;
+      }
+
+      const error = new Error(
+        `Cloudflare API error ${response.status}: ${errorData.message || response.statusText}`,
       );
+
+      Sentry.captureException(error, {
+        tags: {
+          component: "cloudflare-scanner",
+          api_endpoint: endpoint,
+          api_status: response.status.toString(),
+        },
+        contexts: {
+          api_request: {
+            method,
+            endpoint,
+            url,
+          },
+          api_response: {
+            status: response.status,
+            statusText: response.statusText,
+            error_data: errorData,
+          },
+        },
+      });
+
+      throw error;
     }
 
-    return response.json();
+    const responseData = await response.json();
+    if (!responseData) {
+      const error = new Error("API returned empty response");
+      Sentry.captureException(error, {
+        tags: {
+          component: "cloudflare-scanner",
+          api_endpoint: endpoint,
+        },
+        contexts: {
+          api_request: {
+            method,
+            endpoint,
+            url,
+          },
+        },
+      });
+      throw error;
+    }
+
+    return responseData;
   }
 
   async submitScan(request: {
@@ -110,19 +154,49 @@ class CloudflareScannerClient {
     customHeaders?: Record<string, string>;
     customagent?: string;
     referer?: string;
-  }): Promise<ScanSubmissionResponse> {
-    return this.makeRequest<ScanSubmissionResponse>("/scan", {
-      method: "POST",
-      body: JSON.stringify(request),
-    });
+  }): Promise<ScanSubmissionResponse | RecentScanResponse> {
+    return this.makeRequest<ScanSubmissionResponse | RecentScanResponse>(
+      "/scan",
+      {
+        method: "POST",
+        body: JSON.stringify(request),
+      },
+    );
   }
 
   async getScanResult(scanId: string): Promise<ScanResult> {
-    const response = await this.makeRequest<{ data: ScanResult }>(
-      `/result/${scanId}`,
-    );
-    // The API wraps the actual scan result in a 'data' property
-    return response.data;
+    const response = await this.makeRequest<ScanResult>(`/result/${scanId}`);
+
+    if (!response) {
+      const error = new Error(`No scan result returned for scanId: ${scanId}`);
+      Sentry.captureException(error, {
+        tags: {
+          component: "cloudflare-scanner",
+          operation: "getScanResult",
+        },
+        extra: { scanId },
+      });
+      throw error;
+    }
+
+    if (!response.task) {
+      const error = new Error(
+        `Invalid scan result - missing task data for scanId: ${scanId}`,
+      );
+      Sentry.captureException(error, {
+        tags: {
+          component: "cloudflare-scanner",
+          operation: "getScanResult",
+        },
+        extra: {
+          scanId,
+          responseKeys: response ? Object.keys(response) : "null response",
+        },
+      });
+      throw error;
+    }
+
+    return response;
   }
 
   async waitForScanCompletion(
@@ -132,21 +206,45 @@ class CloudflareScannerClient {
   ): Promise<ScanResult> {
     const startTime = Date.now();
 
+    Sentry.logger.info("Cloudflare scan polling started", {
+      scanId,
+      maxWaitTime,
+      pollInterval,
+    });
+
     while (Date.now() - startTime < maxWaitTime) {
       try {
         const result = await this.getScanResult(scanId);
-        // The task object might not have status, check success flag instead
-        if (result.task.success === true) {
+        const elapsedTime = Date.now() - startTime;
+
+        // Check task.success - true means completed, false means failed
+        if (result?.task?.success === true) {
+          Sentry.logger.info("Cloudflare scan completed successfully", {
+            scanId,
+            elapsedTime,
+            malicious: result.verdicts?.overall?.malicious,
+          });
           return result;
-        } else if (result.task.success === false) {
-          throw new Error(`Scan ${scanId} failed`);
+        } else if (result?.task?.success === false) {
+          const error = new Error(`Scan ${scanId} failed`);
+          Sentry.captureException(error, {
+            tags: {
+              component: "cloudflare-scanner",
+              operation: "waitForScanCompletion",
+            },
+            extra: { scanId, elapsedTime },
+          });
+          throw error;
         }
 
-        Sentry.logger.debug("Scan still in progress", {
-          scanId,
-          success: result.task.success,
-          elapsedTime: Date.now() - startTime,
-        });
+        // task.success might be null/undefined while in progress - only log every 30 seconds
+        if (elapsedTime % 30000 < pollInterval) {
+          Sentry.logger.debug("Cloudflare scan still in progress", {
+            scanId,
+            success: result?.task?.success,
+            elapsedTime,
+          });
+        }
       } catch (error) {
         if (
           error instanceof Error &&
@@ -154,11 +252,18 @@ class CloudflareScannerClient {
             error.message.includes("not found") ||
             error.message.includes("not ready"))
         ) {
-          // Scan not ready yet, continue polling
-          Sentry.logger.debug("Scan not ready, continuing to poll", {
-            scanId,
-            elapsedTime: Date.now() - startTime,
-          });
+          // Scan not ready yet (404), continue polling - only log occasionally
+          const elapsedTime = Date.now() - startTime;
+          if (elapsedTime % 60000 < pollInterval) {
+            // Log every minute
+            Sentry.logger.debug(
+              "Cloudflare scan not ready, continuing to poll",
+              {
+                scanId,
+                elapsedTime,
+              },
+            );
+          }
         } else {
           throw error;
         }
@@ -167,7 +272,18 @@ class CloudflareScannerClient {
       await new Promise((resolve) => setTimeout(resolve, pollInterval));
     }
 
-    throw new Error(`Scan ${scanId} did not complete within ${maxWaitTime}ms`);
+    const actualTime = Date.now() - startTime;
+    const timeoutError = new Error(
+      `Scan ${scanId} did not complete within ${maxWaitTime}ms`,
+    );
+    Sentry.captureException(timeoutError, {
+      tags: {
+        component: "cloudflare-scanner",
+        operation: "waitForScanCompletion",
+      },
+      extra: { scanId, maxWaitTime, actualTime },
+    });
+    throw timeoutError;
   }
 
   async searchScans(params: {
@@ -210,51 +326,33 @@ class CloudflareScannerClient {
 }
 
 /**
- * Generate comprehensive summary for chat agent analysis
+ * Generate compact summary for chat agent analysis
  */
 function generateComprehensiveSummary(result: ScanResult) {
-  const overview = getScanOverview(result);
   const security = generateSecuritySummary(result);
-  const network = analyzeNetworkRequests(result);
-  const techStack = extractTechStack(result);
 
   return {
-    // Security Assessment
+    // Security Assessment (most important)
     malicious: security.malicious,
-    hasVerdicts: result.verdicts?.overall?.hasVerdicts || false,
     riskLevel: security.riskLevel,
     securityScore: security.score,
-    threats: security.threats,
+    threats: security.threats, // Keep all threats - they're important
 
-    // Site Information
-    domain: overview.domain,
-    finalUrl: overview.finalUrl,
-    country: overview.country,
-    server: overview.server,
-    ip: result.page?.ip,
+    // Essential Site Information
+    domain: result.page?.domain || result.task?.domain,
+    finalUrl: result.page?.url || result.task?.url,
 
-    // Network Analysis
-    totalRequests: network.totalRequests,
-    uniqueDomains: network.uniqueDomains,
-    thirdPartyRequests: network.thirdPartyRequests,
-    httpRequests: network.httpRequests,
-    httpsRequests: network.httpsRequests,
+    // All Technologies (important for security analysis)
+    technologies:
+      result.meta?.processors?.wappa?.data?.map((tech: any) => ({
+        name: tech.app,
+        confidence: tech.confidenceTotal || 0,
+        categories: tech.categories?.map((cat: any) => cat.name) || [],
+      })) || [],
 
-    // Technology Stack
-    technologies: {
-      detected:
-        result.meta?.processors?.wappa?.data?.map((tech: any) => tech.app) ||
-        [],
-      webServer: techStack.webServer,
-      framework: techStack.framework,
-      analytics: techStack.analytics,
-      security: techStack.security,
-    },
-
-    // Resources
-    reportUrl: result.task?.reportURL,
-    screenshotUrl: result.task?.screenshotURL,
-    hasScreenshot: overview.hasScreenshot,
+    // Critical scan metadata
+    scanId: result.task?.uuid,
+    scanTime: result.task?.time,
   };
 }
 
@@ -263,7 +361,6 @@ async function runCloudflareUrlScan(
   visibility: ScanVisibility = DEFAULT_VISIBILITY,
   screenshotResolutions: ScreenshotResolution[] = DEFAULT_SCREENSHOT_RESOLUTIONS,
   customHeaders?: Record<string, string>,
-  waitForResults = true,
 ): Promise<CloudflareScannerToolOutput> {
   const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
 
@@ -283,69 +380,207 @@ async function runCloudflareUrlScan(
       url: normalizedUrl,
       visibility,
       screenshotResolutions,
-      waitForResults,
       hasCustomHeaders: !!customHeaders,
     });
 
-    const submission = await client.submitScan({
+    // First, search for recent scans of this URL
+    const searchQuery = `task.url:"${normalizedUrl}"`;
+
+    Sentry.logger.info("Searching for recent scans before submission", {
       url: normalizedUrl,
-      visibility,
-      screenshotsResolutions: screenshotResolutions,
-      customHeaders,
+      searchQuery,
     });
 
-    let result: ScanResult | undefined;
+    let scanId: string;
+    let scanUrl: string;
+    let isRecentScan = false;
 
-    if (waitForResults) {
-      Sentry.logger.info("Waiting for scan completion", {
-        scanId: submission.uuid,
+    try {
+      const searchResults = await client.searchScans({
+        query: searchQuery,
+        limit: 1,
       });
-      result = await client.waitForScanCompletion(submission.uuid);
+
+      if (searchResults.results.length > 0) {
+        // Found a recent scan, use it
+        const recentResult = searchResults.results[0];
+        scanId = recentResult.task.uuid;
+        scanUrl = recentResult.result;
+        isRecentScan = true;
+
+        Sentry.logger.info("Using recent scan found via search", {
+          scanId,
+          scanTime: recentResult.task.time,
+          age: Date.now() - new Date(recentResult.task.time).getTime(),
+          malicious: recentResult.verdicts.malicious,
+        });
+      } else {
+        // No recent scan found, submit a new one
+        Sentry.logger.info("No recent scan found, submitting new scan", {
+          url: normalizedUrl,
+        });
+
+        const submission = await client.submitScan({
+          url: normalizedUrl,
+          visibility,
+          screenshotsResolutions: screenshotResolutions,
+          customHeaders,
+        });
+
+        // Handle both new scan and recently scanned responses
+        // Check if this is a RecentScanResponse (409) by checking for the specific structure
+        if (
+          "result" in submission &&
+          typeof (submission as any).result === "object" &&
+          "tasks" in (submission as any).result
+        ) {
+          // Recently scanned - extract existing scan UUID
+          const recentScan = submission as RecentScanResponse;
+          scanId = recentScan.result.tasks[0].uuid;
+          scanUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/urlscanner/v2/result/${scanId}`;
+          isRecentScan = true;
+
+          Sentry.logger.info("Using recent scan from API 409 response", {
+            scanId,
+            message: recentScan.message,
+          });
+        } else {
+          // New scan created
+          const newScan = submission as ScanSubmissionResponse;
+          scanId = newScan.uuid;
+          scanUrl = newScan.api;
+
+          Sentry.logger.info("New scan submitted", {
+            scanId,
+            message: newScan.message,
+          });
+        }
+      }
+    } catch (searchError) {
+      Sentry.logger.warn("Search failed, falling back to direct submission", {
+        error:
+          searchError instanceof Error ? searchError.message : "Unknown error",
+        url: normalizedUrl,
+      });
+
+      // Search failed, fall back to direct submission
+      const submission = await client.submitScan({
+        url: normalizedUrl,
+        visibility,
+        screenshotsResolutions: screenshotResolutions,
+        customHeaders,
+      });
+
+      // Handle response as before
+      if (
+        "result" in submission &&
+        typeof (submission as any).result === "object" &&
+        "tasks" in (submission as any).result
+      ) {
+        const recentScan = submission as RecentScanResponse;
+        scanId = recentScan.result.tasks[0].uuid;
+        scanUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/urlscanner/v2/result/${scanId}`;
+        isRecentScan = true;
+
+        Sentry.logger.info("Fallback got recent scan (409)", { scanId });
+      } else {
+        const newScan = submission as ScanSubmissionResponse;
+        scanId = newScan.uuid;
+        scanUrl = newScan.api;
+
+        Sentry.logger.info("Fallback created new scan", { scanId });
+      }
     }
 
+    // Smart result fetching: always try to get results intelligently
+    let result: ScanResult | undefined;
+
+    try {
+      result = await client.getScanResult(scanId);
+
+      if (result?.task?.success === true) {
+        Sentry.logger.info("Scan completed immediately", {
+          scanId,
+          malicious: result.verdicts?.overall?.malicious,
+        });
+      } else {
+        // Not complete yet, start polling
+        Sentry.logger.debug("Scan incomplete, starting polling", {
+          scanId,
+          success: result?.task?.success,
+        });
+        result = await client.waitForScanCompletion(scanId);
+      }
+    } catch (error) {
+      // If 404 or similar, start polling (scan not ready yet)
+      if (
+        error instanceof Error &&
+        (error.message.includes("404") ||
+          error.message.includes("not found") ||
+          error.message.includes("not ready"))
+      ) {
+        Sentry.logger.debug("Scan not ready, starting polling", { scanId });
+        result = await client.waitForScanCompletion(scanId);
+      } else {
+        throw error;
+      }
+    }
+
+    // Determine status based on scan results
     const status: ScanStatus =
-      result?.task.success === true
+      result?.task?.success === true
         ? "finished"
-        : result?.task.success === false
+        : result?.task?.success === false
           ? "failed"
           : "queued";
 
+    // Generate compact summary without the massive full result
+    const summary = result ? generateComprehensiveSummary(result) : undefined;
+
     const output: CloudflareScannerToolOutput = {
-      scanId: submission.uuid,
-      scanUrl: submission.api,
+      scanId,
+      scanUrl,
       status,
-      result,
-      summary: result ? generateComprehensiveSummary(result) : undefined,
+      // Remove the full result to avoid context length issues
+      result: undefined,
+      summary: summary
+        ? {
+            ...summary,
+            isRecentScan,
+          }
+        : undefined,
     };
 
     Sentry.logger.info("Cloudflare URL Scanner analysis completed", {
       url: normalizedUrl,
-      scanId: submission.uuid,
+      scanId,
       status: output.status,
+      isRecentScan,
       malicious: result?.verdicts?.overall?.malicious,
-      hasVerdicts: result?.verdicts?.overall?.hasVerdicts,
-      categories: result?.verdicts?.overall?.categories,
-      hasResult: !!result,
-      reportURL: result?.task?.reportURL,
-      screenshotURL: result?.task?.screenshotURL,
-      domain: result?.page?.domain,
-      country: result?.page?.country,
-      technologies: result?.meta?.processors?.wappa?.data?.length || 0,
-      success: result?.task?.success,
+      riskLevel: output.summary?.riskLevel,
+      securityScore: output.summary?.securityScore,
+      threatCount: output.summary?.threats?.length || 0,
+      techCount: output.summary?.technologies?.length || 0,
     });
 
     return output;
   } catch (error) {
-    Sentry.logger.error("Cloudflare URL Scanner analysis failed", {
-      url: normalizedUrl,
-      visibility,
-      error: error instanceof Error ? error.message : "Unknown error",
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+
+    Sentry.captureException(error, {
+      tags: {
+        component: "cloudflare-scanner",
+        operation: "runCloudflareUrlScan",
+      },
+      extra: {
+        url: normalizedUrl,
+        visibility,
+        hasCustomHeaders: !!customHeaders,
+      },
     });
-    throw new Error(
-      `Cloudflare URL Scanner analysis failed: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`,
-    );
+
+    throw new Error(`Cloudflare URL Scanner analysis failed: ${errorMessage}`);
   }
 }
 
@@ -366,7 +601,7 @@ async function searchCloudflareScans(
   const client = new CloudflareScannerClient(accountId, apiToken);
 
   try {
-    Sentry.logger.info("Searching Cloudflare URL Scanner results", {
+    Sentry.logger.info("Starting Cloudflare URL Scanner search", {
       query,
       limit,
       offset,
@@ -376,40 +611,43 @@ async function searchCloudflareScans(
 
     Sentry.logger.info("Cloudflare URL Scanner search completed", {
       query,
-      resultCount: results.results?.length || 0,
+      resultCount: results.results.length,
+      maliciousCount: results.results.filter((r) => r.verdicts.malicious)
+        .length,
     });
 
     return results;
   } catch (error) {
-    Sentry.logger.error("Cloudflare URL Scanner search failed", {
-      query,
-      error: error instanceof Error ? error.message : "Unknown error",
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+
+    Sentry.captureException(error, {
+      tags: {
+        component: "cloudflare-scanner",
+        operation: "searchCloudflareScans",
+      },
+      extra: { query, limit, offset },
     });
-    throw new Error(
-      `Cloudflare URL Scanner search failed: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`,
-    );
+
+    throw new Error(`Cloudflare URL Scanner search failed: ${errorMessage}`);
   }
 }
 
 export const cloudflareUrlScannerTool = tool({
   description:
-    "Analyze URLs for security threats, malware, and phishing using Cloudflare's URL Scanner. Provides detailed information about the website including screenshots, network requests, technologies used, domain reputation, and security verdicts. Can detect malicious content, phishing attempts, and provide comprehensive security analysis.",
+    "Analyze URLs for security threats, malware, and phishing using Cloudflare's URL Scanner. Intelligently handles scan submission - uses existing recent scans when available or creates new ones. Automatically waits for completion and provides comprehensive security analysis including threats, network behavior, technology stack, and security scores.",
   inputSchema: cloudflareScantoolInputSchema,
   execute: async ({
     url,
     visibility,
     screenshotResolutions,
     customHeaders,
-    waitForResults,
   }) => {
     return await runCloudflareUrlScan(
       url,
       visibility,
       screenshotResolutions,
       customHeaders,
-      waitForResults,
     );
   },
 });

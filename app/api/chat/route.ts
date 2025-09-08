@@ -91,6 +91,7 @@ When analyzing website security or investigating threats:
 - **Malicious Content:** Check the malicious boolean for immediate threat status
 - **Network Security:** Analyze totalRequests, thirdPartyRequests, httpRequests vs httpsRequests ratios
 - **Technology Stack:** Review detected technologies for known vulnerabilities or suspicious patterns
+- **Recent Scans:** If isRecentScan is true, inform the user that results are from a recent scan rather than a new analysis
 
 ### Threat Investigation (searchSecurityScans):
 - Use to find similar threats, investigate domain history, or check for related malicious activities
