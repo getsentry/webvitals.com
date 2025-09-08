@@ -1,35 +1,26 @@
 import { openai } from "@ai-sdk/openai";
-import * as Sentry from "@sentry/astro";
+import * as Sentry from "@sentry/nextjs";
 import { convertToModelMessages, stepCountIs, streamText } from "ai";
-import type { APIRoute } from "astro";
 import {
   cloudflareSearchTool,
   cloudflareUrlScannerTool,
 } from "@/tools/cloudflare-scanner-tool";
 import { pageSpeedTool } from "@/tools/pagespeed-tool";
 
-export const POST: APIRoute = async ({ request }) => {
+export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { messages, pageSpeedConfig } = body;
 
-    // Set process.env for AI SDK compatibility
-    if (import.meta.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY) {
-      process.env.OPENAI_API_KEY = import.meta.env.OPENAI_API_KEY;
-    }
-
     if (!messages || messages.length === 0) {
-      return new Response(JSON.stringify({ error: "No messages provided" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return Response.json({ error: "No messages provided" }, { status: 400 });
     }
 
     Sentry.logger.info("Chat request received", {
       messageCount: messages.length,
       hasPageSpeedConfig: !!pageSpeedConfig,
       strategy: pageSpeedConfig?.strategy,
-      categories: pageSpeedConfig?.categories
+      categories: pageSpeedConfig?.categories,
     });
 
     const modelMessages = convertToModelMessages(messages);
@@ -40,7 +31,7 @@ export const POST: APIRoute = async ({ request }) => {
       tools: {
         analyzePageSpeed: pageSpeedTool,
         scanUrlSecurity: cloudflareUrlScannerTool,
-        searchSecurityScans: cloudflareSearchTool
+        searchSecurityScans: cloudflareSearchTool,
       },
       stopWhen: stepCountIs(2),
       experimental_telemetry: {
@@ -140,15 +131,12 @@ Configuration: ${JSON.stringify(pageSpeedConfig || {})}`,
       },
     });
 
-    return new Response(
-      JSON.stringify({
+    return Response.json(
+      {
         error: "Failed to process chat request",
         details: error instanceof Error ? error.message : "Unknown error",
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
+      },
+      { status: 500 }
     );
   }
-};
+}

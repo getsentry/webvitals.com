@@ -1,7 +1,7 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import * as Sentry from "@sentry/astro";
+import * as Sentry from "@sentry/nextjs";
 import { AnimatePresence, motion } from "motion/react";
 import type { PageSpeedConfig } from "@/types/pagespeed";
 import Background from "./Background";

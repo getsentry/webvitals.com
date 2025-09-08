@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/astro";
+import * as Sentry from "@sentry/nextjs";
 import { tool } from "ai";
 import { z } from "zod";
 import type {
@@ -103,7 +103,7 @@ async function runPageSpeedAnalysis(
       .map((cat) => `category=${cat}`)
       .join("&");
 
-    const apiKey = import.meta.env.GOOGLE_API_KEY;
+    const apiKey = process.env.GOOGLE_API_KEY;
 
     if (!apiKey) {
       throw new Error("Google API key is required for PageSpeed Insights API");

@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/astro";
+import * as Sentry from "@sentry/nextjs";
 import { tool } from "ai";
 import { z } from "zod";
 import type {
@@ -187,8 +187,8 @@ async function runCloudflareUrlScan(
 ): Promise<CloudflareScannerToolOutput> {
   const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
 
-  const accountId = import.meta.env.CLOUDFLARE_ACCOUNT_ID;
-  const apiToken = import.meta.env.CLOUDFLARE_API_TOKEN;
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN;
 
   if (!accountId || !apiToken) {
     throw new Error(
@@ -260,8 +260,8 @@ async function searchCloudflareScans(
   limit = 20,
   offset = 0
 ): Promise<ScanSearchResponse> {
-  const accountId = import.meta.env.CLOUDFLARE_ACCOUNT_ID;
-  const apiToken = import.meta.env.CLOUDFLARE_API_TOKEN;
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN;
 
   if (!accountId || !apiToken) {
     throw new Error(
