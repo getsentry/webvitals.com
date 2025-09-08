@@ -110,9 +110,10 @@ export function calculateSecurityScore(result: ScanResult): number {
 
   // Major deductions for confirmed threats
   if (verdicts.overall?.malicious) score -= 60;
-  if (verdicts.malware?.detected) score -= 30;
-  if (verdicts.phishing?.detected) score -= 25;
-  if (verdicts.spam?.detected) score -= 15;
+  // Note: The actual API doesn't provide separate malware/phishing/spam verdicts in the current structure
+  // if (verdicts.malware?.detected) score -= 30;
+  // if (verdicts.phishing?.detected) score -= 25;
+  // if (verdicts.spam?.detected) score -= 15;
 
   // Minor deductions for risk indicators
   const categories = verdicts.overall?.categories || [];
@@ -120,21 +121,38 @@ export function calculateSecurityScore(result: ScanResult): number {
 
   // Deductions for suspicious network behavior
   const requests = result.data?.requests || [];
-  const uniqueDomains = new Set(requests.map((r) => r.hostname)).size;
+  const requestUrls = requests
+    .flatMap((req) => [
+      req.request?.request?.url,
+      ...(req.requests?.map((r) => r.request?.url) || []),
+    ])
+    .filter(Boolean);
+
+  const domains = new Set(
+    requestUrls
+      .map((url) => {
+        try {
+          return new URL(url!).hostname;
+        } catch {
+          return null;
+        }
+      })
+      .filter((domain): domain is string => Boolean(domain)),
+  );
+
   const thirdPartyRatio =
-    uniqueDomains > 1 ? (uniqueDomains - 1) / uniqueDomains : 0;
+    domains.size > 1 ? (domains.size - 1) / domains.size : 0;
 
   if (thirdPartyRatio > 0.8) score -= 10; // Too many third parties
-  if (requests.some((r) => !r.url.startsWith("https:"))) score -= 5; // Mixed content
+  if (requestUrls.some((url: any) => url && !url.startsWith("https:")))
+    score -= 5; // Mixed content
 
   // Positive points for security indicators
-  const hasCSP = result.data?.requests?.some(
-    (r) =>
-      r.url.includes("content-security-policy") ||
-      Object.keys(result.page || {}).some((k) =>
-        k.toLowerCase().includes("csp"),
-      ),
-  );
+  const hasCSP =
+    requestUrls.some(
+      (url: any) => url && url.includes("content-security-policy"),
+    ) ||
+    Object.keys(result.page || {}).some((k) => k.toLowerCase().includes("csp"));
   if (hasCSP) score += 5;
 
   const hasHTTPS = result.page?.url?.startsWith("https:");
@@ -154,32 +172,62 @@ export function generateSecuritySummary(result: ScanResult): SecuritySummary {
   const threats: string[] = [];
   const recommendations: string[] = [];
 
-  if (verdicts.malware?.detected) {
-    threats.push("Malware detected");
+  // Note: Current API structure only provides overall malicious verdict
+  // if (verdicts.malware?.detected) {
+  //   threats.push("Malware detected");
+  //   recommendations.push("Do not visit or interact with this site");
+  // }
+
+  // if (verdicts.phishing?.detected) {
+  //   threats.push("Phishing attempt identified");
+  //   recommendations.push("Do not enter personal information on this site");
+  // }
+
+  // if (verdicts.spam?.detected) {
+  //   threats.push("Spam content identified");
+  //   recommendations.push("Be cautious of promotional content");
+  // }
+
+  // Check the overall malicious verdict and categories
+  if (verdicts.overall?.malicious) {
+    threats.push("Site flagged as malicious");
     recommendations.push("Do not visit or interact with this site");
   }
 
-  if (verdicts.phishing?.detected) {
-    threats.push("Phishing attempt identified");
-    recommendations.push("Do not enter personal information on this site");
-  }
-
-  if (verdicts.spam?.detected) {
-    threats.push("Spam content identified");
-    recommendations.push("Be cautious of promotional content");
-  }
+  // Check for specific categories that might indicate threats
+  const categories = verdicts.overall?.categories || [];
+  categories.forEach((category: string) => {
+    threats.push(`Flagged category: ${category}`);
+  });
 
   // Check for other risk indicators
   const requests = result.data?.requests || [];
-  const hasHTTP = requests.some(
-    (r) => r.url.startsWith("http:") && !r.url.startsWith("https:"),
+  const requestUrls = requests
+    .flatMap((req) => [
+      req.request?.request?.url,
+      ...(req.requests?.map((r) => r.request?.url) || []),
+    ])
+    .filter(Boolean);
+
+  const hasHTTP = requestUrls.some(
+    (url: any) => url && url.startsWith("http:") && !url.startsWith("https:"),
   );
   if (hasHTTP) {
     threats.push("Mixed HTTP/HTTPS content");
     recommendations.push("Site uses insecure connections");
   }
 
-  const uniqueDomains = new Set(requests.map((r) => r.hostname)).size;
+  const uniqueDomains = new Set(
+    requestUrls
+      .map((url: any) => {
+        try {
+          return new URL(url).hostname;
+        } catch {
+          return null;
+        }
+      })
+      .filter((domain): domain is string => Boolean(domain)),
+  ).size;
   if (uniqueDomains > 20) {
     threats.push("Excessive third-party connections");
     recommendations.push("Site connects to many external domains");
@@ -209,8 +257,13 @@ export function getScanOverview(result: ScanResult): ScanOverview {
     country: result.page?.country || "Unknown",
     server: result.page?.server || "Unknown",
     scanTime: result.task.time,
-    status: result.task.status,
-    hasScreenshot: !!result.page?.screenshot?.hash,
+    status:
+      result.task.success === true
+        ? "finished"
+        : result.task.success === false
+          ? "failed"
+          : "unknown",
+    hasScreenshot: !!result.page?.screenshot?.dhash,
   };
 }
 
@@ -219,44 +272,78 @@ export function getScanOverview(result: ScanResult): ScanOverview {
  */
 export function analyzeNetworkRequests(result: ScanResult): NetworkSummary {
   const requests = result.data?.requests || [];
-  const domains = new Set(requests.map((r) => r.hostname));
+  const requestUrls = requests
+    .flatMap((req) => [
+      req.request?.request?.url,
+      ...(req.requests?.map((r) => r.request?.url) || []),
+    ])
+    .filter(Boolean);
+
+  const domains = new Set(
+    requestUrls
+      .map((url: any) => {
+        try {
+          return new URL(url).hostname;
+        } catch {
+          return null;
+        }
+      })
+      .filter((domain): domain is string => Boolean(domain)),
+  );
+
   const ips = new Set(result.lists?.ips || []);
 
   const baseDomain = result.page?.domain || new URL(result.task.url).hostname;
-  const thirdPartyRequests = requests.filter((r) => r.hostname !== baseDomain);
-
-  const httpRequests = requests.filter((r) => r.url.startsWith("http:"));
-  const httpsRequests = requests.filter((r) => r.url.startsWith("https:"));
-
-  // Identify suspicious domains (basic heuristics)
-  const suspiciousDomains = Array.from(domains).filter((domain) => {
-    return (
-      domain.includes("bit.ly") ||
-      domain.includes("tinyurl") ||
-      domain.includes("t.co") ||
-      domain.split(".").length > 4 || // Very deep subdomains
-      /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(domain) // IP addresses
-    );
+  const thirdPartyUrls = requestUrls.filter((url: any) => {
+    try {
+      return new URL(url).hostname !== baseDomain;
+    } catch {
+      return false;
+    }
   });
 
-  // Find largest requests
+  const httpRequests = requestUrls.filter(
+    (url: any) => url && url.startsWith("http:"),
+  );
+  const httpsRequests = requestUrls.filter(
+    (url: any) => url && url.startsWith("https:"),
+  );
+
+  // Identify suspicious domains (basic heuristics)
+  const suspiciousDomains = Array.from(domains).filter(
+    (domain): domain is string => {
+      if (!domain) return false;
+      return (
+        domain.includes("bit.ly") ||
+        domain.includes("tinyurl") ||
+        domain.includes("t.co") ||
+        domain.split(".").length > 4 || // Very deep subdomains
+        /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(domain) // IP addresses
+      );
+    },
+  );
+
+  // Find largest requests from response data
   const largestRequests = requests
-    .filter((r) => r.size > 0)
-    .sort((a, b) => b.size - a.size)
+    .filter((req) => req.response?.size && req.response.size > 0)
+    .sort((a, b) => (b.response?.size || 0) - (a.response?.size || 0))
     .slice(0, 5)
-    .map((r) => ({
-      url: r.url.length > 50 ? `${r.url.substring(0, 50)}...` : r.url,
-      size: r.size,
-      type: r.type,
+    .map((req) => ({
+      url:
+        req.request?.request?.url && req.request.request.url.length > 50
+          ? `${req.request.request.url.substring(0, 50)}...`
+          : req.request?.request?.url || "Unknown",
+      size: req.response?.size || 0,
+      type: req.response?.type || "unknown",
     }));
 
   return {
-    totalRequests: requests.length,
+    totalRequests: requestUrls.length,
     uniqueDomains: domains.size,
     uniqueIps: ips.size,
     httpRequests: httpRequests.length,
     httpsRequests: httpsRequests.length,
-    thirdPartyRequests: thirdPartyRequests.length,
+    thirdPartyRequests: thirdPartyUrls.length,
     suspiciousDomains,
     largestRequests,
   };
@@ -266,7 +353,7 @@ export function analyzeNetworkRequests(result: ScanResult): NetworkSummary {
  * Extract and categorize detected technologies
  */
 export function extractTechStack(result: ScanResult): TechStackSummary {
-  const technologies = result.meta?.processors?.wappa || [];
+  const technologies = (result.meta?.processors?.wappa as any)?.data || [];
 
   const categorized: TechStackSummary = {
     analytics: [],
@@ -276,29 +363,38 @@ export function extractTechStack(result: ScanResult): TechStackSummary {
     other: [],
   };
 
-  technologies.forEach((tech) => {
-    const categories = tech.categories.map((c) => c.toLowerCase());
+  technologies.forEach((tech: any) => {
+    // In the official API, categories is an array of objects with name and priority
+    const categories = (tech.categories || []).map((c: any) =>
+      (typeof c === "string" ? c : c.name || "").toLowerCase(),
+    );
 
     if (categories.includes("web servers")) {
-      categorized.webServer = tech.name;
+      categorized.webServer = tech.app || tech.name;
     } else if (categories.includes("web frameworks")) {
-      categorized.framework = tech.name;
+      categorized.framework = tech.app || tech.name;
     } else if (categories.includes("cms")) {
-      categorized.cms = tech.name;
-    } else if (categories.some((c) => c.includes("analytics"))) {
-      categorized.analytics.push(tech.name);
+      categorized.cms = tech.app || tech.name;
+    } else if (categories.some((c: string) => c.includes("analytics"))) {
+      categorized.analytics.push(tech.app || tech.name);
     } else if (
       categories.some(
-        (c) => c.includes("javascript") || c.includes("libraries"),
+        (c: string) => c.includes("javascript") || c.includes("libraries"),
       )
     ) {
-      categorized.libraries.push(tech.name);
-    } else if (categories.some((c) => c.includes("security"))) {
-      categorized.security.push(tech.name);
-    } else if (categories.some((c) => c.includes("advertising"))) {
-      categorized.advertising.push(tech.name);
+      categorized.libraries.push(tech.app || tech.name);
+    } else if (categories.some((c: string) => c.includes("security"))) {
+      categorized.security.push(tech.app || tech.name);
+    } else if (categories.some((c: string) => c.includes("advertising"))) {
+      categorized.advertising.push(tech.app || tech.name);
     } else {
-      categorized.other.push(tech);
+      // Store the full tech object with app name as the primary identifier
+      categorized.other.push({
+        name: tech.app || tech.name,
+        categories: tech.categories,
+        confidence: tech.confidenceTotal,
+        website: tech.website,
+      } as DetectedTechnology);
     }
   });
 
@@ -332,16 +428,22 @@ export function formatSearchResults(results: ScanSearchResult[]): Array<{
   scanTime: string;
   malicious: boolean;
   country?: string;
-  rank?: string;
+  asn?: string;
+  ip?: string;
+  requests?: number;
+  dataLength?: number;
 }> {
   return results.map((result) => ({
     scanId: result.task.uuid,
     url: result.task.url,
-    domain: result.page.domain,
+    domain: new URL(result.page.url).hostname,
     scanTime: result.task.time,
-    malicious: result.verdicts?.overall?.malicious || false,
+    malicious: result.verdicts.malicious,
     country: result.page.country,
-    rank: result.meta?.processors?.radarRank?.bucket,
+    asn: result.page.asn,
+    ip: result.page.ip,
+    requests: result.stats.requests,
+    dataLength: result.stats.dataLength,
   }));
 }
 
@@ -373,16 +475,18 @@ export function buildDomainInvestigationQuery(domain: string): string {
 export function buildSimilarThreatsQuery(result: ScanResult): string {
   const queries: string[] = [];
 
-  if (result.page?.domStructHash) {
-    queries.push(`hash:${result.page.domStructHash}`);
+  // Use available screenshot hashes from the official API structure
+  if (result.page?.screenshot?.dhash) {
+    queries.push(`page.screenshot.dhash:${result.page.screenshot.dhash}`);
   }
 
-  if (result.page?.screenshot?.hash) {
-    queries.push(`page.screenshot.hash:${result.page.screenshot.hash}`);
+  if (result.page?.screenshot?.phash) {
+    queries.push(`page.screenshot.phash:${result.page.screenshot.phash}`);
   }
 
-  if (result.page?.favicon?.hash) {
-    queries.push(`page.favicon.hash:${result.page.favicon.hash}`);
+  // Use domain for similarity matching if no hash is available
+  if (result.page?.domain && queries.length === 0) {
+    queries.push(`page.domain:${result.page.domain}`);
   }
 
   return queries.join(" OR ");

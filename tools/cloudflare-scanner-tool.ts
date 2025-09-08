@@ -1,10 +1,19 @@
 import * as Sentry from "@sentry/nextjs";
 import { tool } from "ai";
 import { z } from "zod";
+import {
+  analyzeNetworkRequests,
+  calculateSecurityScore,
+  extractTechStack,
+  generateSecuritySummary,
+  getScanOverview,
+  getSecurityRiskLevel,
+} from "@/lib/cloudflare-scanner-utils";
 import type {
   CloudflareScannerToolOutput,
   ScanResult,
   ScanSearchResponse,
+  ScanStatus,
   ScanSubmissionResponse,
   ScanVisibility,
   ScreenshotResolution,
@@ -34,7 +43,7 @@ const cloudflareScantoolInputSchema = z.object({
   waitForResults: z
     .boolean()
     .optional()
-    .default(false)
+    .default(true)
     .describe("Whether to wait for scan completion and return results"),
 });
 
@@ -109,7 +118,11 @@ class CloudflareScannerClient {
   }
 
   async getScanResult(scanId: string): Promise<ScanResult> {
-    return this.makeRequest<ScanResult>(`/result/${scanId}`);
+    const response = await this.makeRequest<{ data: ScanResult }>(
+      `/result/${scanId}`,
+    );
+    // The API wraps the actual scan result in a 'data' property
+    return response.data;
   }
 
   async waitForScanCompletion(
@@ -122,12 +135,30 @@ class CloudflareScannerClient {
     while (Date.now() - startTime < maxWaitTime) {
       try {
         const result = await this.getScanResult(scanId);
-        if (result.task.status === "Finished") {
+        // The task object might not have status, check success flag instead
+        if (result.task.success === true) {
           return result;
+        } else if (result.task.success === false) {
+          throw new Error(`Scan ${scanId} failed`);
         }
+
+        Sentry.logger.debug("Scan still in progress", {
+          scanId,
+          success: result.task.success,
+          elapsedTime: Date.now() - startTime,
+        });
       } catch (error) {
-        if (error instanceof Error && error.message.includes("404")) {
+        if (
+          error instanceof Error &&
+          (error.message.includes("404") ||
+            error.message.includes("not found") ||
+            error.message.includes("not ready"))
+        ) {
           // Scan not ready yet, continue polling
+          Sentry.logger.debug("Scan not ready, continuing to poll", {
+            scanId,
+            elapsedTime: Date.now() - startTime,
+          });
         } else {
           throw error;
         }
@@ -178,12 +209,61 @@ class CloudflareScannerClient {
   }
 }
 
+/**
+ * Generate comprehensive summary for chat agent analysis
+ */
+function generateComprehensiveSummary(result: ScanResult) {
+  const overview = getScanOverview(result);
+  const security = generateSecuritySummary(result);
+  const network = analyzeNetworkRequests(result);
+  const techStack = extractTechStack(result);
+
+  return {
+    // Security Assessment
+    malicious: security.malicious,
+    hasVerdicts: result.verdicts?.overall?.hasVerdicts || false,
+    riskLevel: security.riskLevel,
+    securityScore: security.score,
+    threats: security.threats,
+
+    // Site Information
+    domain: overview.domain,
+    finalUrl: overview.finalUrl,
+    country: overview.country,
+    server: overview.server,
+    ip: result.page?.ip,
+
+    // Network Analysis
+    totalRequests: network.totalRequests,
+    uniqueDomains: network.uniqueDomains,
+    thirdPartyRequests: network.thirdPartyRequests,
+    httpRequests: network.httpRequests,
+    httpsRequests: network.httpsRequests,
+
+    // Technology Stack
+    technologies: {
+      detected:
+        result.meta?.processors?.wappa?.data?.map((tech: any) => tech.app) ||
+        [],
+      webServer: techStack.webServer,
+      framework: techStack.framework,
+      analytics: techStack.analytics,
+      security: techStack.security,
+    },
+
+    // Resources
+    reportUrl: result.task?.reportURL,
+    screenshotUrl: result.task?.screenshotURL,
+    hasScreenshot: overview.hasScreenshot,
+  };
+}
+
 async function runCloudflareUrlScan(
   url: string,
   visibility: ScanVisibility = DEFAULT_VISIBILITY,
   screenshotResolutions: ScreenshotResolution[] = DEFAULT_SCREENSHOT_RESOLUTIONS,
   customHeaders?: Record<string, string>,
-  waitForResults = false,
+  waitForResults = true,
 ): Promise<CloudflareScannerToolOutput> {
   const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
 
@@ -223,11 +303,19 @@ async function runCloudflareUrlScan(
       result = await client.waitForScanCompletion(submission.uuid);
     }
 
+    const status: ScanStatus =
+      result?.task.success === true
+        ? "finished"
+        : result?.task.success === false
+          ? "failed"
+          : "queued";
+
     const output: CloudflareScannerToolOutput = {
       scanId: submission.uuid,
       scanUrl: submission.api,
-      status: result?.task.status || "Queued",
+      status,
       result,
+      summary: result ? generateComprehensiveSummary(result) : undefined,
     };
 
     Sentry.logger.info("Cloudflare URL Scanner analysis completed", {
@@ -235,9 +323,15 @@ async function runCloudflareUrlScan(
       scanId: submission.uuid,
       status: output.status,
       malicious: result?.verdicts?.overall?.malicious,
-      phishingDetected: result?.verdicts?.phishing?.detected,
-      malwareDetected: result?.verdicts?.malware?.detected,
+      hasVerdicts: result?.verdicts?.overall?.hasVerdicts,
+      categories: result?.verdicts?.overall?.categories,
       hasResult: !!result,
+      reportURL: result?.task?.reportURL,
+      screenshotURL: result?.task?.screenshotURL,
+      domain: result?.page?.domain,
+      country: result?.page?.country,
+      technologies: result?.meta?.processors?.wappa?.data?.length || 0,
+      success: result?.task?.success,
     });
 
     return output;
@@ -282,8 +376,7 @@ async function searchCloudflareScans(
 
     Sentry.logger.info("Cloudflare URL Scanner search completed", {
       query,
-      resultCount: results.result?.search?.length || 0,
-      totalCount: results.result?.meta?.total || 0,
+      resultCount: results.results?.length || 0,
     });
 
     return results;

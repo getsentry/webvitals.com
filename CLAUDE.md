@@ -4,22 +4,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an Astro-based website with TailwindCSS and React integration, deployed on Vercel with Sentry monitoring. The project uses modern web development tools and follows component-based architecture.
+This is a Next.js-based website with TailwindCSS and React integration, deployed on Vercel with Sentry monitoring. The project uses modern web development tools and follows component-based architecture with App Router.
 
 ## Development Commands
 
 ```bash
-# Start development server
+# Start development server with Turbopack
 pnpm dev
 
-# Build for production
+# Build for production with Turbopack
 pnpm build
 
-# Preview production build locally
+# Start production server
+pnpm start
+
+# Preview production build locally (same as start)
 pnpm preview
 
+# Type checking
+pnpm check
+
 # Code formatting and linting
-pnpm format        # Check formatting with Biome
+pnpm format        # Format code with Biome
 pnpm format:fix    # Fix formatting issues
 pnpm lint          # Check for linting issues
 pnpm lint:fix      # Fix linting issues
@@ -30,44 +36,55 @@ pnpm lint:fix      # Fix linting issues
 ## Architecture and Structure
 
 ### Framework Stack
-- **Astro 5.x**: Meta-framework with SSG/SSR capabilities
+- **Next.js 15.5.2**: React meta-framework with App Router and Turbopack
 - **React 19**: Component library for interactive elements
-- **TailwindCSS 4.x**: Utility-first CSS framework
+- **TailwindCSS 4.x**: Utility-first CSS framework with PostCSS integration
 - **TypeScript**: Type safety with strict configuration
 - **Biome**: Code formatting and linting (replaces ESLint/Prettier)
 
 ### Key Integrations
-- **Vercel**: Deployment platform (`@astrojs/vercel` adapter)
-- **Sentry**: Error monitoring and performance tracking
+- **Vercel**: Deployment platform (native Next.js support)
+- **Sentry**: Error monitoring and performance tracking (`@sentry/nextjs`)
 - **shadcn/ui**: Component system with Radix UI primitives
+- **AI SDK**: OpenAI integration for intelligent web analysis
 
 ### Directory Structure
 ```
-src/
-├── components/        # Reusable components
-│   ├── ui/           # shadcn/ui components (React)
-│   └── *.astro       # Astro components
-├── layouts/          # Page layouts
-├── pages/            # File-based routing
-├── lib/              # Utility functions
-└── styles/           # Global CSS
+app/                   # Next.js App Router
+├── api/chat/         # API routes (App Router format)
+├── layout.tsx        # Root layout
+├── page.tsx          # Homepage
+└── globals.css       # Global styles
+
+components/           # Reusable React components
+├── ui/              # shadcn/ui components
+└── *.tsx            # Interactive components
+
+lib/                 # Utility functions
+tools/               # Analysis tools (PageSpeed, Cloudflare)
+types/               # TypeScript type definitions
+hooks/               # React hooks
 ```
 
 ### Component Architecture
-- **Astro Components**: Use `.astro` files for static/server-rendered components
-- **React Components**: Use `.tsx` files in `src/components/ui/` for interactive components
-- **Path Mapping**: `@/*` maps to `src/*` for clean imports
+- **Server Components**: Default components that render on the server
+- **Client Components**: Use `"use client"` directive for interactive components
+- **Path Mapping**: `@/*` maps to root directory for clean imports
 - **Styling**: Use `cn()` utility from `@/lib/utils` to merge Tailwind classes
+- **Theme System**: Uses `next-themes` with proper SSR hydration
 
 ### Configuration Files
 - **Biome**: Uses space indentation, double quotes, organizes imports automatically
-- **TypeScript**: Extends Astro's strict config with React JSX support  
-- **Astro**: Configured with React, Vercel adapter, and Sentry integration
+- **TypeScript**: Strict Next.js configuration with React JSX support
+- **Next.js**: Configured with Turbopack, external packages, and Sentry integration
+- **TailwindCSS**: PostCSS integration with utility-first approach
 - **shadcn/ui**: New York style, TypeScript, uses Lucide icons
 
 ### Sentry Integration
+- Next.js integration with `@sentry/nextjs`
 - Client-side monitoring with browser tracing and session replay
-- Server-side error tracking
+- Server-side error tracking with performance monitoring
+- AI SDK integration for agent monitoring
 - Source maps uploaded during build (requires `SENTRY_AUTH_TOKEN`)
 - Project: "webvitals", Org: "sergtech"
 
@@ -77,18 +94,27 @@ src/
 - Use space indentation (configured in Biome)
 - Double quotes for JavaScript/TypeScript
 - Imports are automatically organized by Biome
-- Follow Astro component conventions for static content
-- Use React components only when interactivity is needed
+- Follow Next.js conventions: Server Components by default, Client Components when needed
+- Use React Server Components for static content, Client Components for interactivity
 
 ### Component Guidelines
-- Place reusable UI components in `src/components/ui/`
+- Place reusable UI components in `components/ui/`
 - Use the `cn()` utility for conditional class merging
 - Follow shadcn/ui patterns for consistent styling
-- Leverage Astro's component slot system for content projection
+- Prefer Server Components unless interactivity is required
+- Use proper TypeScript types with Next.js conventions
 
 ### Environment Variables
-- `PUBLIC_SENTRY_DSN`: Client-side Sentry DSN
-- `SENTRY_AUTH_TOKEN`: Server-side token for source map uploads
+- `NEXT_PUBLIC_SENTRY_DSN`: Client-side Sentry DSN (public)
+- `SENTRY_AUTH_TOKEN`: Server-side token for source map uploads (private)
+- `OPENAI_API_KEY`: OpenAI API key for AI analysis (private)
+- `GOOGLE_API_KEY`: Google PageSpeed Insights API key (private)
+
+### API Routes
+- Use App Router format: `app/api/[route]/route.ts`
+- Export named functions: `GET`, `POST`, `PUT`, `DELETE`
+- Return `Response` objects or use Next.js response helpers
+- Handle errors with proper HTTP status codes
 
 ## Animations Guidelines
  

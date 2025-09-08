@@ -21,12 +21,13 @@ WebVitals.com transforms confusing performance metrics into clear, implementable
 
 ## Tech Stack
 
-- **Astro 5** - Fast static site generation with view transitions
-- **React 19** - Interactive dashboard components
-- **TailwindCSS 4** - Utility-first styling
-- **TypeScript** - Type-safe development
-- **Vercel** - Deployment and serverless functions
-- **Sentry** - Error monitoring and performance tracking
+- **Next.js 15** - React meta-framework with App Router and Turbopack
+- **React 19** - Interactive dashboard components with Server Components
+- **TailwindCSS 4** - Utility-first styling with PostCSS integration
+- **TypeScript** - Type-safe development with strict configuration
+- **Vercel** - Deployment platform with native Next.js support
+- **Sentry** - Error monitoring, performance tracking, and AI agent monitoring
+- **AI SDK** - OpenAI integration for intelligent web performance analysis
 
 ## Development
 
@@ -34,11 +35,17 @@ WebVitals.com transforms confusing performance metrics into clear, implementable
 # Install dependencies
 pnpm install
 
-# Start development server
+# Start development server with Turbopack
 pnpm dev
 
-# Build for production
+# Build for production with Turbopack
 pnpm build
+
+# Start production server
+pnpm start
+
+# Type checking
+pnpm check
 
 # Format code
 pnpm format:fix
@@ -50,16 +57,32 @@ pnpm lint:fix
 ## Project Structure
 
 ```
-src/
-├── components/           # Reusable UI components
-├── layouts/             # Page layouts with view transitions
-├── pages/               # File-based routing
-├── lib/                 # Utilities and services
-│   └── utils.ts         # Shared utilities
-└── styles/              # Global CSS
+app/                     # Next.js App Router
+├── api/chat/           # API routes for AI analysis
+├── layout.tsx          # Root layout with theme provider
+├── page.tsx            # Homepage
+└── globals.css         # Global styles
+
+components/              # Reusable UI components
+├── ui/                 # shadcn/ui component library
+├── HeroSection.tsx     # Main hero with analysis interface
+├── ChatInterface.tsx   # AI conversation interface
+└── ThemeProvider.tsx   # Next.js theme management
+
+lib/                     # Utilities and services
+├── utils.ts            # Shared utility functions
+└── cloudflare-scanner-utils.ts # Security analysis utilities
+
+tools/                   # Analysis tools
+├── pagespeed-tool.ts   # Google PageSpeed Insights integration
+└── cloudflare-scanner-tool.ts # Security scanning tool
+
+types/                   # TypeScript definitions
+├── pagespeed.ts        # PageSpeed Insights types
+└── cloudflare-scanner.ts # Security analysis types
 
 PRODUCT_SPEC.md          # Detailed product specification
-CLAUDE.md               # Development guidelines
+CLAUDE.md               # Development guidelines for Next.js
 ```
 
 ---

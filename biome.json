@@ -8,6 +8,18 @@
     "indentStyle": "space"
   },
   "linter": {
+    "rules": {
+      "suspicious": {
+        "noUnknownAtRules": "off",
+        "noArrayIndexKey": "off"
+      },
+      "a11y": {
+        "recommended": false
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "off"
+      }
+    },
     "domains": {
       "next": "recommended",
       "react": "recommended"
