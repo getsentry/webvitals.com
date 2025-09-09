@@ -102,25 +102,34 @@ class CloudflareScannerClient {
         `Cloudflare API error ${response.status}: ${errorData.message || response.statusText}`,
       );
 
-      Sentry.captureException(error, {
-        tags: {
-          component: "cloudflare-scanner",
-          api_endpoint: endpoint,
-          api_status: response.status.toString(),
-        },
-        contexts: {
-          api_request: {
-            method,
-            endpoint,
-            url,
+      // Don't capture Sentry error for 404 "Scan is not finished yet" - this is expected behavior
+      const isScanNotFinished =
+        response.status === 404 &&
+        (errorData.message?.includes("Scan is not finished yet") ||
+          errorData.message?.includes("not found") ||
+          errorData.message?.includes("not ready"));
+
+      if (!isScanNotFinished) {
+        Sentry.captureException(error, {
+          tags: {
+            component: "cloudflare-scanner",
+            api_endpoint: endpoint,
+            api_status: response.status.toString(),
           },
-          api_response: {
-            status: response.status,
-            statusText: response.statusText,
-            error_data: errorData,
+          contexts: {
+            api_request: {
+              method,
+              endpoint,
+              url,
+            },
+            api_response: {
+              status: response.status,
+              statusText: response.statusText,
+              error_data: errorData,
+            },
           },
-        },
-      });
+        });
+      }
 
       throw error;
     }
