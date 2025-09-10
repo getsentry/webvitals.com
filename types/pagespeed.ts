@@ -102,13 +102,75 @@ export interface PageSpeedToolInput {
   categories: PageSpeedCategory[];
 }
 
+// Visualization interfaces for UI components
+export interface LighthouseVisualizationMetric {
+  key: string;
+  label: string;
+  value: number;
+  weight: number;
+  score: number;
+}
+
+export interface LighthouseScoreVisualization {
+  overallScore: number;
+  metrics: LighthouseVisualizationMetric[];
+}
+
+export interface RealUserMetricVisualization {
+  key: string;
+  label: string;
+  value: number | string;
+  percentile?: number;
+  category: PerformanceCategory;
+}
+
+export interface RealUserMetricsVisualization {
+  fieldData: RealUserMetricVisualization[] | null;
+  originData: RealUserMetricVisualization[] | null;
+}
+
+export interface PageSpeedVisualizationData {
+  lighthouseScoreRing: LighthouseScoreVisualization | null;
+  realUserMetrics: RealUserMetricsVisualization;
+}
+
+export interface PageSpeedOpportunity {
+  title: string;
+  description: string;
+  score: number;
+  displayValue?: string;
+  id: string;
+}
+
+export interface PageSpeedDiagnostic {
+  title: string;
+  description: string;
+  displayValue?: string;
+  id: string;
+}
+
+export interface PageSpeedInsights {
+  performanceScore: number;
+  opportunities: PageSpeedOpportunity[];
+  diagnostics: PageSpeedDiagnostic[];
+  coreWebVitals: {
+    fieldData: {
+      overallCategory: PerformanceCategory;
+      metrics: number;
+    } | null;
+    originData: {
+      overallCategory: PerformanceCategory;
+      metrics: number;
+    } | null;
+  };
+}
+
 export interface PageSpeedToolOutput {
   url: string;
   strategy: PageSpeedStrategy;
   timestamp: string;
-  fieldData: FieldData | null;
-  originData: OriginData | null;
-  labData: LabData | null;
   captchaResult: string;
   version: string;
+  insights: PageSpeedInsights;
+  visualizations: PageSpeedVisualizationData;
 }

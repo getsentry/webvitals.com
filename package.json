@@ -7,8 +7,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
+    "check-types": "tsc --noEmit",
     "lint": "biome check",
-    "format": "biome format --write"
+    "lint:fix": "biome check --write",
+    "format": "biome format --write ."
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.24",
