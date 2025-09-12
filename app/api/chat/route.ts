@@ -1,6 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import * as Sentry from "@sentry/nextjs";
-import { convertToModelMessages, streamText } from "ai";
+import { convertToModelMessages, streamText, stepCountIs } from "ai";
 import { webAnalysisSystemPrompt } from "@/lib/system-prompts";
 import {
   cloudflareSearchTool,
@@ -29,6 +29,7 @@ export async function POST(request: Request) {
     const result = streamText({
       model: openai("gpt-4o"),
       messages: modelMessages,
+      stopWhen: stepCountIs(5),
       tools: {
         analyzePageSpeed: pageSpeedTool,
         scanUrlSecurity: cloudflareUrlScannerTool,
