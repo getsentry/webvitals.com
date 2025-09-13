@@ -45,6 +45,7 @@
   --color-metric-cls: var(--metric-cls);
   --color-metric-fcp: var(--metric-fcp);
   --color-metric-ttfb: var(--metric-ttfb);
+  --color-metric-inp: var(--metric-inp);
   --color-metric-si: var(--metric-si);
   --color-metric-tbt: var(--metric-tbt);
 
@@ -82,6 +83,8 @@
   --metric-lcp: oklch(0.73 0.17 60);
   --metric-fcp: oklch(0.75 0.13 162);
   --metric-cls: oklch(0.7 0.2 340);
+  --metric-ttfb: oklch(0.6 0.15 200);
+  --metric-inp: oklch(0.68 0.18 300);
   --metric-si: oklch(0.55 0.25 269);
   --metric-tbt: oklch(0.65 0.18 225);
 
@@ -127,6 +130,8 @@
   --metric-lcp: oklch(0.73 0.17 60);
   --metric-fcp: oklch(0.75 0.13 162);
   --metric-cls: oklch(0.7 0.2 340);
+  --metric-ttfb: oklch(0.6 0.15 200);
+  --metric-inp: oklch(0.68 0.18 300);
   --metric-si: oklch(0.55 0.25 269);
   --metric-tbt: oklch(0.65 0.18 225);
 

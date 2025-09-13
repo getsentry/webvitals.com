@@ -6,18 +6,18 @@
 
 WebVitals.com transforms confusing performance metrics into clear, implementable action items. Unlike traditional tools that just give you a score, we provide:
 
-- **Tech-aware recommendations** tailored to your framework (React, Next.js, Vue, etc.)
-- **AI-powered insights** that understand your specific site architecture
-- **Implementation guides** with step-by-step code examples
-- **Sentry integration** to bridge synthetic analysis with real user monitoring
+- **Real-world performance data** from Chrome User Experience Report (CrUX)
+- **AI-powered insights** with contextual analysis of your site
+- **Technology detection** to identify your framework and hosting setup
+- **Sentry-style scoring** for actionable performance metrics
 
 ## Key Features
 
-🎯 **Contextual Analysis** - Recommendations based on your detected tech stack  
-🤖 **AI-Powered Suggestions** - Smart insights beyond generic advice  
-📊 **Real User Monitoring** - Seamless Sentry integration for ongoing performance tracking  
-📚 **Educational Content** - Learn why optimizations matter and how to implement them  
-⚡ **Actionable Results** - Clear priorities with effort vs. impact scoring
+🎯 **Real User Data** - Chrome UX Report data from actual visitors  
+🤖 **AI-Powered Analysis** - Intelligent insights tailored to your site  
+📊 **Sentry-Style Scoring** - Performance metrics with actionable thresholds  
+🔧 **Technology Detection** - Automatic framework and platform identification  
+⚡ **Streamlined Experience** - Focus on what matters most for your site
 
 ## Tech Stack
 
@@ -67,19 +67,24 @@ components/              # Reusable UI components
 ├── ui/                 # shadcn/ui component library
 ├── HeroSection.tsx     # Main hero with analysis interface
 ├── ChatInterface.tsx   # AI conversation interface
+├── MessageRenderer.tsx # AI tool output rendering
 └── ThemeProvider.tsx   # Next.js theme management
 
 lib/                     # Utilities and services
 ├── utils.ts            # Shared utility functions
-└── cloudflare-scanner-utils.ts # Security analysis utilities
+└── system-prompts.ts   # AI system prompts
 
-tools/                   # Analysis tools
-├── pagespeed-tool.ts   # Google PageSpeed Insights integration
-└── cloudflare-scanner-tool.ts # Security scanning tool
+tools/                   # Analysis tools (simplified to 2 core tools)
+├── real-world-performance-tool.ts # Chrome UX Report data with Sentry scoring
+└── tech-detection-tool.ts # Cloudflare-based technology detection
 
 types/                   # TypeScript definitions
-├── pagespeed.ts        # PageSpeed Insights types
-└── cloudflare-scanner.ts # Security analysis types
+├── real-world-performance.ts # CrUX data and Sentry scoring types
+└── cloudflare-tech.ts  # Technology detection types
+
+hooks/                   # React hooks
+├── use-mobile.ts       # Mobile detection hook
+└── useScrollFade.ts    # Scroll animation hook
 
 PRODUCT_SPEC.md          # Detailed product specification
 CLAUDE.md               # Development guidelines for Next.js

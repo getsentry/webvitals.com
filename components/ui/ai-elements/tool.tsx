@@ -37,9 +37,8 @@ export type ToolHeaderProps = {
 
 const getToolDisplayName = (type: string) => {
   const toolNames = {
-    "tool-analyzePageSpeed": "Analyzing page speed performance",
-    "tool-scanUrlSecurity": "Scanning for technologies and security concerns",
-    "tool-searchSecurityScans": "Searching security scans",
+    "tool-getRealWorldPerformance": "Analyzing real world performance",
+    "tool-detectTechnologies": "Identifying tech stack",
   } as const;
 
   return toolNames[type as keyof typeof toolNames] || type;
@@ -106,28 +105,22 @@ export type ToolInputProps = ComponentProps<"div"> & {
   input: ToolUIPart["input"];
 };
 
-export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
-  <div className={cn("space-y-2 overflow-hidden p-4", className)} {...props}>
-    <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-      Parameters
-    </h4>
-    <div className="rounded-md bg-muted/50">
-      <pre className="text-xs overflow-auto p-4 font-mono">
-        {JSON.stringify(input, null, 2)}
-      </pre>
-    </div>
-  </div>
-);
+export const ToolInput = ({ className, input, ...props }: ToolInputProps) => {
+  // Don't render parameters section
+  return null;
+};
 
 export type ToolOutputProps = ComponentProps<"div"> & {
   output: ReactNode;
   errorText: ToolUIPart["errorText"];
+  rawOutput?: any;
 };
 
 export const ToolOutput = ({
   className,
   output,
   errorText,
+  rawOutput,
   ...props
 }: ToolOutputProps) => {
   if (!(output || errorText)) {
@@ -144,12 +137,22 @@ export const ToolOutput = ({
         </Alert>
       ) : (
         <>
-          <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-            Result
-          </h4>
-          <div className="overflow-x-auto rounded-md bg-muted/50 text-foreground text-xs [&_table]:w-full">
+          <div className="overflow-x-auto rounded-md bg-muted/30 text-foreground text-xs [&_table]:w-full">
             {output && <div>{output}</div>}
           </div>
+          
+          {rawOutput && (
+            <details className="text-xs">
+              <summary className="cursor-pointer text-muted-foreground font-medium uppercase tracking-wide">
+                Debug Info
+              </summary>
+              <div className="mt-2 rounded-md bg-muted/50">
+                <pre className="text-xs overflow-auto p-4 font-mono">
+                  {JSON.stringify(rawOutput, null, 2)}
+                </pre>
+              </div>
+            </details>
+          )}
         </>
       )}
     </div>

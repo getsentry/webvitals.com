@@ -3,7 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import * as Sentry from "@sentry/nextjs";
 import { AnimatePresence, motion } from "motion/react";
-import type { PageSpeedConfig } from "@/types/pagespeed";
+import type { PerformanceConfig } from "@/types/performance-config";
 import Background from "./Background";
 import ChatInterface from "./ChatInterface";
 import HeroLanding from "./HeroLanding";
@@ -36,17 +36,16 @@ export default function HeroSection() {
     },
   });
 
-  const handlePageSpeedSubmit = async (
+  const handlePerformanceSubmit = async (
     domain: string,
-    config: PageSpeedConfig,
+    config: PerformanceConfig,
   ) => {
     Sentry.setTag("analysis.domain", domain);
-    Sentry.setTag("analysis.strategy", config.strategy);
+    Sentry.setTag("analysis.devices", config.devices.join(","));
 
-    Sentry.logger.info("PageSpeed analysis initiated", {
+    Sentry.logger.info("Performance analysis initiated", {
       domain,
-      strategy: config.strategy,
-      categories: config.categories,
+      devices: config.devices,
       timestamp: new Date().toISOString(),
     });
 
@@ -57,7 +56,7 @@ export default function HeroSection() {
       },
       {
         body: {
-          pageSpeedConfig: config,
+          performanceConfig: config,
         },
       },
     );
@@ -86,7 +85,7 @@ export default function HeroSection() {
               className="flex-1 flex flex-col items-center justify-center"
             >
               <HeroLanding
-                onSubmit={handlePageSpeedSubmit}
+                onSubmit={handlePerformanceSubmit}
                 disabled={status !== "ready"}
               />
             </motion.div>

@@ -4,8 +4,8 @@ import type { ChatStatus } from "ai";
 import {
   CheckIcon,
   ChevronDownIcon,
-  ListIcon,
   MonitorIcon,
+  SmartphoneIcon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useState } from "react";
@@ -37,15 +37,13 @@ import {
 import { useScrollFade } from "@/hooks/useScrollFade";
 import { cn } from "@/lib/utils";
 import type {
-  PageSpeedCategory,
-  PageSpeedConfig,
-  PageSpeedStrategy,
-} from "@/types/pagespeed";
+  DeviceType,
+  PerformanceConfig,
+} from "@/types/performance-config";
 import {
-  CATEGORY_LABELS,
-  DEFAULT_PAGESPEED_CONFIG,
-  STRATEGY_LABELS,
-} from "@/types/pagespeed";
+  DEVICE_LABELS,
+  DEFAULT_PERFORMANCE_CONFIG,
+} from "@/types/performance-config";
 
 const SUGGESTED_URLS = [
   "vercel.com",
@@ -67,7 +65,7 @@ const urlSchema = z
   );
 
 interface PageSpeedPromptInputProps {
-  onSubmit: (domain: string, config: PageSpeedConfig) => Promise<void>;
+  onSubmit: (domain: string, config: PerformanceConfig) => Promise<void>;
   disabled?: boolean;
   className?: string;
 }
@@ -79,10 +77,10 @@ export default function PageSpeedPromptInput({
 }: PageSpeedPromptInputProps) {
   const [domain, setDomain] = useState("");
   const [status, setStatus] = useState<ChatStatus>("ready");
-  const [config, setConfig] = useState<PageSpeedConfig>(
-    DEFAULT_PAGESPEED_CONFIG,
+  const [config, setConfig] = useState<PerformanceConfig>(
+    DEFAULT_PERFORMANCE_CONFIG,
   );
-  const [strategyPopoverOpen, setStrategyPopoverOpen] = useState(false);
+  const [devicesPopoverOpen, setDevicesPopoverOpen] = useState(false);
   const { scrollRef, showLeftFade, showRightFade } = useScrollFade(domain);
 
   // Validate URL using zod schema
@@ -102,11 +100,48 @@ export default function PageSpeedPromptInput({
     }
   };
 
-  const toggleCategory = (category: PageSpeedCategory) => {
-    const categories = config.categories.includes(category)
-      ? config.categories.filter((c) => c !== category)
-      : [...config.categories, category];
-    setConfig({ ...config, categories });
+  const toggleDevice = (device: DeviceType) => {
+    const devices = config.devices.includes(device)
+      ? config.devices.filter((d) => d !== device)
+      : [...config.devices, device];
+    
+    // Ensure at least one device is selected
+    if (devices.length === 0) return;
+    
+    setConfig({ ...config, devices });
+  };
+
+  const getDeviceIcons = () => {
+    const selectedDevices = config.devices;
+    if (selectedDevices.length === 2) {
+      return (
+        <>
+          <SmartphoneIcon size={16} />
+          <MonitorIcon size={16} />
+        </>
+      );
+    }
+    if (selectedDevices.includes("mobile")) {
+      return <SmartphoneIcon size={16} />;
+    }
+    if (selectedDevices.includes("desktop")) {
+      return <MonitorIcon size={16} />;
+    }
+    return <MonitorIcon size={16} />;
+  };
+
+  const getDevicesLabel = () => {
+    const selectedDevices = config.devices;
+    if (selectedDevices.length === 2) {
+      return "Both";
+    }
+    if (selectedDevices.includes("mobile")) {
+      return "Mobile";
+    }
+    if (selectedDevices.includes("desktop")) {
+      return "Desktop";
+    }
+    return "Desktop";
   };
 
   return (
@@ -123,90 +158,54 @@ export default function PageSpeedPromptInput({
         <PromptInputToolbar>
           <PromptInputTools>
             <Popover
-              open={strategyPopoverOpen}
-              onOpenChange={setStrategyPopoverOpen}
+              open={devicesPopoverOpen}
+              onOpenChange={setDevicesPopoverOpen}
             >
               <PopoverTrigger asChild>
                 <ComboboxTrigger className="sm:!min-w-0">
-                  <MonitorIcon size={16} className="sm:hidden" />
+                  <span className="flex items-center gap-1.5 sm:hidden">
+                    {getDeviceIcons()}
+                  </span>
                   <span className="hidden sm:flex items-center gap-1.5">
-                    <span>{STRATEGY_LABELS[config.strategy]}</span>
+                    {getDeviceIcons()}
+                    <span>{getDevicesLabel()}</span>
                   </span>
                   <ChevronDownIcon size={16} />
                 </ComboboxTrigger>
               </PopoverTrigger>
-              <PopoverContent className="w-32 p-0" align="start">
+              <PopoverContent className="w-40 p-0" align="start">
                 <Command>
                   <CommandList>
+                    <CommandEmpty>No devices found.</CommandEmpty>
                     <CommandGroup>
-                      {Object.entries(STRATEGY_LABELS).map(
-                        ([strategy, label]) => (
+                      {Object.entries(DEVICE_LABELS).map(
+                        ([device, label]) => (
                           <CommandItem
-                            key={strategy}
-                            value={strategy}
-                            onSelect={() => {
-                              setConfig({
-                                ...config,
-                                strategy: strategy as PageSpeedStrategy,
-                              });
-                              setStrategyPopoverOpen(false);
-                            }}
-                            className="cursor-pointer"
-                          >
-                            <CheckIcon
-                              className={cn(
-                                "mr-2 size-4",
-                                config.strategy === strategy
-                                  ? "opacity-100"
-                                  : "opacity-0",
-                              )}
-                            />
-                            {label}
-                          </CommandItem>
-                        ),
-                      )}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-
-            <Popover>
-              <PopoverTrigger asChild>
-                <ComboboxTrigger className="sm:!min-w-0">
-                  <ListIcon size={16} className="sm:hidden" />
-                  <span className="hidden sm:flex items-center gap-1.5">
-                    <span>{config.categories.length} Categories</span>
-                  </span>
-                  <ChevronDownIcon size={16} />
-                </ComboboxTrigger>
-              </PopoverTrigger>
-              <PopoverContent className="w-56 p-0" align="start">
-                <Command>
-                  <CommandList>
-                    <CommandEmpty>No categories found.</CommandEmpty>
-                    <CommandGroup>
-                      {Object.entries(CATEGORY_LABELS).map(
-                        ([category, label]) => (
-                          <CommandItem
-                            key={category}
-                            value={category}
+                            key={device}
+                            value={device}
                             onSelect={() =>
-                              toggleCategory(category as PageSpeedCategory)
+                              toggleDevice(device as DeviceType)
                             }
                             className="cursor-pointer"
                           >
                             <CheckIcon
                               className={cn(
                                 "mr-2 size-4",
-                                config.categories.includes(
-                                  category as PageSpeedCategory,
+                                config.devices.includes(
+                                  device as DeviceType,
                                 )
                                   ? "opacity-100"
                                   : "opacity-0",
                               )}
                             />
-                            {label}
+                            <span className="flex items-center gap-2">
+                              {device === "mobile" ? (
+                                <SmartphoneIcon size={16} />
+                              ) : (
+                                <MonitorIcon size={16} />
+                              )}
+                              {label}
+                            </span>
                           </CommandItem>
                         ),
                       )}
@@ -233,7 +232,7 @@ export default function PageSpeedPromptInput({
               exit={{ opacity: 0 }}
               transition={{
                 duration: 0.2,
-                ease: [0.25, 0.46, 0.45, 0.94], // ease-out-quad
+                ease: [0.25, 0.46, 0.45, 0.94],
               }}
               className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-background to-transparent pointer-events-none z-10"
             />
@@ -246,7 +245,7 @@ export default function PageSpeedPromptInput({
               exit={{ opacity: 0 }}
               transition={{
                 duration: 0.2,
-                ease: [0.25, 0.46, 0.45, 0.94], // ease-out-quad
+                ease: [0.25, 0.46, 0.45, 0.94],
               }}
               className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-background to-transparent pointer-events-none z-10"
             />

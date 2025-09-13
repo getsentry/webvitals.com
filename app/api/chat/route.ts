@@ -2,16 +2,13 @@ import { openai } from "@ai-sdk/openai";
 import * as Sentry from "@sentry/nextjs";
 import { convertToModelMessages, stepCountIs, streamText } from "ai";
 import { webAnalysisSystemPrompt } from "@/lib/system-prompts";
-import {
-  cloudflareSearchTool,
-  cloudflareUrlScannerTool,
-} from "@/tools/cloudflare-scanner-tool";
-import { pageSpeedTool } from "@/tools/pagespeed-tool";
+import { realWorldPerformanceTool } from "@/tools/real-world-performance-tool";
+import { techDetectionTool } from "@/tools/tech-detection-tool";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { messages, pageSpeedConfig } = body;
+    const { messages, performanceConfig } = body;
 
     if (!messages || messages.length === 0) {
       return Response.json({ error: "No messages provided" }, { status: 400 });
@@ -19,9 +16,8 @@ export async function POST(request: Request) {
 
     Sentry.logger.info("Chat request received", {
       messageCount: messages.length,
-      hasPageSpeedConfig: !!pageSpeedConfig,
-      strategy: pageSpeedConfig?.strategy,
-      categories: pageSpeedConfig?.categories,
+      hasPerformanceConfig: !!performanceConfig,
+      devices: performanceConfig?.devices,
     });
 
     const modelMessages = convertToModelMessages(messages);
@@ -31,10 +27,11 @@ export async function POST(request: Request) {
       messages: modelMessages,
       stopWhen: stepCountIs(5),
       tools: {
-        analyzePageSpeed: pageSpeedTool,
-        scanUrlSecurity: cloudflareUrlScannerTool,
-        searchSecurityScans: cloudflareSearchTool,
+        // Simplified tools for real-world performance analysis
+        getRealWorldPerformance: realWorldPerformanceTool,
+        detectTechnologies: techDetectionTool,
       },
+
       experimental_telemetry: {
         isEnabled: true,
         functionId: "pagespeed-analysis-chat",
@@ -43,12 +40,12 @@ export async function POST(request: Request) {
         Sentry.logger.debug("AI step finished", {
           toolCalls: step.toolCalls?.length || 0,
           toolResults: step.toolResults?.length || 0,
-          hasToolCalls: !!step.toolCalls?.length,
-          hasToolResults: !!step.toolResults?.length,
         });
 
         if (step.toolResults) {
-          step.toolResults.forEach((result, index) => {
+          step.toolResults.forEach((result: any, index) => {
+            const toolName = step.toolCalls?.[index]?.toolName;
+
             if ("error" in result) {
               Sentry.captureException(
                 new Error(`Tool execution failed: ${result.error}`),
@@ -56,16 +53,16 @@ export async function POST(request: Request) {
                   tags: {
                     area: "ai-tool-execution",
                     function: "pagespeed-analysis-chat",
-                    tool: step.toolCalls?.[index]?.toolName,
+                    tool: toolName,
                   },
                   contexts: {
                     ai: {
                       model: "gpt-4o",
-                      tool: step.toolCalls?.[index]?.toolName,
+                      tool: toolName,
                       toolError: step.toolCalls?.[index]?.error,
                     },
                   },
-                },
+                }
               );
             }
           });
@@ -73,7 +70,7 @@ export async function POST(request: Request) {
       },
       system: `${webAnalysisSystemPrompt}
 
-Configuration: ${JSON.stringify(pageSpeedConfig || {})}`,
+Configuration: ${JSON.stringify(performanceConfig || {})}`,
     });
 
     return result.toUIMessageStreamResponse();
@@ -100,7 +97,7 @@ Configuration: ${JSON.stringify(pageSpeedConfig || {})}`,
         error: "Failed to process chat request",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

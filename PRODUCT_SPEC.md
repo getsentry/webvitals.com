@@ -118,7 +118,7 @@ Current web performance tools (Lighthouse, Pingdom, GTMetrix) suffer from:
 
 ### Data Pipeline
 ```
-Domain Input → PageSpeed Insights API + Cloudflare Scanner → Real User Data + Lab Data + Security Analysis → OpenAI Streaming Analysis → AI-Powered Recommendations → Sentry Integration → Enhanced Monitoring
+Domain Input → Chrome UX Report API + Cloudflare Tech Detection → Real User Performance Data + Technology Stack → OpenAI Streaming Analysis → AI-Powered Insights → Sentry-Style Scoring → Actionable Recommendations
 ```
 
 ---
@@ -136,44 +136,44 @@ Domain Input → PageSpeed Insights API + Cloudflare Scanner → Real User Data 
 - [x] **Input Interface**: Advanced analysis interface with configuration options
 - [x] **Sentry Integration**: Next.js error monitoring and AI agent tracking
 - [x] **PageSpeed Integration**: Google PageSpeed Insights API with real user data extraction
-- [x] **Security Analysis**: Cloudflare URL Scanner integration for comprehensive site analysis
 - [x] **AI Chat Interface**: Real-time streaming analysis with OpenAI integration
-- [ ] Tech stack detection (framework identification)
-- [ ] Results dashboard UI with interactive visualizations
+- [x] **Tech Stack Detection**: Cloudflare-based technology detection with API-driven results
+- [x] **Simplified Tool Architecture**: Focused on 2 core tools for streamlined analysis
+- [x] **Sentry-Style Scoring**: Real-world performance scoring with proper thresholds
 - [ ] Enhanced recommendation templates with implementation guides
 
 #### Success Metrics:
 - ✅ Modern Next.js 15 architecture with App Router established
 - ✅ User interface with advanced analysis configuration complete
-- ✅ Google PageSpeed Insights API integration with real user data
-- ✅ Security analysis capabilities via Cloudflare URL Scanner
+- ✅ Chrome User Experience Report (CrUX) integration for real-world data
+- ✅ Cloudflare technology detection with comprehensive API coverage
 - ✅ AI-powered streaming analysis with OpenAI integration
 - ✅ Real-time chat interface for interactive analysis
-- ⏳ Analyze any domain and return contextual recommendations
-- ⏳ Detect top 10 web frameworks/platforms accurately
+- ✅ Simplified 2-tool architecture focused on core functionality
+- ✅ Technology detection with confidence scoring and categorization
 
 ### Phase 2: Intelligence (Weeks 3-4) ✅ COMPLETED
 **Goal**: AI-powered streaming analysis with comprehensive web insights
 
 #### Deliverables:
 - [x] **AI SDK Integration**: OpenAI integration with streaming capabilities
-- [x] **Multi-Tool Analysis**: PageSpeed Insights + Cloudflare security scanning
+- [x] **Real-World Performance Analysis**: Chrome UX Report data with Sentry-style scoring
+- [x] **Technology Detection**: Cloudflare API-based framework identification
 - [x] **Streaming Interface**: Real-time AI analysis with @ai-sdk/react
-- [x] **Comprehensive Analysis**: Field data, origin data, lab data, and security insights
+- [x] **Simplified Architecture**: Focused 2-tool approach for optimal performance
 - [x] **Error Handling**: Robust error tracking with Sentry integration
-- [x] **Tool Orchestration**: Multiple analysis tools with intelligent coordination
+- [x] **Tool Orchestration**: Streamlined coordination between core analysis tools
 - [ ] Framework-specific recommendation logic
 - [ ] Impact/effort scoring system
 - [ ] Implementation guide generation
-- [ ] Educational content system
 
 #### Success Metrics:
 - ✅ AI infrastructure with streaming capabilities established
-- ✅ Real user data analysis integrated with security scanning
+- ✅ Real user data analysis with Chrome UX Report integration
 - ✅ Interactive chat interface for real-time analysis
-- ✅ Multi-tool coordination for comprehensive site analysis
+- ✅ Streamlined 2-tool coordination for focused site analysis
+- ✅ Technology detection with confidence scoring and categorization
 - ⏳ 90%+ relevant recommendations for detected tech stacks
-- ⏳ Clear implementation instructions for all suggestions
 
 ### Phase 3: Integration (Weeks 5-6) ✅ COMPLETED
 **Goal**: Enhanced Sentry integration and monitoring infrastructure

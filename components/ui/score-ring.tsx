@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Tooltip,
   TooltipContent,
@@ -17,7 +18,7 @@ interface LighthouseMetric {
   score: number;
 }
 
-interface LighthouseScoreRingProps {
+interface ScoreRingProps {
   overallScore: number;
   metrics: LighthouseMetric[];
   size?: number;
@@ -27,9 +28,10 @@ interface LighthouseScoreRingProps {
 
 const METRIC_COLORS = {
   "first-contentful-paint": "var(--color-metric-fcp)",
-  "speed-index": "var(--color-metric-si)",
+  "interaction-to-next-paint": "var(--color-metric-inp)",
   "largest-contentful-paint": "var(--color-metric-lcp)",
-  "total-blocking-time": "var(--color-metric-tbt)",
+  "time-to-first-byte": "var(--color-metric-ttfb)",
+  "experimental-time-to-first-byte": "var(--color-metric-ttfb)",
   "cumulative-layout-shift": "var(--color-metric-cls)",
 } as const;
 
@@ -63,9 +65,9 @@ const METRIC_INFO = {
       "Time until first text/image appears. Measures perceived loading speed.",
     unit: "ms",
   },
-  "speed-index": {
-    name: "Speed Index",
-    description: "How quickly content is visually displayed during page load.",
+  "interaction-to-next-paint": {
+    name: "Interaction to Next Paint",
+    description: "Responsiveness to user interactions throughout the page lifetime.",
     unit: "ms",
   },
   "largest-contentful-paint": {
@@ -73,9 +75,14 @@ const METRIC_INFO = {
     description: "Loading performance of the largest content element.",
     unit: "ms",
   },
-  "total-blocking-time": {
-    name: "Total Blocking Time",
-    description: "Time the main thread was blocked, preventing user input.",
+  "time-to-first-byte": {
+    name: "Time to First Byte",
+    description: "Server response time for the initial request.",
+    unit: "ms",
+  },
+  "experimental-time-to-first-byte": {
+    name: "Time to First Byte",
+    description: "Server response time for the initial request.",
     unit: "ms",
   },
   "cumulative-layout-shift": {
@@ -86,13 +93,13 @@ const METRIC_INFO = {
   },
 } as const;
 
-export default function LighthouseScoreRing({
+export default function ScoreRing({
   overallScore,
   metrics,
   size = 140,
   barWidth = 8,
   className,
-}: LighthouseScoreRingProps) {
+}: ScoreRingProps) {
   const [hoveredSegment, setHoveredSegment] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState<{
     x: number;
@@ -129,13 +136,11 @@ export default function LighthouseScoreRing({
       const backgroundColor = getMetricBackgroundColor(metric.key);
       const metricInfo = METRIC_INFO[metric.key as keyof typeof METRIC_INFO];
 
-      // Calculate label position outside the ring
       const labelRadius = radius + barWidth + 16;
       const labelRadians = ((midAngle - 90) * Math.PI) / 180; // -90 to start from top
       const labelX = svgCenter + labelRadius * Math.cos(labelRadians);
       const labelY = svgCenter + labelRadius * Math.sin(labelRadians);
 
-      // Create path for the segment arc
       const startAngleRad = ((startAngle - 90) * Math.PI) / 180;
       const endAngleRad =
         ((startAngle + actualSegmentAngle - 90) * Math.PI) / 180;
@@ -183,8 +188,8 @@ export default function LighthouseScoreRing({
     });
   }, [metrics, size, barWidth, radius, circumference, svgCenter]);
 
-
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
     setMousePosition({
       x: e.clientX,
       y: e.clientY,
@@ -199,7 +204,7 @@ export default function LighthouseScoreRing({
     <TooltipProvider>
       <div
         className={cn("relative inline-block", className)}
-        data-lighthouse-ring
+        data-score-ring
       >
         <svg
           width={svgSize}
@@ -216,7 +221,6 @@ export default function LighthouseScoreRing({
             const isHovered = hoveredSegment === segment.metric.key;
             const shouldMute = hoveredSegment && !isHovered;
 
-            // Create proper arc paths with gaps
             const startAngleRad = ((segment.startAngle - 90) * Math.PI) / 180;
             const endAngleRad =
               ((segment.startAngle + segment.actualSegmentAngle - 90) *
@@ -229,7 +233,6 @@ export default function LighthouseScoreRing({
                 Math.PI) /
               180;
 
-            // Background arc path
             const bgStartX = svgCenter + radius * Math.cos(startAngleRad);
             const bgStartY = svgCenter + radius * Math.sin(startAngleRad);
             const bgEndX = svgCenter + radius * Math.cos(endAngleRad);
@@ -241,7 +244,6 @@ export default function LighthouseScoreRing({
               `A ${radius} ${radius} 0 ${bgLargeArcFlag} 1 ${bgEndX} ${bgEndY}`,
             ].join(" ");
 
-            // Progress arc path
             const progStartX = svgCenter + radius * Math.cos(startAngleRad);
             const progStartY = svgCenter + radius * Math.sin(startAngleRad);
             const progEndX = svgCenter + radius * Math.cos(progressEndAngleRad);
@@ -261,7 +263,6 @@ export default function LighthouseScoreRing({
 
             return (
               <g key={segment.metric.key}>
-                {/* Background arc - muted track */}
                 <path
                   d={backgroundPath}
                   fill="none"
@@ -274,7 +275,6 @@ export default function LighthouseScoreRing({
                     isHovered && "opacity-20",
                   )}
                 />
-                {/* Progress arc */}
                 {segment.boundedScore > 0 && (
                   <path
                     d={progressPath}
@@ -289,7 +289,6 @@ export default function LighthouseScoreRing({
                     )}
                   />
                 )}
-                {/* Invisible hover area */}
                 <path
                   d={segment.pathData}
                   fill="transparent"
@@ -301,7 +300,6 @@ export default function LighthouseScoreRing({
             );
           })}
 
-          {/* Segment labels */}
           {segments.map((segment) => {
             const isHovered = hoveredSegment === segment.metric.key;
             const shouldMute = hoveredSegment && !isHovered;
@@ -327,120 +325,84 @@ export default function LighthouseScoreRing({
             );
           })}
 
-          {/* Center score text */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <g className="cursor-help">
-                <text
-                  x={svgCenter}
-                  y={svgCenter}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  className="text-3xl font-bold fill-current"
-                  style={{ fill: getOverallScoreColor(overallScore) }}
-                >
-                  {overallScore}
-                </text>
-              </g>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="min-w-64">
-                <div className="font-semibold text-center mb-3">
-                  Overall Performance Score
-                </div>
-                <div className="text-xs text-muted-foreground text-center mb-3">
-                  Weighted average of all Lighthouse metrics
-                </div>
-                <div className="space-y-2">
-                  {metrics.map((metric) => {
-                    const metricInfo =
-                      METRIC_INFO[metric.key as keyof typeof METRIC_INFO];
-                    return (
-                      <div
-                        key={metric.key}
-                        className="flex items-center justify-between text-xs"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{
-                              backgroundColor: getMetricColor(metric.key),
-                            }}
-                          />
-                          <span>{metricInfo?.name || metric.label}</span>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-medium">{metric.score}/100</div>
-                          <div className="text-muted-foreground">
-                            ({Math.round(metric.weight * 100)}%)
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </TooltipContent>
-          </Tooltip>
+          <text
+            x={svgCenter}
+            y={svgCenter}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            className="text-3xl font-bold fill-current"
+            style={{ fill: getOverallScoreColor(overallScore) }}
+          >
+            {overallScore}
+          </text>
         </svg>
 
-        {/* Cursor-following tooltip */}
-        {hoveredSegment && mousePosition && (() => {
-          const segment = segments.find(s => s.metric.key === hoveredSegment);
-          if (!segment) return null;
+        {typeof document !== 'undefined' && hoveredSegment &&
+          mousePosition &&
+          createPortal(
+            (() => {
+              const segment = segments.find(
+                (s) => s.metric.key === hoveredSegment,
+              );
+              if (!segment) return null;
 
-          const scoreColor = segment.boundedScore >= 90 
-            ? SCORE_COLORS.GOOD 
-            : segment.boundedScore >= 50 
-            ? SCORE_COLORS.NEEDS_IMPROVEMENT 
-            : SCORE_COLORS.POOR;
+              const scoreColor =
+                segment.boundedScore >= 90
+                  ? SCORE_COLORS.GOOD
+                  : segment.boundedScore >= 50
+                    ? SCORE_COLORS.NEEDS_IMPROVEMENT
+                    : SCORE_COLORS.POOR;
 
-          return (
-            <div
-              className="fixed bg-popover text-popover-foreground animate-in fade-in-0 zoom-in-95 z-50 rounded-md border px-3 py-2 text-xs shadow-md pointer-events-none max-w-48"
-              style={{
-                left: mousePosition.x + 15,
-                top: mousePosition.y - 10,
-              }}
-            >
-              <div className="font-semibold text-sm mb-1">{segment.metricInfo?.name}</div>
-              <div className="text-xs text-foreground/70 mb-2 leading-tight">
-                {segment.metricInfo?.description}
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-foreground/60">Score:</span>
-                  <span 
-                    className="font-medium text-xs"
-                    style={{ color: scoreColor }}
-                  >
-                    {segment.boundedScore}/100
-                  </span>
+              return (
+                <div
+                  className="fixed bg-popover text-popover-foreground rounded-md border px-3 py-2 text-xs shadow-lg pointer-events-none max-w-48 z-[9999]"
+                  style={{
+                    left: mousePosition.x + 10,
+                    top: mousePosition.y - 10,
+                  }}
+                >
+                  <div className="font-semibold text-sm mb-1">
+                    {segment.metricInfo?.name}
+                  </div>
+                  <div className="text-xs text-foreground/70 mb-2 leading-tight">
+                    {segment.metricInfo?.description}
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-foreground/60">Score:</span>
+                      <span
+                        className="font-medium text-xs"
+                        style={{ color: scoreColor }}
+                      >
+                        {segment.boundedScore}/100
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-foreground/60">Weight:</span>
+                      <span className="font-medium text-xs">
+                        {Math.round(segment.metric.weight * 100)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-foreground/60">Value:</span>
+                      <span className="font-medium text-xs">
+                        {segment.metric.key === "cumulative-layout-shift"
+                          ? segment.metric.value.toFixed(3)
+                          : segment.metric.key === "first-contentful-paint" ||
+                              segment.metric.key === "largest-contentful-paint" ||
+                              segment.metric.key === "interaction-to-next-paint" ||
+                              segment.metric.key === "time-to-first-byte" ||
+                              segment.metric.key === "experimental-time-to-first-byte"
+                            ? `${(segment.metric.value / 1000).toFixed(2)}s`
+                            : segment.metric.value.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-foreground/60">Weight:</span>
-                  <span className="font-medium text-xs">
-                    {Math.round(segment.metric.weight * 100)}%
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-foreground/60">Value:</span>
-                  <span className="font-medium text-xs">
-                    {segment.metric.key === "cumulative-layout-shift" 
-                      ? segment.metric.value.toFixed(3)
-                      : segment.metric.key === "first-contentful-paint" || 
-                        segment.metric.key === "largest-contentful-paint" ||
-                        segment.metric.key === "speed-index" ||
-                        segment.metric.key === "total-blocking-time"
-                      ? `${(segment.metric.value / 1000).toFixed(2)}s`
-                      : segment.metric.value.toFixed(2)
-                    }
-                  </span>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
+              );
+            })(),
+            document.body
+          )}
       </div>
     </TooltipProvider>
   );
