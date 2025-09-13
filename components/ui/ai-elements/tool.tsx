@@ -2,6 +2,7 @@
 
 import type { ToolUIPart } from "ai";
 import {
+  AlertTriangleIcon,
   CheckCircleIcon,
   ChevronDownIcon,
   CircleIcon,
@@ -10,6 +11,7 @@ import {
   XCircleIcon,
 } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,
@@ -31,6 +33,16 @@ export type ToolHeaderProps = {
   type: ToolUIPart["type"];
   state: ToolUIPart["state"];
   className?: string;
+};
+
+const getToolDisplayName = (type: string) => {
+  const toolNames = {
+    "tool-analyzePageSpeed": "Analyzing page speed performance",
+    "tool-scanUrlSecurity": "Scanning for technologies and security concerns",
+    "tool-searchSecurityScans": "Searching security scans",
+  } as const;
+
+  return toolNames[type as keyof typeof toolNames] || type;
 };
 
 const getStatusBadge = (status: ToolUIPart["state"]) => {
@@ -71,7 +83,7 @@ export const ToolHeader = ({
   >
     <div className="flex items-center gap-2">
       <WrenchIcon className="size-4 text-muted-foreground" />
-      <span className="font-medium text-sm">{type}</span>
+      <span className="font-medium text-sm">{getToolDisplayName(type)}</span>
       {getStatusBadge(state)}
     </div>
     <ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
@@ -123,21 +135,23 @@ export const ToolOutput = ({
   }
 
   return (
-    <div className={cn("space-y-2 p-4", className)} {...props}>
-      <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-        {errorText ? "Error" : "Result"}
-      </h4>
-      <div
-        className={cn(
-          "overflow-x-auto rounded-md text-xs [&_table]:w-full",
-          errorText
-            ? "bg-destructive/10 text-destructive"
-            : "bg-muted/50 text-foreground",
-        )}
-      >
-        {errorText && <div>{errorText}</div>}
-        {output && <div>{output}</div>}
-      </div>
+    <div className={cn("space-y-4 p-4", className)} {...props}>
+      {errorText ? (
+        <Alert variant="destructive">
+          <AlertTriangleIcon className="h-4 w-4" />
+          <AlertTitle>Tool Execution Failed</AlertTitle>
+          <AlertDescription className="mt-2">{errorText}</AlertDescription>
+        </Alert>
+      ) : (
+        <>
+          <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+            Result
+          </h4>
+          <div className="overflow-x-auto rounded-md bg-muted/50 text-foreground text-xs [&_table]:w-full">
+            {output && <div>{output}</div>}
+          </div>
+        </>
+      )}
     </div>
   );
 };

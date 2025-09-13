@@ -25,24 +25,25 @@ interface LighthouseScoreRingProps {
   className?: string;
 }
 
-// Individual metric colors (distinct colors, not score-based)
 const METRIC_COLORS = {
-  "first-contentful-paint": "#10B981", // green
-  "speed-index": "#6366F1", // indigo
-  "largest-contentful-paint": "#F59E0B", // amber
-  "total-blocking-time": "#3B82F6", // blue
-  "cumulative-layout-shift": "#EF4444", // red
+  "first-contentful-paint": "var(--color-metric-fcp)",
+  "speed-index": "var(--color-metric-si)",
+  "largest-contentful-paint": "var(--color-metric-lcp)",
+  "total-blocking-time": "var(--color-metric-tbt)",
+  "cumulative-layout-shift": "var(--color-metric-cls)",
 } as const;
 
-// Overall score colors (based on performance)
 const SCORE_COLORS = {
-  GOOD: "#10B981", // green
-  NEEDS_IMPROVEMENT: "#F59E0B", // amber
-  POOR: "#EF4444", // red
+  GOOD: "var(--color-score-good)",
+  NEEDS_IMPROVEMENT: "var(--color-score-needs-improvement)",
+  POOR: "var(--color-score-poor)",
 } as const;
 
 function getMetricColor(metricKey: string): string {
-  return METRIC_COLORS[metricKey as keyof typeof METRIC_COLORS] || "#6B7280";
+  return (
+    METRIC_COLORS[metricKey as keyof typeof METRIC_COLORS] ||
+    "var(--color-muted-foreground)"
+  );
 }
 
 function getMetricBackgroundColor(metricKey: string): string {
@@ -93,10 +94,11 @@ export default function LighthouseScoreRing({
   className,
 }: LighthouseScoreRingProps) {
   const [hoveredSegment, setHoveredSegment] = useState<string | null>(null);
-  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
-  const [clickedSegment, setClickedSegment] = useState<string | null>(null);
+  const [mousePosition, setMousePosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
-  // Make SVG larger to accommodate labels outside the ring
   const svgSize = size + 60; // Extra space for labels
   const svgCenter = svgSize / 2;
   const radius = size / 2 - barWidth / 2;
@@ -109,12 +111,15 @@ export default function LighthouseScoreRing({
     return metrics.map((metric) => {
       const boundedScore = Math.min(Math.max(metric.score, 0), 100);
       const segmentAngle = (metric.weight / totalWeight) * 360;
-      const gapAngle = 2; // Gap in degrees
+      const gapAngle = 12;
 
       // Calculate actual segment angles with gaps
       const actualSegmentAngle = segmentAngle - gapAngle;
       const segmentCircumference = (circumference * actualSegmentAngle) / 360;
       const progressLength = (boundedScore / 100) * segmentCircumference;
+
+      // Add small gap in strokeDasharray to ensure separation
+      const gapLength = (circumference * gapAngle) / 360;
 
       const startAngle = currentAngle;
       const midAngle = currentAngle + actualSegmentAngle / 2;
@@ -132,31 +137,32 @@ export default function LighthouseScoreRing({
 
       // Create path for the segment arc
       const startAngleRad = ((startAngle - 90) * Math.PI) / 180;
-      const endAngleRad = (((startAngle + actualSegmentAngle) - 90) * Math.PI) / 180;
-      
+      const endAngleRad =
+        ((startAngle + actualSegmentAngle - 90) * Math.PI) / 180;
+
       const innerRadius = radius - barWidth / 2;
       const outerRadius = radius + barWidth / 2;
-      
+
       const x1 = svgCenter + innerRadius * Math.cos(startAngleRad);
       const y1 = svgCenter + innerRadius * Math.sin(startAngleRad);
       const x2 = svgCenter + outerRadius * Math.cos(startAngleRad);
       const y2 = svgCenter + outerRadius * Math.sin(startAngleRad);
-      
+
       const x3 = svgCenter + outerRadius * Math.cos(endAngleRad);
       const y3 = svgCenter + outerRadius * Math.sin(endAngleRad);
       const x4 = svgCenter + innerRadius * Math.cos(endAngleRad);
       const y4 = svgCenter + innerRadius * Math.sin(endAngleRad);
-      
+
       const largeArcFlag = actualSegmentAngle > 180 ? 1 : 0;
-      
+
       const pathData = [
         `M ${x1} ${y1}`,
         `L ${x2} ${y2}`,
         `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${x3} ${y3}`,
         `L ${x4} ${y4}`,
         `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${x1} ${y1}`,
-        'Z'
-      ].join(' ');
+        "Z",
+      ].join(" ");
 
       return {
         metric,
@@ -164,6 +170,7 @@ export default function LighthouseScoreRing({
         actualSegmentAngle,
         segmentCircumference,
         progressLength,
+        gapLength,
         strokeColor,
         backgroundColor,
         metricInfo,
@@ -176,25 +183,24 @@ export default function LighthouseScoreRing({
     });
   }, [metrics, size, barWidth, radius, circumference, svgCenter]);
 
+
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
     setMousePosition({
       x: e.clientX,
       y: e.clientY,
     });
   };
 
-  const handleSegmentInteraction = (segmentKey: string, action: 'enter' | 'click') => {
-    if (action === 'click') {
-      setClickedSegment(clickedSegment === segmentKey ? null : segmentKey);
-    } else {
-      setHoveredSegment(segmentKey);
-    }
+  const handleSegmentHover = (segmentKey: string | null) => {
+    setHoveredSegment(segmentKey);
   };
 
   return (
     <TooltipProvider>
-      <div className={cn("relative inline-block", className)} data-lighthouse-ring>
+      <div
+        className={cn("relative inline-block", className)}
+        data-lighthouse-ring
+      >
         <svg
           width={svgSize}
           height={svgSize}
@@ -205,71 +211,95 @@ export default function LighthouseScoreRing({
             setHoveredSegment(null);
             setMousePosition(null);
           }}
-          onClick={(e) => {
-            // Close any tooltips when clicking outside segments
-            if (e.target === e.currentTarget) {
-              setClickedSegment(null);
-            }
-          }}
         >
           {segments.map((segment) => {
             const isHovered = hoveredSegment === segment.metric.key;
             const shouldMute = hoveredSegment && !isHovered;
 
+            // Create proper arc paths with gaps
+            const startAngleRad = ((segment.startAngle - 90) * Math.PI) / 180;
+            const endAngleRad =
+              ((segment.startAngle + segment.actualSegmentAngle - 90) *
+                Math.PI) /
+              180;
+            const progressEndAngleRad =
+              ((segment.startAngle +
+                (segment.actualSegmentAngle * segment.boundedScore) / 100 -
+                90) *
+                Math.PI) /
+              180;
+
+            // Background arc path
+            const bgStartX = svgCenter + radius * Math.cos(startAngleRad);
+            const bgStartY = svgCenter + radius * Math.sin(startAngleRad);
+            const bgEndX = svgCenter + radius * Math.cos(endAngleRad);
+            const bgEndY = svgCenter + radius * Math.sin(endAngleRad);
+            const bgLargeArcFlag = segment.actualSegmentAngle > 180 ? 1 : 0;
+
+            const backgroundPath = [
+              `M ${bgStartX} ${bgStartY}`,
+              `A ${radius} ${radius} 0 ${bgLargeArcFlag} 1 ${bgEndX} ${bgEndY}`,
+            ].join(" ");
+
+            // Progress arc path
+            const progStartX = svgCenter + radius * Math.cos(startAngleRad);
+            const progStartY = svgCenter + radius * Math.sin(startAngleRad);
+            const progEndX = svgCenter + radius * Math.cos(progressEndAngleRad);
+            const progEndY = svgCenter + radius * Math.sin(progressEndAngleRad);
+            const progLargeArcFlag =
+              (segment.actualSegmentAngle * segment.boundedScore) / 100 > 180
+                ? 1
+                : 0;
+
+            const progressPath =
+              segment.boundedScore > 0
+                ? [
+                    `M ${progStartX} ${progStartY}`,
+                    `A ${radius} ${radius} 0 ${progLargeArcFlag} 1 ${progEndX} ${progEndY}`,
+                  ].join(" ")
+                : "";
+
             return (
               <g key={segment.metric.key}>
-                {/* Background arc */}
-                <circle
-                  cx={svgCenter}
-                  cy={svgCenter}
-                  r={radius}
+                {/* Background arc - muted track */}
+                <path
+                  d={backgroundPath}
                   fill="none"
-                  stroke={segment.backgroundColor}
+                  stroke={segment.strokeColor}
                   strokeWidth={barWidth}
-                  strokeDasharray={`${segment.segmentCircumference} ${circumference - segment.segmentCircumference}`}
-                  strokeDashoffset={
-                    -((circumference * segment.startAngle) / 360)
-                  }
-                  transform={`rotate(-90 ${svgCenter} ${svgCenter})`}
+                  strokeLinecap="round"
                   className={cn(
-                    "transition-all duration-300",
-                    shouldMute && "opacity-30",
-                    isHovered && "opacity-100",
+                    "transition-all duration-300 opacity-10",
+                    shouldMute && "opacity-5",
+                    isHovered && "opacity-20",
                   )}
                 />
                 {/* Progress arc */}
-                <circle
-                  cx={svgCenter}
-                  cy={svgCenter}
-                  r={radius}
-                  fill="none"
-                  stroke={segment.strokeColor}
-                  strokeWidth={isHovered ? barWidth + 2 : barWidth}
-                  strokeLinecap="round"
-                  strokeDasharray={`${segment.progressLength} ${circumference - segment.progressLength}`}
-                  strokeDashoffset={
-                    -((circumference * segment.startAngle) / 360)
-                  }
-                  transform={`rotate(-90 ${svgCenter} ${svgCenter})`}
-                  className={cn(
-                    "transition-all duration-300",
-                    shouldMute && "opacity-30",
-                    isHovered && "opacity-100",
-                  )}
-                />
+                {segment.boundedScore > 0 && (
+                  <path
+                    d={progressPath}
+                    fill="none"
+                    stroke={segment.strokeColor}
+                    strokeWidth={barWidth}
+                    strokeLinecap="round"
+                    className={cn(
+                      "transition-all duration-300",
+                      shouldMute && "opacity-30",
+                      isHovered && "opacity-100",
+                    )}
+                  />
+                )}
                 {/* Invisible hover area */}
                 <path
                   d={segment.pathData}
                   fill="transparent"
                   className="cursor-help"
-                  onMouseEnter={() => handleSegmentInteraction(segment.metric.key, 'enter')}
-                  onMouseLeave={() => setHoveredSegment(null)}
-                  onClick={() => handleSegmentInteraction(segment.metric.key, 'click')}
+                  onMouseEnter={() => handleSegmentHover(segment.metric.key)}
+                  onMouseLeave={() => handleSegmentHover(null)}
                 />
               </g>
             );
           })}
-
 
           {/* Segment labels */}
           {segments.map((segment) => {
@@ -284,11 +314,13 @@ export default function LighthouseScoreRing({
                 textAnchor="middle"
                 dominantBaseline="middle"
                 className={cn(
-                  "text-xs font-medium fill-current transition-all duration-300",
+                  "text-xs font-medium fill-current transition-all duration-300 cursor-help select-none",
                   shouldMute ? "opacity-30" : "opacity-80",
                   isHovered && "opacity-100 font-semibold",
                 )}
                 style={{ fill: segment.strokeColor }}
+                onMouseEnter={() => handleSegmentHover(segment.metric.key)}
+                onMouseLeave={() => handleSegmentHover(null)}
               >
                 {segment.metric.label}
               </text>
@@ -351,75 +383,64 @@ export default function LighthouseScoreRing({
             </TooltipContent>
           </Tooltip>
         </svg>
-        
-        {/* Custom floating tooltip for segments - matches shadcn/ui styling exactly */}
-        {(hoveredSegment || clickedSegment) && (
-          (() => {
-            const activeSegment = hoveredSegment || clickedSegment;
-            const segment = segments.find(s => s.metric.key === activeSegment);
-            if (!segment) return null;
-            
-            // Use mouse position if hovering, otherwise position near the segment for mobile
-            const useMousePosition = hoveredSegment && mousePosition;
-            let tooltipX = 0;
-            let tooltipY = 0;
-            
-            if (useMousePosition) {
-              tooltipX = mousePosition.x + 15;
-              tooltipY = mousePosition.y - 10;
-            } else {
-              // Position near segment for mobile clicks
-              const containerRect = document.querySelector('[data-lighthouse-ring]')?.getBoundingClientRect();
-              if (containerRect) {
-                const centerX = containerRect.left + containerRect.width / 2;
-                const centerY = containerRect.top + containerRect.height / 2;
-                const segmentRadius = radius * 1.5;
-                const angleRad = ((segment.midAngle - 90) * Math.PI) / 180;
-                
-                tooltipX = centerX + segmentRadius * Math.cos(angleRad);
-                tooltipY = centerY + segmentRadius * Math.sin(angleRad);
-              }
-            }
-            
-            return (
-              <div 
-                className="fixed bg-primary text-primary-foreground animate-in fade-in-0 zoom-in-95 z-50 rounded-md px-3 py-1.5 text-xs text-balance max-w-xs pointer-events-none"
-                style={{
-                  left: tooltipX,
-                  top: tooltipY,
-                }}
-              >
-                <div className="font-semibold">
-                  {segment.metricInfo?.name}
+
+        {/* Cursor-following tooltip */}
+        {hoveredSegment && mousePosition && (() => {
+          const segment = segments.find(s => s.metric.key === hoveredSegment);
+          if (!segment) return null;
+
+          const scoreColor = segment.boundedScore >= 90 
+            ? SCORE_COLORS.GOOD 
+            : segment.boundedScore >= 50 
+            ? SCORE_COLORS.NEEDS_IMPROVEMENT 
+            : SCORE_COLORS.POOR;
+
+          return (
+            <div
+              className="fixed bg-popover text-popover-foreground animate-in fade-in-0 zoom-in-95 z-50 rounded-md border px-3 py-2 text-xs shadow-md pointer-events-none max-w-48"
+              style={{
+                left: mousePosition.x + 15,
+                top: mousePosition.y - 10,
+              }}
+            >
+              <div className="font-semibold text-sm mb-1">{segment.metricInfo?.name}</div>
+              <div className="text-xs text-foreground/70 mb-2 leading-tight">
+                {segment.metricInfo?.description}
+              </div>
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-foreground/60">Score:</span>
+                  <span 
+                    className="font-medium text-xs"
+                    style={{ color: scoreColor }}
+                  >
+                    {segment.boundedScore}/100
+                  </span>
                 </div>
-                <div className="text-xs opacity-70 mt-1 leading-tight">
-                  {segment.metricInfo?.description}
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-foreground/60">Weight:</span>
+                  <span className="font-medium text-xs">
+                    {Math.round(segment.metric.weight * 100)}%
+                  </span>
                 </div>
-                <div className="mt-2 space-y-1">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs">Score:</span>
-                    <span className="font-medium">
-                      {segment.boundedScore}/100
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs">Weight:</span>
-                    <span className="font-medium">
-                      {Math.round(segment.metric.weight * 100)}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs">Value:</span>
-                    <span className="font-medium">
-                      {segment.metric.value}
-                      {segment.metricInfo?.unit}
-                    </span>
-                  </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-foreground/60">Value:</span>
+                  <span className="font-medium text-xs">
+                    {segment.metric.key === "cumulative-layout-shift" 
+                      ? segment.metric.value.toFixed(3)
+                      : segment.metric.key === "first-contentful-paint" || 
+                        segment.metric.key === "largest-contentful-paint" ||
+                        segment.metric.key === "speed-index" ||
+                        segment.metric.key === "total-blocking-time"
+                      ? `${(segment.metric.value / 1000).toFixed(2)}s`
+                      : segment.metric.value.toFixed(2)
+                    }
+                  </span>
                 </div>
               </div>
-            );
-          })()
-        )}
+            </div>
+          );
+        })()}
       </div>
     </TooltipProvider>
   );

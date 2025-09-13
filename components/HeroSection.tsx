@@ -53,9 +53,7 @@ export default function HeroSection() {
     sendMessage(
       {
         role: "user",
-        parts: [
-          { type: "text", text: `Please analyze the website: ${domain}` },
-        ],
+        parts: [{ type: "text", text: `Please analyze ${domain}` }],
       },
       {
         body: {

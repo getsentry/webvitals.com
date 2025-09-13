@@ -100,7 +100,7 @@ const pageSpeedInputSchema = z.object({
     .describe("Analysis strategy - mobile or desktop"),
   categories: z
     .array(
-      z.enum(["performance", "accessibility", "best-practices", "seo", "pwa"]),
+      z.enum(["performance", "accessibility", "best-practices", "seo", "pwa"])
     )
     .optional()
     .default(DEFAULT_CATEGORIES)
@@ -109,26 +109,23 @@ const pageSpeedInputSchema = z.object({
 
 // Helper function to transform raw metrics to typed format
 function transformMetrics(
-  metrics: Record<string, RawMetricValue>,
+  metrics: Record<string, RawMetricValue>
 ): Record<string, CoreWebVitalMetric> {
-  return Object.entries(metrics).reduce(
-    (acc, [key, value]) => {
-      acc[key] = {
-        percentile: value.percentile,
-        category: value.category,
-        distributions: value.distributions,
-      };
-      return acc;
-    },
-    {} as Record<string, CoreWebVitalMetric>,
-  );
+  return Object.entries(metrics).reduce((acc, [key, value]) => {
+    acc[key] = {
+      percentile: value.percentile,
+      category: value.category,
+      distributions: value.distributions,
+    };
+    return acc;
+  }, {} as Record<string, CoreWebVitalMetric>);
 }
 
 // Calculate Lighthouse score for a metric using log-normal distribution approach
 function calculateLighthouseScore(
   value: number,
   thresholds: { good: number; needsImprovement: number },
-  isRatio = false,
+  isRatio = false
 ): number {
   if (isRatio) {
     // For CLS (ratio metric)
@@ -179,7 +176,7 @@ function transformLabDataForLighthouse(labMetrics: Record<string, number>) {
   });
 
   const overallScore = Math.round(
-    metrics.reduce((sum, metric) => sum + metric.score * metric.weight, 0),
+    metrics.reduce((sum, metric) => sum + metric.score * metric.weight, 0)
   );
 
   return { overallScore, metrics };
@@ -197,8 +194,8 @@ function transformRealUserMetrics(metrics: Record<string, CoreWebVitalMetric>) {
   return Object.entries(metrics).map(([key, data]) => ({
     key,
     label: metricLabels[key as keyof typeof metricLabels] || key,
-    value: data.percentile,
-    percentile: data.percentile,
+    value: data.percentile, // Actual metric value at 75th percentile
+    distributions: data.distributions, // Min/max ranges showing spread of user experiences
     category: data.category,
   }));
 }
@@ -206,11 +203,11 @@ function transformRealUserMetrics(metrics: Record<string, CoreWebVitalMetric>) {
 async function runPageSpeedAnalysis(
   url: string,
   strategy: "mobile" | "desktop" = "desktop",
-  categories: string[] = DEFAULT_CATEGORIES,
+  categories: string[] = DEFAULT_CATEGORIES
 ) {
   const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
   const validCategories = categories.filter((cat) =>
-    VALID_CATEGORIES.includes(cat as PageSpeedCategory),
+    VALID_CATEGORIES.includes(cat as PageSpeedCategory)
   );
 
   try {
@@ -231,18 +228,20 @@ async function runPageSpeedAnalysis(
     }
 
     const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(
-      normalizedUrl,
+      normalizedUrl
     )}&strategy=${strategy}&${categoryParams}&key=${apiKey}`;
 
     const response = await fetch(apiUrl);
 
     if (!response.ok) {
       throw new Error(
-        `PageSpeed Insights API failed: ${response.status} ${response.statusText}`,
+        `PageSpeed Insights API failed: ${response.status} ${response.statusText}`
       );
     }
 
     const data = await response.json();
+
+    console.log("data", JSON.stringify(data, null, 2));
 
     const fieldData = data.loadingExperience as RawFieldData | undefined;
     const originData = data.originLoadingExperience as RawFieldData | undefined;
@@ -275,13 +274,13 @@ async function runPageSpeedAnalysis(
       ? {
           scores: {
             performance: Math.round(
-              (labData.categories?.performance?.score ?? 0) * 100,
+              (labData.categories?.performance?.score ?? 0) * 100
             ),
             accessibility: Math.round(
-              (labData.categories?.accessibility?.score ?? 0) * 100,
+              (labData.categories?.accessibility?.score ?? 0) * 100
             ),
             "best-practices": Math.round(
-              (labData.categories?.["best-practices"]?.score ?? 0) * 100,
+              (labData.categories?.["best-practices"]?.score ?? 0) * 100
             ),
             seo: Math.round((labData.categories?.seo?.score ?? 0) * 100),
             pwa: Math.round((labData.categories?.pwa?.score ?? 0) * 100),
@@ -308,7 +307,7 @@ async function runPageSpeedAnalysis(
                     typeof audit === "object" &&
                     audit.scoreDisplayMode === "numeric" &&
                     typeof audit.score === "number" &&
-                    audit.score < 0.9,
+                    audit.score < 0.9
                 )
                 .map((audit) => ({
                   title: audit.title,
@@ -385,6 +384,8 @@ async function runPageSpeedAnalysis(
       hasLabData: !!labData,
     });
 
+    console.log("result", JSON.stringify(result, null, 2));
+
     return result;
   } catch (error) {
     Sentry.logger.error("PageSpeed Insights analysis failed", {
@@ -396,7 +397,7 @@ async function runPageSpeedAnalysis(
     throw new Error(
       `PageSpeed Insights analysis failed: ${
         error instanceof Error ? error.message : "Unknown error"
-      }`,
+      }`
     );
   }
 }

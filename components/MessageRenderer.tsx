@@ -59,7 +59,6 @@ interface MessageRendererProps {
 }
 
 export default function MessageRenderer({ message }: MessageRendererProps) {
-  console.log("message", message);
   return (
     <motion.div
       key={message.id}

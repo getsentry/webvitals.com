@@ -12,33 +12,57 @@ const metrics = [
     Icon: Clock,
     className: "col-span-3 lg:col-span-2",
     background: (
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-blue-600/20">
-        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(59,130,246,.1)_50%,transparent_75%)] bg-[length:20px_20px]" />
-        <div className="absolute top-4 right-4 w-32 h-32 bg-blue-400/20 rounded-full blur-xl animate-pulse" />
-        <div className="absolute bottom-8 left-8 w-24 h-24 bg-blue-500/30 rounded-full blur-lg animate-pulse delay-700" />
+      <div className="absolute inset-0" style={{ 
+        background: `linear-gradient(135deg, oklch(from var(--metric-lcp) l c h / 0.1), oklch(from var(--metric-lcp) l c h / 0.2))`
+      }}>
+        <div 
+          className="absolute inset-0 bg-[length:20px_20px]" 
+          style={{
+            backgroundImage: `linear-gradient(45deg,transparent_25%, oklch(from var(--metric-lcp) l c h / 0.1) 50%,transparent_75%)`
+          }}
+        />
+        <div 
+          className="absolute top-4 right-4 w-32 h-32 rounded-full blur-xl animate-pulse" 
+          style={{ backgroundColor: `oklch(from var(--metric-lcp) l c h / 0.2)` }}
+        />
+        <div 
+          className="absolute bottom-8 left-8 w-24 h-24 rounded-full blur-lg animate-pulse delay-700" 
+          style={{ backgroundColor: `oklch(from var(--metric-lcp) l c h / 0.3)` }}
+        />
       </div>
     ),
     href: "#lcp",
     cta: "Optimize Loading",
   },
   {
-    name: "First Input Delay",
-    shortName: "FID",
-    description: "Measures interactivity - should be less than 100ms",
+    name: "Interaction to Next Paint",
+    shortName: "INP",
+    description: "Measures responsiveness - should be less than 200ms",
     detailedDescription:
-      "The time from when a user first interacts with your page to when the browser responds to that interaction.",
+      "The time from when a user interacts with your page to when the visual response is painted on screen.",
     Icon: MousePointer,
     className: "col-span-3 lg:col-span-1",
     background: (
-      <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-600/20">
+      <div className="absolute inset-0" style={{ 
+        background: `linear-gradient(135deg, oklch(from var(--metric-si) l c h / 0.1), oklch(from var(--metric-si) l c h / 0.2))`
+      }}>
         <div className="absolute inset-0">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-green-500 rounded-full animate-ping" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-green-500/50 rounded-full animate-ping delay-300" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-green-500/30 rounded-full animate-ping delay-700" />
+          <div 
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full animate-ping" 
+            style={{ backgroundColor: `var(--metric-si)` }}
+          />
+          <div 
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full animate-ping delay-300" 
+            style={{ backgroundColor: `oklch(from var(--metric-si) l c h / 0.5)` }}
+          />
+          <div 
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full animate-ping delay-700" 
+            style={{ backgroundColor: `oklch(from var(--metric-si) l c h / 0.3)` }}
+          />
         </div>
       </div>
     ),
-    href: "#fid",
+    href: "#inp",
     cta: "Improve Response",
   },
   {
@@ -50,14 +74,16 @@ const metrics = [
     Icon: Move3D,
     className: "col-span-3 lg:col-span-1",
     background: (
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-violet-600/20">
+      <div className="absolute inset-0" style={{ 
+        background: `linear-gradient(135deg, oklch(from var(--metric-cls) l c h / 0.1), oklch(from var(--metric-cls) l c h / 0.2))`
+      }}>
         <div className="absolute inset-4 grid grid-cols-3 gap-2 opacity-30">
-          <div className="bg-purple-400/40 rounded animate-pulse" />
-          <div className="bg-purple-500/40 rounded animate-pulse delay-200" />
-          <div className="bg-purple-400/40 rounded animate-pulse delay-400" />
-          <div className="bg-purple-500/40 rounded animate-pulse delay-300" />
-          <div className="bg-purple-400/40 rounded animate-pulse delay-100" />
-          <div className="bg-purple-500/40 rounded animate-pulse delay-500" />
+          <div className="rounded animate-pulse" style={{ backgroundColor: `oklch(from var(--metric-cls) l c h / 0.4)` }} />
+          <div className="rounded animate-pulse delay-200" style={{ backgroundColor: `oklch(from var(--metric-cls) l c h / 0.5)` }} />
+          <div className="rounded animate-pulse delay-400" style={{ backgroundColor: `oklch(from var(--metric-cls) l c h / 0.4)` }} />
+          <div className="rounded animate-pulse delay-300" style={{ backgroundColor: `oklch(from var(--metric-cls) l c h / 0.5)` }} />
+          <div className="rounded animate-pulse delay-100" style={{ backgroundColor: `oklch(from var(--metric-cls) l c h / 0.4)` }} />
+          <div className="rounded animate-pulse delay-500" style={{ backgroundColor: `oklch(from var(--metric-cls) l c h / 0.5)` }} />
         </div>
       </div>
     ),
@@ -73,12 +99,26 @@ const metrics = [
     Icon: Paintbrush,
     className: "col-span-3 lg:col-span-1",
     background: (
-      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-amber-600/20">
+      <div className="absolute inset-0" style={{ 
+        background: `linear-gradient(135deg, oklch(from var(--metric-fcp) l c h / 0.1), oklch(from var(--metric-fcp) l c h / 0.2))`
+      }}>
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-4 left-4 w-16 h-2 bg-orange-400/50 rounded animate-pulse" />
-          <div className="absolute top-8 left-4 w-24 h-2 bg-orange-500/60 rounded animate-pulse delay-200" />
-          <div className="absolute top-12 left-4 w-20 h-2 bg-orange-400/50 rounded animate-pulse delay-400" />
-          <div className="absolute bottom-4 right-4 w-8 h-8 bg-orange-500/40 rounded-full animate-bounce" />
+          <div 
+            className="absolute top-4 left-4 w-16 h-2 rounded animate-pulse" 
+            style={{ backgroundColor: `oklch(from var(--metric-fcp) l c h / 0.5)` }}
+          />
+          <div 
+            className="absolute top-8 left-4 w-24 h-2 rounded animate-pulse delay-200" 
+            style={{ backgroundColor: `oklch(from var(--metric-fcp) l c h / 0.6)` }}
+          />
+          <div 
+            className="absolute top-12 left-4 w-20 h-2 rounded animate-pulse delay-400" 
+            style={{ backgroundColor: `oklch(from var(--metric-fcp) l c h / 0.5)` }}
+          />
+          <div 
+            className="absolute bottom-4 right-4 w-8 h-8 rounded-full animate-bounce" 
+            style={{ backgroundColor: `oklch(from var(--metric-fcp) l c h / 0.4)` }}
+          />
         </div>
       </div>
     ),
@@ -94,12 +134,23 @@ const metrics = [
     Icon: Server,
     className: "col-span-3 lg:col-span-1",
     background: (
-      <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-rose-600/20">
+      <div className="absolute inset-0" style={{ 
+        background: `linear-gradient(135deg, oklch(from var(--metric-tbt) l c h / 0.1), oklch(from var(--metric-tbt) l c h / 0.2))`
+      }}>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative">
-            <div className="w-12 h-8 bg-red-400/40 rounded animate-pulse" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping" />
-            <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-red-400 rounded-full animate-ping delay-500" />
+            <div 
+              className="w-12 h-8 rounded animate-pulse" 
+              style={{ backgroundColor: `oklch(from var(--metric-tbt) l c h / 0.4)` }}
+            />
+            <div 
+              className="absolute -top-1 -right-1 w-3 h-3 rounded-full animate-ping" 
+              style={{ backgroundColor: `var(--metric-tbt)` }}
+            />
+            <div 
+              className="absolute -bottom-1 -left-1 w-2 h-2 rounded-full animate-ping delay-500" 
+              style={{ backgroundColor: `oklch(from var(--metric-tbt) l c h / 0.8)` }}
+            />
           </div>
         </div>
       </div>

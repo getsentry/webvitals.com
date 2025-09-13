@@ -1,11 +1,13 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+import { useMemo } from "react";
 import {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
 } from "@/components/ui/ai-elements/conversation";
+
 import MessageRenderer from "./MessageRenderer";
 import WebVitalsFacts from "./WebVitalsFacts";
 
@@ -22,57 +24,93 @@ interface ChatInterfaceProps {
   error?: Error | null;
 }
 
+// Extract style objects to prevent recreation on every render
+const cardStyles = { maxHeight: "60vh" };
+
 export default function ChatInterface({
   messages,
   status,
   error,
 }: ChatInterfaceProps) {
-  // Check if we have AI responses or are streaming - if so, move to top
-  const hasAIResponses =
-    messages.some((msg) => msg.role === "assistant") && messages.length > 2;
+  // Memoize expensive calculations
+  const hasAIResponses = useMemo(
+    () =>
+      messages.some(
+        (msg) =>
+          msg.role === "assistant" && msg.parts?.length && msg.parts.length > 3,
+      ),
+    [messages],
+  );
 
+  const hasAIText = useMemo(
+    () =>
+      messages.some(
+        (msg) =>
+          msg.role === "assistant" &&
+          msg.parts?.some(
+            (part) =>
+              part.type === "text" && part.text?.length && part.text.length > 0,
+          ),
+      ),
+    [messages],
+  );
+
+  // Show fade overlays when there's scrollable content
+  const showFadeOverlays = useMemo(
+    () => messages.length > 0 && hasAIResponses,
+    [messages.length, hasAIResponses],
+  );
   return (
     <motion.div
       className={`h-full flex flex-col items-center px-4 py-8 ${
         hasAIResponses ? "justify-start" : "justify-center"
       }`}
-      layout="position"
+      animate={{
+        justifyContent: hasAIResponses ? "flex-start" : "center",
+      }}
       transition={{
         duration: 0.3,
         ease: [0.215, 0.61, 0.355, 1], // ease-out-cubic
       }}
     >
-      <div
-        className="max-w-4xl w-full bg-card rounded-xl border shadow-lg overflow-hidden flex flex-col"
-        style={{
-          minHeight: "min-content",
-          maxHeight: "60vh",
+      <motion.div
+        className="max-w-4xl w-full bg-card rounded-xl border shadow-lg overflow-hidden flex flex-col relative"
+        animate={{
+          height: "auto",
         }}
+        transition={{
+          duration: 0.25,
+          ease: [0.25, 0.46, 0.45, 0.94],
+        }}
+        style={cardStyles}
       >
-        <div className="px-6 py-4 border-b bg-muted/30">
-          <h2 className="text-lg font-semibold">Performance Analysis</h2>
-        </div>
+        {/* Fade overlays */}
+        <div
+          className={`absolute top-0 left-0 right-4 h-6 bg-gradient-to-b from-card/60 via-card/30 to-transparent pointer-events-none z-10 transition-opacity duration-300 ease-out ${
+            showFadeOverlays ? "opacity-100" : "opacity-0"
+          }`}
+        />
+        <div
+          className={`absolute bottom-0 left-0 right-4 h-6 bg-gradient-to-t from-card/60 via-card/30 to-transparent pointer-events-none z-10 transition-opacity duration-300 ease-out ${
+            showFadeOverlays ? "opacity-100" : "opacity-0"
+          }`}
+        />
 
         <div className="flex-1 min-h-0">
-          <Conversation className="h-full max-h-[calc(60vh-4rem)] min-h-[310px]">
+          <Conversation className="h-full max-h-[60vh]">
             <ConversationContent>
               {messages.map((message) => (
                 <MessageRenderer key={message.id} message={message} />
               ))}
 
               <AnimatePresence>
-                {status === "streaming" && (
+                {status === "streaming" && !hasAIText && (
                   <motion.div
                     key="streaming-facts"
-                    initial={{
-                      opacity: 0,
-                      y: -20,
-                      scaleY: 0,
-                    }}
-                    animate={{
-                      opacity: 1,
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ 
+                      opacity: 1, 
                       y: 0,
-                      scaleY: 1,
                       transition: {
                         duration: 0.25,
                         ease: [0.25, 0.46, 0.45, 0.94], // ease-out-quad
@@ -80,15 +118,11 @@ export default function ChatInterface({
                     }}
                     exit={{
                       opacity: 0,
-                      y: -10,
-                      scaleY: 0,
+                      y: -5,
                       transition: {
                         duration: 0.2,
                         ease: [0.55, 0.085, 0.68, 0.53], // ease-in-quad
                       },
-                    }}
-                    style={{
-                      transformOrigin: "top",
                     }}
                     className="p-4 bg-muted/30 rounded-lg border"
                   >
@@ -101,10 +135,10 @@ export default function ChatInterface({
                 {error && (
                   <motion.div
                     key="error-message"
-                    initial={{ opacity: 0, scale: 0.95 }}
+                    initial={{ opacity: 0, y: -10 }}
                     animate={{
                       opacity: 1,
-                      scale: 1,
+                      y: 0,
                       transition: {
                         duration: 0.2,
                         ease: [0.25, 0.46, 0.45, 0.94], // ease-out-quad
@@ -112,7 +146,7 @@ export default function ChatInterface({
                     }}
                     exit={{
                       opacity: 0,
-                      scale: 0.95,
+                      y: -5,
                       transition: {
                         duration: 0.15,
                         ease: [0.55, 0.085, 0.68, 0.53], // ease-in-quad
@@ -128,7 +162,7 @@ export default function ChatInterface({
             <ConversationScrollButton />
           </Conversation>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
