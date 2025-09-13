@@ -107,7 +107,7 @@ export default function MessageRenderer({ message }: MessageRendererProps) {
 
             const formatMetricValue = (key: string, value: number) => {
               if (key === "cumulative_layout_shift") {
-                return value.toString();
+                return (value / 100).toFixed(2);
               }
               return `${(value / 1000).toFixed(2)}s`;
             };
