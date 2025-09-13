@@ -1,16 +1,18 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { motion, type Transition, type HTMLMotionProps } from 'motion/react';
-
+import { type HTMLMotionProps, motion, type Transition } from "motion/react";
+import * as React from "react";
+import {
+  Slot,
+  type WithAsChild,
+} from "@/components/animate-ui/primitives/animate/slot";
 import {
   Highlight,
   HighlightItem,
   type HighlightItemProps,
   type HighlightProps,
-} from '@/components/animate-ui/primitives/effects/highlight';
-import { getStrictContext } from '@/lib/get-strict-context';
-import { Slot, type WithAsChild } from '@/components/animate-ui/primitives/animate/slot';
+} from "@/components/animate-ui/primitives/effects/highlight";
+import { getStrictContext } from "@/lib/get-strict-context";
 
 type TabsContextType = {
   activeValue: string;
@@ -19,9 +21,9 @@ type TabsContextType = {
 };
 
 const [TabsProvider, useTabs] =
-  getStrictContext<TabsContextType>('TabsContext');
+  getStrictContext<TabsContextType>("TabsContext");
 
-type BaseTabsProps = React.ComponentProps<'div'> & {
+type BaseTabsProps = React.ComponentProps<"div"> & {
   children: React.ReactNode;
 };
 
@@ -108,10 +110,10 @@ function Tabs({
   );
 }
 
-type TabsHighlightProps = Omit<HighlightProps, 'controlledItems' | 'value'>;
+type TabsHighlightProps = Omit<HighlightProps, "controlledItems" | "value">;
 
 function TabsHighlight({
-  transition = { type: 'spring', stiffness: 200, damping: 25 },
+  transition = { type: "spring", stiffness: 200, damping: 25 },
   ...props
 }: TabsHighlightProps) {
   const { activeValue } = useTabs();
@@ -128,7 +130,7 @@ function TabsHighlight({
   );
 }
 
-type TabsListProps = React.ComponentProps<'div'> & {
+type TabsListProps = React.ComponentProps<"div"> & {
   children: React.ReactNode;
 };
 
@@ -148,7 +150,7 @@ type TabsTriggerProps = WithAsChild<
   {
     value: string;
     children: React.ReactNode;
-  } & HTMLMotionProps<'button'>
+  } & HTMLMotionProps<"button">
 >;
 
 function TabsTrigger({
@@ -175,13 +177,13 @@ function TabsTrigger({
       data-slot="tabs-trigger"
       role="tab"
       onClick={() => handleValueChange(value)}
-      data-state={activeValue === value ? 'active' : 'inactive'}
+      data-state={activeValue === value ? "active" : "inactive"}
       {...props}
     />
   );
 }
 
-type TabsContentsProps = HTMLMotionProps<'div'> & {
+type TabsContentsProps = HTMLMotionProps<"div"> & {
   children: React.ReactNode;
   transition?: Transition;
 };
@@ -189,7 +191,7 @@ type TabsContentsProps = HTMLMotionProps<'div'> & {
 function TabsContents({
   children,
   transition = {
-    type: 'spring',
+    type: "spring",
     stiffness: 300,
     damping: 30,
     bounce: 0,
@@ -202,9 +204,9 @@ function TabsContents({
   const activeIndex = childrenArray.findIndex(
     (child): child is React.ReactElement<{ value: string }> =>
       React.isValidElement(child) &&
-      typeof child.props === 'object' &&
+      typeof child.props === "object" &&
       child.props !== null &&
-      'value' in child.props &&
+      "value" in child.props &&
       child.props.value === activeValue,
   );
 
@@ -221,18 +223,18 @@ function TabsContents({
     const base = pane.getBoundingClientRect().height || 0;
 
     const cs = getComputedStyle(container);
-    const isBorderBox = cs.boxSizing === 'border-box';
+    const isBorderBox = cs.boxSizing === "border-box";
     const paddingY =
-      (parseFloat(cs.paddingTop || '0') || 0) +
-      (parseFloat(cs.paddingBottom || '0') || 0);
+      (parseFloat(cs.paddingTop || "0") || 0) +
+      (parseFloat(cs.paddingBottom || "0") || 0);
     const borderY =
-      (parseFloat(cs.borderTopWidth || '0') || 0) +
-      (parseFloat(cs.borderBottomWidth || '0') || 0);
+      (parseFloat(cs.borderTopWidth || "0") || 0) +
+      (parseFloat(cs.borderBottomWidth || "0") || 0);
 
     let total = base + (isBorderBox ? paddingY + borderY : 0);
 
     const dpr =
-      typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+      typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
     total = Math.ceil(total * dpr) / dpr;
 
     return total;
@@ -276,14 +278,14 @@ function TabsContents({
     <motion.div
       ref={containerRef}
       data-slot="tabs-contents"
-      style={{ overflow: 'hidden' }}
+      style={{ overflow: "hidden" }}
       animate={{ height }}
       transition={transition}
       {...props}
     >
       <motion.div
         className="flex -mx-2"
-        animate={{ x: activeIndex * -100 + '%' }}
+        animate={{ x: activeIndex * -100 + "%" }}
         transition={transition}
       >
         {childrenArray.map((child, index) => (
@@ -306,7 +308,7 @@ type TabsContentProps = WithAsChild<
   {
     value: string;
     children: React.ReactNode;
-  } & HTMLMotionProps<'div'>
+  } & HTMLMotionProps<"div">
 >;
 
 function TabsContent({
@@ -324,11 +326,11 @@ function TabsContent({
     <Component
       role="tabpanel"
       data-slot="tabs-content"
-      style={{ overflow: 'hidden', ...style }}
-      initial={{ filter: 'blur(0px)' }}
-      animate={{ filter: isActive ? 'blur(0px)' : 'blur(4px)' }}
-      exit={{ filter: 'blur(0px)' }}
-      transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+      style={{ overflow: "hidden", ...style }}
+      initial={{ filter: "blur(0px)" }}
+      animate={{ filter: isActive ? "blur(0px)" : "blur(4px)" }}
+      exit={{ filter: "blur(0px)" }}
+      transition={{ type: "spring", stiffness: 200, damping: 25 }}
       {...props}
     />
   );

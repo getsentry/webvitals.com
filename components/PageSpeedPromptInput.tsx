@@ -36,13 +36,10 @@ import {
 } from "@/components/ui/popover";
 import { useScrollFade } from "@/hooks/useScrollFade";
 import { cn } from "@/lib/utils";
-import type {
-  DeviceType,
-  PerformanceConfig,
-} from "@/types/performance-config";
+import type { DeviceType, PerformanceConfig } from "@/types/performance-config";
 import {
-  DEVICE_LABELS,
   DEFAULT_PERFORMANCE_CONFIG,
+  DEVICE_LABELS,
 } from "@/types/performance-config";
 
 const SUGGESTED_URLS = [
@@ -104,10 +101,10 @@ export default function PageSpeedPromptInput({
     const devices = config.devices.includes(device)
       ? config.devices.filter((d) => d !== device)
       : [...config.devices, device];
-    
+
     // Ensure at least one device is selected
     if (devices.length === 0) return;
-    
+
     setConfig({ ...config, devices });
   };
 
@@ -178,37 +175,31 @@ export default function PageSpeedPromptInput({
                   <CommandList>
                     <CommandEmpty>No devices found.</CommandEmpty>
                     <CommandGroup>
-                      {Object.entries(DEVICE_LABELS).map(
-                        ([device, label]) => (
-                          <CommandItem
-                            key={device}
-                            value={device}
-                            onSelect={() =>
-                              toggleDevice(device as DeviceType)
-                            }
-                            className="cursor-pointer"
-                          >
-                            <CheckIcon
-                              className={cn(
-                                "mr-2 size-4",
-                                config.devices.includes(
-                                  device as DeviceType,
-                                )
-                                  ? "opacity-100"
-                                  : "opacity-0",
-                              )}
-                            />
-                            <span className="flex items-center gap-2">
-                              {device === "mobile" ? (
-                                <SmartphoneIcon size={16} />
-                              ) : (
-                                <MonitorIcon size={16} />
-                              )}
-                              {label}
-                            </span>
-                          </CommandItem>
-                        ),
-                      )}
+                      {Object.entries(DEVICE_LABELS).map(([device, label]) => (
+                        <CommandItem
+                          key={device}
+                          value={device}
+                          onSelect={() => toggleDevice(device as DeviceType)}
+                          className="cursor-pointer"
+                        >
+                          <CheckIcon
+                            className={cn(
+                              "mr-2 size-4",
+                              config.devices.includes(device as DeviceType)
+                                ? "opacity-100"
+                                : "opacity-0",
+                            )}
+                          />
+                          <span className="flex items-center gap-2">
+                            {device === "mobile" ? (
+                              <SmartphoneIcon size={16} />
+                            ) : (
+                              <MonitorIcon size={16} />
+                            )}
+                            {label}
+                          </span>
+                        </CommandItem>
+                      ))}
                     </CommandGroup>
                   </CommandList>
                 </Command>

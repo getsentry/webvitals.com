@@ -1,8 +1,17 @@
 "use client";
 
 import type { ToolUIPart } from "ai";
+import { MonitorIcon, SmartphoneIcon } from "lucide-react";
 import { motion } from "motion/react";
-import { SmartphoneIcon, MonitorIcon } from "lucide-react";
+import {
+  Tabs,
+  TabsContent,
+  TabsContents,
+  TabsHighlight,
+  TabsHighlightItem,
+  TabsList,
+  TabsTrigger,
+} from "@/components/animate-ui/primitives/animate/tabs";
 import { Message, MessageContent } from "@/components/ui/ai-elements/message";
 import { Response } from "@/components/ui/ai-elements/response";
 import {
@@ -12,22 +21,13 @@ import {
   ToolInput,
   ToolOutput,
 } from "@/components/ui/ai-elements/tool";
-import {
-  Tabs,
-  TabsList,
-  TabsHighlight,
-  TabsHighlightItem,
-  TabsTrigger,
-  TabsContents,
-  TabsContent,
-} from "@/components/animate-ui/primitives/animate/tabs";
 import { Badge } from "@/components/ui/badge";
+import ScoreRing from "@/components/ui/score-ring";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import ScoreRing from "@/components/ui/score-ring";
 import type { RealWorldPerformanceOutput } from "@/types/real-world-performance";
 
 interface MessageRendererProps {
@@ -114,35 +114,38 @@ export default function MessageRenderer({ message }: MessageRendererProps) {
 
             const getMetricBadge = (category: string) => {
               const badgeConfig = {
-                FAST: { 
+                FAST: {
                   variant: "default" as const,
                   label: "FAST",
-                  className: "text-white font-medium"
+                  className: "text-white font-medium",
                 },
-                AVERAGE: { 
+                AVERAGE: {
                   variant: "secondary" as const,
                   label: "MEH",
-                  className: "text-white font-medium"
+                  className: "text-white font-medium",
                 },
-                SLOW: { 
+                SLOW: {
                   variant: "destructive" as const,
                   label: "SLOW",
-                  className: "text-white font-medium"
-                }
+                  className: "text-white font-medium",
+                },
               } as const;
-              
-              const config = badgeConfig[category as keyof typeof badgeConfig] || badgeConfig.AVERAGE;
-              
+
+              const config =
+                badgeConfig[category as keyof typeof badgeConfig] ||
+                badgeConfig.AVERAGE;
+
               return (
-                <Badge 
-                  variant={config.variant} 
+                <Badge
+                  variant={config.variant}
                   className={config.className}
                   style={{
-                    backgroundColor: category === "FAST" 
-                      ? "var(--score-good)"
-                      : category === "AVERAGE"
-                      ? "var(--score-needs-improvement)" 
-                      : "var(--score-poor)"
+                    backgroundColor:
+                      category === "FAST"
+                        ? "var(--score-good)"
+                        : category === "AVERAGE"
+                          ? "var(--score-needs-improvement)"
+                          : "var(--score-poor)",
                   }}
                 >
                   {config.label}
@@ -167,27 +170,39 @@ export default function MessageRenderer({ message }: MessageRendererProps) {
 
             const getMetricAbbreviation = (key: string) => {
               const abbreviations: Record<string, string> = {
-                'largest_contentful_paint': 'LCP',
-                'interaction_to_next_paint': 'INP',
-                'cumulative_layout_shift': 'CLS',
-                'first_contentful_paint': 'FCP',
-                'experimental_time_to_first_byte': 'TTFB'
+                largest_contentful_paint: "LCP",
+                interaction_to_next_paint: "INP",
+                cumulative_layout_shift: "CLS",
+                first_contentful_paint: "FCP",
+                experimental_time_to_first_byte: "TTFB",
               };
               return abbreviations[key] || key.toUpperCase();
             };
 
             const getMetricValueColor = (category: string) => {
-              return category === "FAST" 
+              return category === "FAST"
                 ? "var(--score-good)"
                 : category === "AVERAGE"
-                ? "var(--score-needs-improvement)" 
-                : "var(--score-poor)";
+                  ? "var(--score-needs-improvement)"
+                  : "var(--score-poor)";
             };
 
-            const renderDistributionBarWithMarker = (distributions: any[], percentile: number, key: string) => {
-              const colorClasses = ["bg-green-500", "bg-yellow-500", "bg-red-500"];
-              const colorVars = ["var(--score-good)", "var(--score-needs-improvement)", "var(--score-poor)"];
-              
+            const renderDistributionBarWithMarker = (
+              distributions: any[],
+              percentile: number,
+              key: string,
+            ) => {
+              const colorClasses = [
+                "bg-green-500",
+                "bg-yellow-500",
+                "bg-red-500",
+              ];
+              const colorVars = [
+                "var(--score-good)",
+                "var(--score-needs-improvement)",
+                "var(--score-poor)",
+              ];
+
               // Define thresholds for each metric type
               const getThresholds = (metricKey: string) => {
                 if (metricKey === "cumulative_layout_shift") {
@@ -205,43 +220,48 @@ export default function MessageRenderer({ message }: MessageRendererProps) {
               };
 
               const thresholds = getThresholds(key);
-              
+
               // Calculate marker position based on actual thresholds and percentile
               let markerPosition = 0;
-              
+
               if (percentile <= thresholds.good) {
                 // Position within good range (green section)
-                const progress = thresholds.good > 0 ? percentile / thresholds.good : 0;
+                const progress =
+                  thresholds.good > 0 ? percentile / thresholds.good : 0;
                 markerPosition = progress * distributions[0].proportion * 100;
               } else if (percentile <= thresholds.needsImprovement) {
                 // Position within needs improvement range (yellow section)
                 const greenWidth = distributions[0].proportion * 100;
                 const yellowWidth = distributions[1].proportion * 100;
-                const progress = (percentile - thresholds.good) / (thresholds.needsImprovement - thresholds.good);
-                markerPosition = greenWidth + (progress * yellowWidth);
+                const progress =
+                  (percentile - thresholds.good) /
+                  (thresholds.needsImprovement - thresholds.good);
+                markerPosition = greenWidth + progress * yellowWidth;
               } else {
                 // Position within poor range (red section)
                 const greenWidth = distributions[0].proportion * 100;
                 const yellowWidth = distributions[1].proportion * 100;
                 const redWidth = distributions[2].proportion * 100;
                 // Position at 70% through the red section for open-ended poor ranges
-                markerPosition = greenWidth + yellowWidth + (0.7 * redWidth);
+                markerPosition = greenWidth + yellowWidth + 0.7 * redWidth;
               }
-              
+
               const formatThresholdValue = (value: number) => {
                 if (key === "cumulative_layout_shift") {
                   return value.toString();
                 }
-                return value >= 1000 ? `${(value / 1000).toFixed(1)}s` : `${value}ms`;
+                return value >= 1000
+                  ? `${(value / 1000).toFixed(1)}s`
+                  : `${value}ms`;
               };
 
               const getMetricName = (metricKey: string) => {
                 const names: Record<string, string> = {
-                  'largest_contentful_paint': 'Largest Contentful Paint (LCP)',
-                  'interaction_to_next_paint': 'Interaction to Next Paint (INP)',
-                  'cumulative_layout_shift': 'Cumulative Layout Shift (CLS)',
-                  'first_contentful_paint': 'First Contentful Paint (FCP)',
-                  'experimental_time_to_first_byte': 'Time to First Byte (TTFB)'
+                  largest_contentful_paint: "Largest Contentful Paint (LCP)",
+                  interaction_to_next_paint: "Interaction to Next Paint (INP)",
+                  cumulative_layout_shift: "Cumulative Layout Shift (CLS)",
+                  first_contentful_paint: "First Contentful Paint (FCP)",
+                  experimental_time_to_first_byte: "Time to First Byte (TTFB)",
                 };
                 return names[metricKey] || metricKey;
               };
@@ -249,50 +269,69 @@ export default function MessageRenderer({ message }: MessageRendererProps) {
               const tooltipContent = (
                 <div className="text-xs space-y-2">
                   <div className="font-medium">{getMetricName(key)}</div>
-                  
+
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div 
+                        <div
                           className="w-2 h-2 rounded-sm"
                           style={{ backgroundColor: colorVars[0] }}
                         ></div>
-                        <span style={{ color: colorVars[0] }}>Good (≤ {formatThresholdValue(thresholds.good)})</span>
+                        <span style={{ color: colorVars[0] }}>
+                          Good (≤ {formatThresholdValue(thresholds.good)})
+                        </span>
                       </div>
-                      <span className="font-medium">{Math.round(distributions[0].proportion * 100)}%</span>
+                      <span className="font-medium">
+                        {Math.round(distributions[0].proportion * 100)}%
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div 
+                        <div
                           className="w-2 h-2 rounded-sm"
                           style={{ backgroundColor: colorVars[1] }}
                         ></div>
-                        <span style={{ color: colorVars[1] }}>Needs Improvement ({formatThresholdValue(thresholds.good)} - {formatThresholdValue(thresholds.needsImprovement)})</span>
+                        <span style={{ color: colorVars[1] }}>
+                          Needs Improvement (
+                          {formatThresholdValue(thresholds.good)} -{" "}
+                          {formatThresholdValue(thresholds.needsImprovement)})
+                        </span>
                       </div>
-                      <span className="font-medium">{Math.round(distributions[1].proportion * 100)}%</span>
+                      <span className="font-medium">
+                        {Math.round(distributions[1].proportion * 100)}%
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div 
+                        <div
                           className="w-2 h-2 rounded-sm"
                           style={{ backgroundColor: colorVars[2] }}
                         ></div>
-                        <span style={{ color: colorVars[2] }}>Poor (&gt; {formatThresholdValue(thresholds.needsImprovement)})</span>
+                        <span style={{ color: colorVars[2] }}>
+                          Poor (&gt;{" "}
+                          {formatThresholdValue(thresholds.needsImprovement)})
+                        </span>
                       </div>
-                      <span className="font-medium">{Math.round(distributions[2].proportion * 100)}%</span>
+                      <span className="font-medium">
+                        {Math.round(distributions[2].proportion * 100)}%
+                      </span>
                     </div>
                   </div>
-                  
+
                   <div className="pt-2 border-t border-border/50 space-y-1">
                     <div className="flex items-center gap-1">
                       <span>▲</span>
-                      <span className="font-medium">75th Percentile - {formatMetricValue(key, percentile)}</span>
+                      <span className="font-medium">
+                        75th Percentile - {formatMetricValue(key, percentile)}
+                      </span>
                     </div>
-                    <div className="text-muted-foreground text-xs">Core Web Vital</div>
+                    <div className="text-muted-foreground text-xs">
+                      Core Web Vital
+                    </div>
                   </div>
                 </div>
               );
-              
+
               return (
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -301,16 +340,19 @@ export default function MessageRenderer({ message }: MessageRendererProps) {
                         {distributions.map((dist, i) => (
                           <div
                             key={i}
-                            style={{ 
+                            style={{
                               width: `${dist.proportion * 100}%`,
-                              backgroundColor: colorVars[i]
+                              backgroundColor: colorVars[i],
                             }}
                           />
                         ))}
                       </div>
-                      <div 
+                      <div
                         className="absolute top-0 w-1 h-3 bg-gray-900 shadow-sm pointer-events-none"
-                        style={{ left: `${Math.min(Math.max(markerPosition, 0.5), 99.5)}%`, transform: 'translateX(-50%)' }}
+                        style={{
+                          left: `${Math.min(Math.max(markerPosition, 0.5), 99.5)}%`,
+                          transform: "translateX(-50%)",
+                        }}
                       />
                     </div>
                   </TooltipTrigger>
@@ -321,53 +363,76 @@ export default function MessageRenderer({ message }: MessageRendererProps) {
               );
             };
 
-            const renderMetricCard = (key: string, metric: any, label: string) => (
-              <div key={key} className="p-4 bg-card border rounded-lg space-y-2">
+            const renderMetricCard = (
+              key: string,
+              metric: any,
+              label: string,
+            ) => (
+              <div
+                key={key}
+                className="p-4 bg-card border rounded-lg space-y-2"
+              >
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <h4 className="font-bold text-sm">{getMetricAbbreviation(key)}</h4>
+                    <h4 className="font-bold text-sm">
+                      {getMetricAbbreviation(key)}
+                    </h4>
                     <div className="text-xs text-muted-foreground">{label}</div>
                   </div>
                   {getMetricBadge(metric.category)}
                 </div>
-                <div 
+                <div
                   className="text-2xl font-bold"
                   style={{ color: getMetricValueColor(metric.category) }}
                 >
                   {formatMetricValue(key, metric.percentile)}
                 </div>
-                {metric.distributions && renderDistributionBarWithMarker(metric.distributions, metric.percentile, key)}
+                {metric.distributions &&
+                  renderDistributionBarWithMarker(
+                    metric.distributions,
+                    metric.percentile,
+                    key,
+                  )}
               </div>
             );
 
             const calculateLighthouseScore = (metrics: any) => {
               // Lighthouse 10 weights (Nov 2023)
               const weights = {
-                'largest_contentful_paint': 0.25,
-                'interaction_to_next_paint': 0.25, 
-                'cumulative_layout_shift': 0.25,
-                'first_contentful_paint': 0.1,
-                'experimental_time_to_first_byte': 0.15
+                largest_contentful_paint: 0.25,
+                interaction_to_next_paint: 0.25,
+                cumulative_layout_shift: 0.25,
+                first_contentful_paint: 0.1,
+                experimental_time_to_first_byte: 0.15,
               };
 
               // Lighthouse 10 scoring thresholds
               const thresholds = {
-                'largest_contentful_paint': { good: 2500, poor: 4000 },
-                'interaction_to_next_paint': { good: 200, poor: 500 },
-                'cumulative_layout_shift': { good: 0.1, poor: 0.25 },
-                'first_contentful_paint': { good: 1800, poor: 3000 },
-                'experimental_time_to_first_byte': { good: 800, poor: 1800 }
+                largest_contentful_paint: { good: 2500, poor: 4000 },
+                interaction_to_next_paint: { good: 200, poor: 500 },
+                cumulative_layout_shift: { good: 0.1, poor: 0.25 },
+                first_contentful_paint: { good: 1800, poor: 3000 },
+                experimental_time_to_first_byte: { good: 800, poor: 1800 },
               };
 
-              const calculateMetricScore = (metricKey: string, value: number) => {
-                const threshold = thresholds[metricKey as keyof typeof thresholds];
+              const calculateMetricScore = (
+                metricKey: string,
+                value: number,
+              ) => {
+                const threshold =
+                  thresholds[metricKey as keyof typeof thresholds];
                 if (!threshold) return 50; // fallback
 
                 if (value <= threshold.good) return 100;
                 if (value >= threshold.poor) return 0;
-                
+
                 // Linear interpolation between good and poor
-                return Math.round(100 - ((value - threshold.good) / (threshold.poor - threshold.good)) * 100);
+                return Math.round(
+                  100 -
+                    ((value - threshold.good) /
+                      (threshold.poor - threshold.good)) *
+                      100,
+                );
               };
 
               let totalScore = 0;
@@ -384,75 +449,92 @@ export default function MessageRenderer({ message }: MessageRendererProps) {
                 if (metrics[key]) {
                   const value = metrics[key].percentile;
                   const score = calculateMetricScore(key, value);
-                  
+
                   totalScore += score * weight;
                   totalWeight += weight;
 
                   const labels: Record<string, string> = {
-                    'largest_contentful_paint': 'LCP',
-                    'interaction_to_next_paint': 'INP',
-                    'cumulative_layout_shift': 'CLS', 
-                    'first_contentful_paint': 'FCP',
-                    'experimental_time_to_first_byte': 'TTFB'
+                    largest_contentful_paint: "LCP",
+                    interaction_to_next_paint: "INP",
+                    cumulative_layout_shift: "CLS",
+                    first_contentful_paint: "FCP",
+                    experimental_time_to_first_byte: "TTFB",
                   };
 
                   lighthouseMetrics.push({
-                    key: key.replace(/_/g, '-'),
+                    key: key.replace(/_/g, "-"),
                     label: labels[key] || key,
                     value,
                     weight,
-                    score
+                    score,
                   });
                 }
               }
 
-              const overallScore = totalWeight > 0 ? Math.round(totalScore / totalWeight) : 0;
+              const overallScore =
+                totalWeight > 0 ? Math.round(totalScore / totalWeight) : 0;
               return { overallScore, metrics: lighthouseMetrics };
             };
 
             const renderDeviceMetrics = (deviceData: any) => {
               if (!deviceData?.fieldData?.metrics) return null;
-              
+
               const metrics = deviceData.fieldData.metrics;
-              const allMetrics = ["largest_contentful_paint", "interaction_to_next_paint", "cumulative_layout_shift", "first_contentful_paint", "experimental_time_to_first_byte"];
-              
+              const allMetrics = [
+                "largest_contentful_paint",
+                "interaction_to_next_paint",
+                "cumulative_layout_shift",
+                "first_contentful_paint",
+                "experimental_time_to_first_byte",
+              ];
+
               const metricLabels: Record<string, string> = {
                 first_contentful_paint: "First Contentful Paint",
-                largest_contentful_paint: "Largest Contentful Paint", 
+                largest_contentful_paint: "Largest Contentful Paint",
                 cumulative_layout_shift: "Cumulative Layout Shift",
                 interaction_to_next_paint: "Interaction to Next Paint",
-                experimental_time_to_first_byte: "Time to First Byte"
+                experimental_time_to_first_byte: "Time to First Byte",
               };
 
               const allMetricsData = allMetrics
-                .filter(key => metrics[key])
-                .map(key => ({ key, metric: metrics[key], label: metricLabels[key] || key }));
+                .filter((key) => metrics[key])
+                .map((key) => ({
+                  key,
+                  metric: metrics[key],
+                  label: metricLabels[key] || key,
+                }));
 
-              const { overallScore, metrics: lighthouseMetrics } = calculateLighthouseScore(metrics);
+              const { overallScore, metrics: lighthouseMetrics } =
+                calculateLighthouseScore(metrics);
 
               return (
                 <div className="space-y-6">
                   <div className="flex justify-center">
-                    <ScoreRing 
+                    <ScoreRing
                       overallScore={overallScore}
                       metrics={lighthouseMetrics}
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {allMetricsData.map(({ key, metric, label }) => 
-                      renderMetricCard(key, metric, label)
+                    {allMetricsData.map(({ key, metric, label }) =>
+                      renderMetricCard(key, metric, label),
                     )}
                   </div>
                 </div>
               );
             };
 
-            const hasMultipleDevices = output.mobile?.fieldData && output.desktop?.fieldData;
+            const hasMultipleDevices =
+              output.mobile?.fieldData && output.desktop?.fieldData;
 
             if (!hasMultipleDevices) {
-              const deviceData = output.mobile?.fieldData ? output.mobile : output.desktop;
-              return <div className="p-4">{renderDeviceMetrics(deviceData)}</div>;
+              const deviceData = output.mobile?.fieldData
+                ? output.mobile
+                : output.desktop;
+              return (
+                <div className="p-4">{renderDeviceMetrics(deviceData)}</div>
+              );
             }
 
             return (
@@ -461,20 +543,26 @@ export default function MessageRenderer({ message }: MessageRendererProps) {
                   <TabsHighlight className="bg-background absolute z-0 inset-0 rounded-xl">
                     <TabsList className="h-10 inline-flex p-1 bg-muted w-full rounded-xl">
                       <TabsHighlightItem value="mobile" className="flex-1">
-                        <TabsTrigger value="mobile" className="h-full px-4 py-2 w-full text-sm flex items-center justify-center gap-2">
+                        <TabsTrigger
+                          value="mobile"
+                          className="h-full px-4 py-2 w-full text-sm flex items-center justify-center gap-2"
+                        >
                           <SmartphoneIcon size={16} />
                           Mobile
                         </TabsTrigger>
                       </TabsHighlightItem>
                       <TabsHighlightItem value="desktop" className="flex-1">
-                        <TabsTrigger value="desktop" className="h-full px-4 py-2 w-full text-sm flex items-center justify-center gap-2">
+                        <TabsTrigger
+                          value="desktop"
+                          className="h-full px-4 py-2 w-full text-sm flex items-center justify-center gap-2"
+                        >
                           <MonitorIcon size={16} />
                           Desktop
                         </TabsTrigger>
                       </TabsHighlightItem>
                     </TabsList>
                   </TabsHighlight>
-                  
+
                   <TabsContents className="mt-6">
                     <TabsContent value="mobile">
                       {renderDeviceMetrics(output.mobile)}
@@ -561,7 +649,6 @@ export default function MessageRenderer({ message }: MessageRendererProps) {
                             ))}
                           </div>
                         )}
-
                       </div>
                     ) : null
                   }

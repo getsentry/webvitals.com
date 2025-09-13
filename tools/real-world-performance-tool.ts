@@ -8,19 +8,20 @@ import type {
 
 const realWorldPerformanceInputSchema = z.object({
   url: z.string().describe("The URL to analyze for real-world performance"),
-  devices: z.array(z.enum(["mobile", "desktop"])).optional().describe("Devices to analyze (default: both mobile and desktop)"),
+  devices: z
+    .array(z.enum(["mobile", "desktop"]))
+    .optional()
+    .describe("Devices to analyze (default: both mobile and desktop)"),
 });
-
 
 async function fetchPerformanceData(
   url: string,
   strategy: "mobile" | "desktop",
-  apiKey: string
+  apiKey: string,
 ) {
   const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(
-    url
+    url,
   )}&strategy=${strategy}&fields=loadingExperience,originLoadingExperience&key=${apiKey}`;
-
 
   const response = await fetch(apiUrl, {
     next: {
@@ -31,7 +32,7 @@ async function fetchPerformanceData(
 
   if (!response.ok) {
     throw new Error(
-      `CrUX API failed for ${strategy}: ${response.status} ${response.statusText}`
+      `CrUX API failed for ${strategy}: ${response.status} ${response.statusText}`,
     );
   }
 
@@ -42,7 +43,6 @@ async function fetchPerformanceData(
 
 function transformMetrics(rawMetrics: Record<string, any>): FieldMetrics {
   const result: FieldMetrics = {};
-
 
   const fieldMapping: Record<string, keyof FieldMetrics> = {
     FIRST_CONTENTFUL_PAINT: "first_contentful_paint",
@@ -72,7 +72,7 @@ function transformMetrics(rawMetrics: Record<string, any>): FieldMetrics {
 
 async function getRealWorldPerformance(
   url: string,
-  devices: Array<"mobile" | "desktop"> = ["mobile", "desktop"]
+  devices: Array<"mobile" | "desktop"> = ["mobile", "desktop"],
 ): Promise<RealWorldPerformanceOutput> {
   const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
 
@@ -84,20 +84,24 @@ async function getRealWorldPerformance(
   try {
     const promises: Promise<any>[] = [];
     const deviceOrder: Array<"mobile" | "desktop"> = [];
-    
+
     if (devices.includes("mobile")) {
       promises.push(fetchPerformanceData(normalizedUrl, "mobile", apiKey));
       deviceOrder.push("mobile");
     }
-    
+
     if (devices.includes("desktop")) {
       promises.push(fetchPerformanceData(normalizedUrl, "desktop", apiKey));
       deviceOrder.push("desktop");
     }
-    
+
     const results = await Promise.all(promises);
-    const mobileData = deviceOrder.includes("mobile") ? results[deviceOrder.indexOf("mobile")] : null;
-    const desktopData = deviceOrder.includes("desktop") ? results[deviceOrder.indexOf("desktop")] : null;
+    const mobileData = deviceOrder.includes("mobile")
+      ? results[deviceOrder.indexOf("mobile")]
+      : null;
+    const desktopData = deviceOrder.includes("desktop")
+      ? results[deviceOrder.indexOf("desktop")]
+      : null;
 
     const result: RealWorldPerformanceOutput = {
       url: normalizedUrl,
@@ -128,7 +132,6 @@ async function getRealWorldPerformance(
       hasDesktopData: !!result.desktop?.fieldData,
     });
 
-
     return result;
   } catch (error) {
     Sentry.logger.error("Real-world performance fetch failed", {
@@ -147,7 +150,7 @@ async function getRealWorldPerformance(
     throw new Error(
       `Real-world performance analysis failed: ${
         error instanceof Error ? error.message : "Unknown error"
-      }`
+      }`,
     );
   }
 }

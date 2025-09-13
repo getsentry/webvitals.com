@@ -140,7 +140,7 @@ export const ToolOutput = ({
           <div className="overflow-x-auto rounded-md bg-muted/30 text-foreground text-xs [&_table]:w-full">
             {output && <div>{output}</div>}
           </div>
-          
+
           {rawOutput && (
             <details className="text-xs">
               <summary className="cursor-pointer text-muted-foreground font-medium uppercase tracking-wide">

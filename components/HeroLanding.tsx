@@ -16,8 +16,8 @@ export default function HeroLanding({ onSubmit, disabled }: HeroLandingProps) {
             Analyze. Optimize. Ship.
           </h1>
           <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Unlock your website's potential with real-world performance
-            analysis from actual user experiences
+            Unlock your website's potential with real-world performance analysis
+            from actual user experiences
           </p>
         </div>
 

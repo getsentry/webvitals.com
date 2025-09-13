@@ -38,7 +38,7 @@ class CloudflareTechDetector {
 
   private async makeRequest<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers = {
@@ -66,7 +66,7 @@ class CloudflareTechDetector {
       throw new Error(
         `Cloudflare API error ${response.status}: ${
           errorData.message || response.statusText
-        }`
+        }`,
       );
     }
 
@@ -80,7 +80,7 @@ class CloudflareTechDetector {
     });
 
     return this.makeRequest<CloudflareSearchResponse>(
-      `/search?${searchParams}`
+      `/search?${searchParams}`,
     );
   }
 
@@ -102,7 +102,7 @@ class CloudflareTechDetector {
   async waitForScanCompletion(
     scanId: string,
     maxWaitTime = 60000,
-    pollInterval = 5000
+    pollInterval = 5000,
   ): Promise<CloudflareScanResult> {
     const startTime = Date.now();
 
@@ -138,7 +138,7 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
 
   if (!accountId || !apiToken) {
     throw new Error(
-      "CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN environment variables are required"
+      "CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN environment variables are required",
     );
   }
 
@@ -159,7 +159,6 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
         const recentResult = searchResults.results[0];
         const scanId = recentResult.task.uuid;
 
-
         try {
           scanResult = await client.getScanResult(scanId);
         } catch (fetchError) {
@@ -171,7 +170,6 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
     }
 
     if (!scanResult?.meta?.processors?.wappa?.data) {
-
       const submission = await client.submitScan(normalizedUrl);
       let scanId: string;
 

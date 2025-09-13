@@ -67,7 +67,8 @@ const METRIC_INFO = {
   },
   "interaction-to-next-paint": {
     name: "Interaction to Next Paint",
-    description: "Responsiveness to user interactions throughout the page lifetime.",
+    description:
+      "Responsiveness to user interactions throughout the page lifetime.",
     unit: "ms",
   },
   "largest-contentful-paint": {
@@ -202,10 +203,7 @@ export default function ScoreRing({
 
   return (
     <TooltipProvider>
-      <div
-        className={cn("relative inline-block", className)}
-        data-score-ring
-      >
+      <div className={cn("relative inline-block", className)} data-score-ring>
         <svg
           width={svgSize}
           height={svgSize}
@@ -337,7 +335,8 @@ export default function ScoreRing({
           </text>
         </svg>
 
-        {typeof document !== 'undefined' && hoveredSegment &&
+        {typeof document !== "undefined" &&
+          hoveredSegment &&
           mousePosition &&
           createPortal(
             (() => {
@@ -378,7 +377,9 @@ export default function ScoreRing({
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-xs text-foreground/60">Weight:</span>
+                      <span className="text-xs text-foreground/60">
+                        Weight:
+                      </span>
                       <span className="font-medium text-xs">
                         {Math.round(segment.metric.weight * 100)}%
                       </span>
@@ -389,10 +390,13 @@ export default function ScoreRing({
                         {segment.metric.key === "cumulative-layout-shift"
                           ? segment.metric.value.toFixed(3)
                           : segment.metric.key === "first-contentful-paint" ||
-                              segment.metric.key === "largest-contentful-paint" ||
-                              segment.metric.key === "interaction-to-next-paint" ||
+                              segment.metric.key ===
+                                "largest-contentful-paint" ||
+                              segment.metric.key ===
+                                "interaction-to-next-paint" ||
                               segment.metric.key === "time-to-first-byte" ||
-                              segment.metric.key === "experimental-time-to-first-byte"
+                              segment.metric.key ===
+                                "experimental-time-to-first-byte"
                             ? `${(segment.metric.value / 1000).toFixed(2)}s`
                             : segment.metric.value.toFixed(2)}
                       </span>
@@ -401,7 +405,7 @@ export default function ScoreRing({
                 </div>
               );
             })(),
-            document.body
+            document.body,
           )}
       </div>
     </TooltipProvider>
