@@ -1,8 +1,8 @@
 "use client";
 
+import NumberFlow from "@number-flow/react";
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-
 import { cn } from "@/lib/utils";
 
 interface LighthouseMetric {
@@ -315,17 +315,28 @@ export default function ScoreRing({
           );
         })}
 
-        <text
-          x={svgCenter}
-          y={svgCenter}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          className="text-3xl font-bold fill-current"
-          style={{ fill: getOverallScoreColor(overallScore) }}
-        >
-          {overallScore}
-        </text>
+        {/* Placeholder for positioning - actual score will be positioned absolutely */}
+        <circle
+          cx={svgCenter}
+          cy={svgCenter}
+          r={radius - barWidth}
+          fill="transparent"
+          className="pointer-events-none"
+        />
       </svg>
+
+      {/* Overall score using NumberFlow positioned over the center */}
+      <div
+        className="absolute flex items-center justify-center text-3xl font-bold"
+        style={{
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          color: getOverallScoreColor(overallScore),
+        }}
+      >
+        <NumberFlow value={overallScore} />
+      </div>
 
       {typeof document !== "undefined" &&
         hoveredSegment &&

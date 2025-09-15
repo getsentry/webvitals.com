@@ -1,3 +1,4 @@
+import NumberFlow from "@number-flow/react";
 import {
   formatMetricValue,
   getMetricValueColor,
@@ -33,7 +34,7 @@ export default function MetricCard({
         className="text-2xl font-bold"
         style={{ color: getMetricValueColor(metric.category) }}
       >
-        {formatMetricValue(metricKey, metric.percentile)}
+        <NumberFlow value={formatMetricValue(metricKey, metric.percentile)} suffix= {metricKey === "cumulative_layout_shift" ? "" : "s"} />
       </div>
       {metric.distributions && (
         <DistributionBar

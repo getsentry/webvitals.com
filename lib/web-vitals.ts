@@ -119,7 +119,7 @@ export function calculateMetricScore(metricKey: string, value: number): number {
 
   // Linear interpolation between good and poor
   return Math.round(
-    100 - ((value - threshold.good) / (threshold.poor - threshold.good)) * 100,
+    100 - ((value - threshold.good) / (threshold.poor - threshold.good)) * 100
   );
 }
 
@@ -155,11 +155,11 @@ export function calculateLighthouseScore(metrics: FieldMetrics): {
   return { overallScore, metrics: lighthouseMetrics };
 }
 
-export function formatMetricValue(key: string, value: number): string {
+export function formatMetricValue(key: string, value: number): number {
   if (key === "cumulative_layout_shift") {
-    return (value / 100).toFixed(2);
+    return Number((value / 100).toFixed(2));
   }
-  return `${(value / 1000).toFixed(2)}s`;
+  return Number((value / 1000).toFixed(2));
 }
 
 export function formatThresholdValue(key: string, value: number): string {
@@ -173,14 +173,14 @@ export function getMetricValueColor(category: string): string {
   return category === "FAST"
     ? "var(--score-good)"
     : category === "AVERAGE"
-      ? "var(--score-needs-improvement)"
-      : "var(--score-poor)";
+    ? "var(--score-needs-improvement)"
+    : "var(--score-poor)";
 }
 
 export function getMetricBackgroundColor(category: string): string {
   return category === "FAST"
     ? "var(--score-good)"
     : category === "AVERAGE"
-      ? "var(--score-needs-improvement)"
-      : "var(--score-poor)";
+    ? "var(--score-needs-improvement)"
+    : "var(--score-poor)";
 }
