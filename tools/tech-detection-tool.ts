@@ -28,10 +28,8 @@ interface TechDetectionOutput {
 class CloudflareTechDetector {
   private apiToken: string;
   private baseUrl: string;
-  private accountId: string;
 
   constructor(accountId: string, apiToken: string) {
-    this.accountId = accountId;
     this.apiToken = apiToken;
     this.baseUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/urlscanner/v2`;
   }
@@ -162,11 +160,20 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
         try {
           scanResult = await client.getScanResult(scanId);
         } catch (fetchError) {
-          // Failed to fetch existing scan result, will submit new scan
+          Sentry.logger.warn("Failed to fetch scan result", {
+            scanId,
+            error:
+              fetchError instanceof Error
+                ? fetchError.message
+                : "Unknown error",
+          });
         }
       }
     } catch (searchError) {
-      // Search failed, will submit new scan
+      Sentry.logger.warn("Failed to search scans", {
+        error:
+          searchError instanceof Error ? searchError.message : "Unknown error",
+      });
     }
 
     if (!scanResult?.meta?.processors?.wappa?.data) {

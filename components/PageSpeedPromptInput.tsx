@@ -145,6 +145,7 @@ export default function PageSpeedPromptInput({
     <div className={className}>
       <PromptInput onSubmit={handleSubmit}>
         <PromptInputTextarea
+          autoFocus
           onChange={(e) => setDomain(e.target.value)}
           value={domain}
           placeholder="Enter your domain"

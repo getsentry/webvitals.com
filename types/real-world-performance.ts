@@ -27,7 +27,7 @@ export interface PerformanceData {
   metrics: FieldMetrics;
 }
 
-export interface SentryScoreMetric {
+export interface LighthouseScoreMetric {
   key: string;
   label: string;
   value: number;
@@ -35,24 +35,22 @@ export interface SentryScoreMetric {
   score: number;
 }
 
-export interface SentryScoreData {
+export interface LighthouseScoreData {
   overallScore: number;
-  metrics: SentryScoreMetric[];
+  metrics: LighthouseScoreMetric[];
+}
+
+export interface DeviceData {
+  fieldData?: PerformanceData;
+  originData?: PerformanceData;
+  lighthouseScore?: LighthouseScoreData;
 }
 
 export interface RealWorldPerformanceOutput {
   url: string;
   hasData: boolean;
-  mobile?: {
-    fieldData?: PerformanceData;
-    originData?: PerformanceData;
-    sentryScore?: SentryScoreData;
-  };
-  desktop?: {
-    fieldData?: PerformanceData;
-    originData?: PerformanceData;
-    sentryScore?: SentryScoreData;
-  };
+  mobile?: DeviceData;
+  desktop?: DeviceData;
 }
 
 // Sentry Performance Score thresholds and weights

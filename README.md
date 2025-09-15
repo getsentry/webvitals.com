@@ -45,13 +45,13 @@ pnpm build
 pnpm start
 
 # Type checking
-pnpm check
+pnpm check-types
 
 # Format code
 pnpm format:fix
 
 # Lint code
-pnpm lint:fix
+pnpm lint
 ```
 
 ## Project Structure

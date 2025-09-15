@@ -18,17 +18,13 @@ pnpm build
 # Start production server
 pnpm start
 
-# Preview production build locally (same as start)
-pnpm preview
-
 # Type checking
-pnpm check
+pnpm check-types
 
 # Code formatting and linting
 pnpm format        # Format code with Biome
 pnpm format:fix    # Fix formatting issues
 pnpm lint          # Check for linting issues
-pnpm lint:fix      # Fix linting issues
 ```
 
 **Note**: Always ask before running dev/build commands or formatting/linting - the user prefers to handle these manually.

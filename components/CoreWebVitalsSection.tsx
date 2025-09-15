@@ -1,5 +1,8 @@
+"use client";
+
 import { Clock, MousePointer, Move3D, Paintbrush, Server } from "lucide-react";
 import { BentoCard, BentoGrid } from "@/components/magicui/bento-grid";
+import { useWebVitalsScore } from "@/contexts/WebVitalsScoreContext";
 
 const metrics = [
   {
@@ -226,32 +229,69 @@ const metrics = [
 ];
 
 export default function CoreWebVitalsSection() {
+  const { scores, hasScores } = useWebVitalsScore();
+
+  const getMetricScore = (metricKey: string) => {
+    if (!hasScores) return null;
+
+    // Try mobile first, then desktop
+    const deviceScores = scores.mobile || scores.desktop;
+    if (!deviceScores) return null;
+
+    const metric = deviceScores.metrics.find((m) => m.key === metricKey);
+    return metric?.score || null;
+  };
+
+  const formatMetricScore = (score: number | null) => {
+    if (score === null) return "";
+    return ` (${score})`;
+  };
+
   return (
     <section className="py-24 px-4 bg-background">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
             Understanding Core Web Vitals
+            {hasScores && (
+              <span className="text-muted-foreground text-lg font-normal ml-2">
+                - Current Analysis Results
+              </span>
+            )}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Google's Core Web Vitals are essential metrics that measure
             real-world user experience on your website
+            {hasScores && " - scores from your recent analysis are shown below"}
           </p>
         </div>
 
         <BentoGrid className="grid-cols-3 auto-rows-[22rem] mb-16">
-          {metrics.map((metric, idx) => (
-            <BentoCard
-              key={idx}
-              name={metric.name}
-              className={metric.className}
-              background={metric.background}
-              Icon={metric.Icon}
-              description={metric.detailedDescription}
-              href={metric.href}
-              cta={metric.cta}
-            />
-          ))}
+          {metrics.map((metric, idx) => {
+            const metricMappings: Record<string, string> = {
+              "Largest Contentful Paint": "largest-contentful-paint",
+              "Interaction to Next Paint": "interaction-to-next-paint",
+              "Cumulative Layout Shift": "cumulative-layout-shift",
+              "First Contentful Paint": "first-contentful-paint",
+              "Time to First Byte": "experimental-time-to-first-byte",
+            };
+
+            const metricKey = metricMappings[metric.name];
+            const score = getMetricScore(metricKey);
+
+            return (
+              <BentoCard
+                key={idx}
+                name={metric.name + formatMetricScore(score)}
+                className={metric.className}
+                background={metric.background}
+                Icon={metric.Icon}
+                description={metric.detailedDescription}
+                href={metric.href}
+                cta={metric.cta}
+              />
+            );
+          })}
         </BentoGrid>
       </div>
     </section>
