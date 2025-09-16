@@ -72,7 +72,12 @@ export default function PerformanceOutput({ output }: PerformanceOutputProps) {
     const deviceData =
       selectedDevice === "mobile" ? output.mobile : output.desktop;
     if (!deviceData) return null;
-    return <DeviceMetrics deviceData={deviceData} />;
+    return (
+      <DeviceMetrics
+        deviceData={deviceData}
+        animationDirection={selectedDevice === "mobile" ? -1 : 1}
+      />
+    );
   }, [selectedDevice, output.mobile, output.desktop, output.hasData]);
 
   if (!output.hasData) {

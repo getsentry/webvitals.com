@@ -34,7 +34,15 @@ export default function MetricCard({
         className="text-2xl font-bold"
         style={{ color: getMetricValueColor(metric.category) }}
       >
-        <NumberFlow value={formatMetricValue(metricKey, metric.percentile)} suffix= {metricKey === "cumulative_layout_shift" ? "" : "s"} />
+        <NumberFlow
+          value={formatMetricValue(metricKey, metric.percentile)}
+          suffix={metricKey === "cumulative_layout_shift" ? "" : "s"}
+          style={
+            {
+              "--suffix-color": getMetricValueColor(metric.category),
+            } as React.CSSProperties
+          }
+        />
       </div>
       {metric.distributions && (
         <DistributionBar

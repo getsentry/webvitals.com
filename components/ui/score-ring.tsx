@@ -1,6 +1,6 @@
 "use client";
 
-import NumberFlow from "@number-flow/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,7 @@ interface ScoreRingProps {
   size?: number;
   barWidth?: number;
   className?: string;
+  animationDirection?: -1 | 1;
 }
 
 const METRIC_COLORS = {
@@ -95,6 +96,7 @@ export default function ScoreRing({
   size = 140,
   barWidth = 8,
   className,
+  animationDirection = -1,
 }: ScoreRingProps) {
   const [hoveredSegment, setHoveredSegment] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState<{
@@ -335,7 +337,22 @@ export default function ScoreRing({
           color: getOverallScoreColor(overallScore),
         }}
       >
-        <NumberFlow value={overallScore} />
+        <AnimatePresence
+          mode="popLayout"
+          initial={false}
+          custom={animationDirection}
+        >
+          <motion.div
+            key={overallScore}
+            variants={variants}
+            initial="initial"
+            animate="active"
+            exit="exit"
+            custom={animationDirection}
+          >
+            {overallScore}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {typeof document !== "undefined" &&
@@ -410,3 +427,13 @@ export default function ScoreRing({
     </div>
   );
 }
+
+const variants = {
+  initial: (direction: number) => {
+    return { x: `${110 * direction}%`, opacity: 0 };
+  },
+  active: { x: "0%", opacity: 1 },
+  exit: (direction: number) => {
+    return { x: `${-110 * direction}%`, opacity: 0 };
+  },
+};

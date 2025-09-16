@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "motion/react";
 import {
   Tooltip,
   TooltipContent,
@@ -110,7 +111,6 @@ export default function DistributionBar({
             75th Percentile - {formatMetricValue(metricKey, percentile)}
           </span>
         </div>
-        <div className="text-muted-foreground text-xs">Core Web Vital</div>
       </div>
     </div>
   );
@@ -120,23 +120,35 @@ export default function DistributionBar({
       <TooltipTrigger asChild>
         <div className="relative">
           <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted cursor-help">
-            {distributions.map((dist, i) => (
-              <div
-                key={i}
-                style={{
-                  width: `${dist.proportion * 100}%`,
-                  backgroundColor: COLOR_VARS[i],
-                }}
-              />
-            ))}
+            <AnimatePresence>
+              {distributions.map((dist, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${dist.proportion * 100}%` }}
+                  exit={{ width: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  style={{
+                    backgroundColor: COLOR_VARS[i],
+                  }}
+                />
+              ))}
+            </AnimatePresence>
           </div>
-          <div
-            className="absolute top-0 w-1 h-3 bg-gray-900 shadow-sm pointer-events-none"
-            style={{
-              left: `${Math.min(Math.max(markerPosition, 0.5), 99.5)}%`,
-              transform: "translateX(-50%)",
-            }}
-          />
+          <AnimatePresence>
+            <motion.div
+              className="absolute top-0 w-1 h-3 bg-foreground shadow-sm pointer-events-none"
+              initial={{ left: 0 }}
+              animate={{
+                left: `${Math.min(Math.max(markerPosition, 0.5), 99.5)}%`,
+              }}
+              exit={{ left: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              style={{
+                transform: "translateX(-50%)",
+              }}
+            />
+          </AnimatePresence>
         </div>
       </TooltipTrigger>
       <TooltipContent side="top" className="max-w-sm">

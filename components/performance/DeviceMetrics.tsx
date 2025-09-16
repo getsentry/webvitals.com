@@ -5,6 +5,7 @@ import MetricCard from "./MetricCard";
 
 interface DeviceMetricsProps {
   deviceData: NonNullable<DeviceData>;
+  animationDirection?: -1 | 1;
 }
 
 const ALL_METRICS = [
@@ -15,7 +16,10 @@ const ALL_METRICS = [
   "experimental_time_to_first_byte",
 ];
 
-export default function DeviceMetrics({ deviceData }: DeviceMetricsProps) {
+export default function DeviceMetrics({
+  deviceData,
+  animationDirection,
+}: DeviceMetricsProps) {
   if (!deviceData?.fieldData?.metrics) return null;
 
   const metrics = deviceData.fieldData.metrics;
@@ -37,7 +41,11 @@ export default function DeviceMetrics({ deviceData }: DeviceMetricsProps) {
   return (
     <div className="space-y-6">
       <div className="flex justify-center">
-        <ScoreRing overallScore={overallScore} metrics={lighthouseMetrics} />
+        <ScoreRing
+          overallScore={overallScore}
+          metrics={lighthouseMetrics}
+          animationDirection={animationDirection}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
