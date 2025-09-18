@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AIDevtools } from "@ai-sdk-tools/devtools";
 import ThemeProvider from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -23,6 +24,8 @@ export default function RootLayout({
           </div>
           {children}
         </ThemeProvider>
+        {/* Only in development */}
+        {process.env.NODE_ENV === "development" && <AIDevtools />}
       </body>
     </html>
   );
