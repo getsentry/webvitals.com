@@ -1,8 +1,14 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
 import type { ToolUIPart } from "ai";
 import {
-  AlertTriangleIcon,
   CheckCircleIcon,
   ChevronDownIcon,
   CircleIcon,
@@ -11,14 +17,7 @@ import {
   XCircleIcon,
 } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { cn } from "@/lib/utils";
+import { CodeBlock } from "./code-block";
 
 export type ToolProps = ComponentProps<typeof Collapsible>;
 
@@ -33,15 +32,6 @@ export type ToolHeaderProps = {
   type: ToolUIPart["type"];
   state: ToolUIPart["state"];
   className?: string;
-};
-
-const getToolDisplayName = (type: string) => {
-  const toolNames = {
-    "tool-getRealWorldPerformance": "Analyzing real world performance",
-    "tool-detectTechnologies": "Identifying tech stack",
-  } as const;
-
-  return toolNames[type as keyof typeof toolNames] || type;
 };
 
 const getStatusBadge = (status: ToolUIPart["state"]) => {
@@ -82,7 +72,7 @@ export const ToolHeader = ({
   >
     <div className="flex items-center gap-2">
       <WrenchIcon className="size-4 text-muted-foreground" />
-      <span className="font-medium text-sm">{getToolDisplayName(type)}</span>
+      <span className="font-medium text-sm">{type}</span>
       {getStatusBadge(state)}
     </div>
     <ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
@@ -105,56 +95,58 @@ export type ToolInputProps = ComponentProps<"div"> & {
   input: ToolUIPart["input"];
 };
 
-export const ToolInput = ({ className, input, ...props }: ToolInputProps) => {
-  // Don't render parameters section
-  return null;
-};
+export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
+  <div className={cn("space-y-2 overflow-hidden p-4", className)} {...props}>
+    <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+      Parameters
+    </h4>
+    <div className="rounded-md bg-muted/50">
+      <CodeBlock code={JSON.stringify(input, null, 2)} language="json" />
+    </div>
+  </div>
+);
 
 export type ToolOutputProps = ComponentProps<"div"> & {
-  output: ReactNode;
+  output: ToolUIPart["output"];
   errorText: ToolUIPart["errorText"];
-  rawOutput?: any;
 };
 
 export const ToolOutput = ({
   className,
   output,
   errorText,
-  rawOutput,
   ...props
 }: ToolOutputProps) => {
   if (!(output || errorText)) {
     return null;
   }
 
-  return (
-    <div className={cn("space-y-4 p-4", className)} {...props}>
-      {errorText ? (
-        <Alert variant="destructive">
-          <AlertTriangleIcon className="h-4 w-4" />
-          <AlertTitle>Tool Execution Failed</AlertTitle>
-          <AlertDescription className="mt-2">{errorText}</AlertDescription>
-        </Alert>
-      ) : (
-        <>
-          <div className="overflow-x-auto rounded-md bg-muted/30 text-foreground text-xs [&_table]:w-full">
-            {output && <div>{output}</div>}
-          </div>
+  let Output = <div>{output as ReactNode}</div>;
 
-          {rawOutput && (
-            <details className="text-xs">
-              <summary className="cursor-pointer text-muted-foreground font-medium uppercase tracking-wide">
-                Debug Info
-              </summary>
-              <div className="mt-2 rounded-md bg-muted/50">
-                <pre className="text-xs overflow-auto p-4 font-mono">
-                  {JSON.stringify(rawOutput, null, 2)}
-                </pre>
-              </div>
-            </details>
-          )}
-        </>
-      )}
+  if (typeof output === "object") {
+    Output = (
+      <CodeBlock code={JSON.stringify(output, null, 2)} language="json" />
+    );
+  } else if (typeof output === "string") {
+    Output = <CodeBlock code={output} language="json" />;
+  }
+
+  return (
+    <div className={cn("space-y-2 p-4", className)} {...props}>
+      <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+        {errorText ? "Error" : "Result"}
+      </h4>
+      <div
+        className={cn(
+          "overflow-x-auto rounded-md text-xs [&_table]:w-full",
+          errorText
+            ? "bg-destructive/10 text-destructive"
+            : "bg-muted/50 text-foreground",
+        )}
+      >
+        {errorText && <div>{errorText}</div>}
+        {Output}
+      </div>
     </div>
   );
 };

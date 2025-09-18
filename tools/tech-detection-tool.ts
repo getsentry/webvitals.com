@@ -13,16 +13,11 @@ const techDetectionInputSchema = z.object({
 });
 
 interface TechDetectionOutput {
-  url: string;
   technologies: Array<{
     name: string;
     confidence: number;
     categories: string[];
   }>;
-  summary: {
-    totalDetected: number;
-    byCategory: Record<string, string[]>;
-  };
 }
 
 class CloudflareTechDetector {
@@ -214,32 +209,13 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
       categories: tech.categories?.map((cat) => cat.name) || [],
     }));
 
-    const byCategory: Record<string, string[]> = {};
-
-    for (const tech of technologies) {
-      for (const category of tech.categories) {
-        if (!byCategory[category]) {
-          byCategory[category] = [];
-        }
-        if (!byCategory[category].includes(tech.name)) {
-          byCategory[category].push(tech.name);
-        }
-      }
-    }
-
     const result: TechDetectionOutput = {
-      url: normalizedUrl,
       technologies: technologies.sort((a, b) => b.confidence - a.confidence),
-      summary: {
-        totalDetected: technologies.length,
-        byCategory,
-      },
     };
 
     Sentry.logger.info("Technology detection completed", {
       url: normalizedUrl,
       techCount: technologies.length,
-      categories: Object.keys(byCategory),
       scanId: scanResult.task?.uuid,
     });
 
@@ -259,12 +235,7 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
     });
 
     return {
-      url: normalizedUrl,
       technologies: [],
-      summary: {
-        totalDetected: 0,
-        byCategory: {},
-      },
     };
   }
 }
