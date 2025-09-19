@@ -1,6 +1,6 @@
 "use client";
 
-import type { ToolUIPart } from "ai";
+import type { TextUIPart, ToolUIPart, UIMessage } from "ai";
 import { memo, useCallback, useEffect, useMemo } from "react";
 import {
   Tool,
@@ -17,7 +17,6 @@ import type {
   RealWorldPerformanceOutput,
 } from "@/types/real-world-performance";
 import type { TechnologyDetectionOutput } from "@/types/web-vitals";
-import FollowUpSuggestions from "./FollowUpSuggestions";
 import TextMessage from "./message/TextMessage";
 import PerformanceResult from "./results/PerformanceResult";
 
@@ -35,105 +34,50 @@ type TechnologyToolUIPart = ToolUIPart<{
   };
 }>;
 
-type FollowUpActionsToolUIPart = ToolUIPart<{
-  generateFollowUpActions: {
-    input: {
-      performanceData: RealWorldPerformanceOutput;
-      technologyData: TechnologyDetectionOutput;
-    };
-    output: {
-      url: string;
-      actions: Array<{
-        id: string;
-        title: string;
-      }>;
-      generatedAt: string;
-    };
-  };
-}>;
-
-type TextPart = {
-  type: "text";
-  text?: string;
-};
-
 interface MessageRendererProps {
-  message: {
-    id: string;
-    role: "system" | "user" | "assistant";
-    parts?: Array<{
-      type: string;
-      text?: string;
-    }>;
-  };
-  onSendMessage?: (message: {
-    role: "user";
-    parts: Array<{ type: "text"; text: string }>;
-  }) => void;
+  message: UIMessage;
 }
 
 const MessageRenderer = memo(function MessageRenderer({
   message,
-  onSendMessage,
 }: MessageRendererProps) {
   console.log("MessageRenderer", message);
   const { setScores } = useWebVitalsScore();
 
   // Memoize part separation to avoid expensive filtering on every render
-  const { toolParts, textParts, performanceParts, followUpActionsParts } =
-    useMemo(() => {
-      if (!message.parts) {
-        return {
-          toolParts: [] as (
-            | PerformanceToolUIPart
-            | TechnologyToolUIPart
-            | FollowUpActionsToolUIPart
-          )[],
-          textParts: [] as TextPart[],
-          performanceParts: [] as PerformanceToolUIPart[],
-          followUpActionsParts: [] as FollowUpActionsToolUIPart[],
-        };
-      }
+  const { toolParts, textParts, performanceParts } = useMemo(() => {
+    const tools: (PerformanceToolUIPart | TechnologyToolUIPart)[] = [];
+    const texts: TextUIPart[] = [];
+    const performance: PerformanceToolUIPart[] = [];
 
-      const tools: (
-        | PerformanceToolUIPart
-        | TechnologyToolUIPart
-        | FollowUpActionsToolUIPart
-      )[] = [];
-      const texts: TextPart[] = [];
-      const performance: PerformanceToolUIPart[] = [];
-      const followUpActions: FollowUpActionsToolUIPart[] = [];
-
-      // Single pass through parts for better performance
-      for (const part of message.parts) {
-        if (part.type.startsWith("tool-")) {
-          const toolPart = part as
-            | PerformanceToolUIPart
-            | TechnologyToolUIPart
-            | FollowUpActionsToolUIPart;
-          tools.push(toolPart);
-          if (part.type === "tool-getRealWorldPerformance") {
-            performance.push(part as PerformanceToolUIPart);
-          } else if (part.type === "tool-generateFollowUpActions") {
-            followUpActions.push(part as FollowUpActionsToolUIPart);
-          }
-        } else if (part.type === "text") {
-          // Type guard for text parts
-          const textPart: TextPart = {
-            type: "text",
-            text: part.text,
-          };
-          texts.push(textPart);
+    // Single pass through parts for better performance
+    for (const part of message.parts) {
+      if (part.type.startsWith("tool-")) {
+        // Skip follow-up actions - handled at ChatInterface level
+        if (part.type === "tool-generateFollowUpActions") {
+          continue;
         }
-      }
 
-      return {
-        toolParts: tools,
-        textParts: texts,
-        performanceParts: performance,
-        followUpActionsParts: followUpActions,
-      };
-    }, [message.parts]);
+        if (part.type === "tool-getRealWorldPerformance") {
+          const performancePart = part as PerformanceToolUIPart;
+          tools.push(performancePart);
+          performance.push(performancePart);
+        } else if (part.type === "tool-detectTechnologies") {
+          const technologyPart = part as TechnologyToolUIPart;
+          tools.push(technologyPart);
+        }
+      } else if (part.type === "text") {
+        const textPart = part as TextUIPart;
+        texts.push(textPart);
+      }
+    }
+
+    return {
+      toolParts: tools,
+      textParts: texts,
+      performanceParts: performance,
+    };
+  }, [message.parts]);
 
   // Memoize performance score calculation
   const updateScores = useCallback(() => {
@@ -216,14 +160,10 @@ const MessageRenderer = memo(function MessageRenderer({
           );
         }
 
-        // Skip rendering follow-up actions as tool UI - handled separately
-        if (part.type === "tool-generateFollowUpActions") {
-          return null;
-        }
-
         return null;
       })}
 
+      {/* 2. Performance results */}
       {performanceParts.map((performanceTool, i) => {
         if (
           performanceTool.state === "output-available" &&
@@ -240,28 +180,7 @@ const MessageRenderer = memo(function MessageRenderer({
         return null;
       })}
 
-      {/* Follow-up Suggestions - rendered after all text messages */}
-      {followUpActionsParts.length > 0 && onSendMessage && (
-        <FollowUpSuggestions
-          actions={
-            followUpActionsParts.find(
-              (part) => part.state === "output-available",
-            )?.output?.actions
-          }
-          isLoading={followUpActionsParts.some(
-            (part) =>
-              part.state === "input-streaming" ||
-              part.state === "input-available",
-          )}
-          onSuggestionClick={(suggestion) => {
-            onSendMessage({
-              role: "user",
-              parts: [{ type: "text", text: suggestion }],
-            });
-          }}
-        />
-      )}
-
+      {/* 3. Text messages */}
       {textParts.map((part, i) => {
         return (
           <TextMessage

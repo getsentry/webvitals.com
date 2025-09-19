@@ -10,13 +10,13 @@ importers:
     dependencies:
       '@ai-sdk-tools/artifacts':
         specifier: ^0.4.0
-        version: 0.4.0(@ai-sdk-tools/store@0.1.2(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(react@19.1.0)(zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0))))(ai@5.0.32(zod@4.1.5))(react@19.1.0)
+        version: 0.4.0(@ai-sdk-tools/store@0.7.0-beta.4(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(react@19.1.0)(zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0))))(ai@5.0.32(zod@4.1.5))(react@19.1.0)
       '@ai-sdk-tools/devtools':
         specifier: ^0.6.1
         version: 0.6.1(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(@types/react@19.1.12)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.1.5)
       '@ai-sdk-tools/store':
-        specifier: ^0.1.2
-        version: 0.1.2(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(react@19.1.0)(zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0)))
+        specifier: v0.7.0-beta.4
+        version: 0.7.0-beta.4(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(react@19.1.0)(zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0)))
       '@ai-sdk/openai':
         specifier: ^2.0.24
         version: 2.0.24(zod@4.1.5)
@@ -260,8 +260,8 @@ packages:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
 
-  '@ai-sdk-tools/store@0.1.2':
-    resolution: {integrity: sha512-HalfDEe2fFGtcG9TX9USnBKJUOghfHYbuqixNXQbBSLgbTLIYlKi+NdRvNhhiKviMijgOlaaup8A0buGz1FueQ==}
+  '@ai-sdk-tools/store@0.7.0-beta.4':
+    resolution: {integrity: sha512-63uKaJUx/qcm9M5sNBCsA+3SkcoDEE63IdwCFb37q3gqQsjr0BneSokaxUo4Wq8DpRwP7LzzhSEMWunTJ4Pa3Q==}
     peerDependencies:
       '@ai-sdk/react': '>=2.0.0'
       react: '>=18.0.0'
@@ -5201,9 +5201,9 @@ packages:
 
 snapshots:
 
-  '@ai-sdk-tools/artifacts@0.4.0(@ai-sdk-tools/store@0.1.2(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(react@19.1.0)(zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0))))(ai@5.0.32(zod@4.1.5))(react@19.1.0)':
+  '@ai-sdk-tools/artifacts@0.4.0(@ai-sdk-tools/store@0.7.0-beta.4(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(react@19.1.0)(zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0))))(ai@5.0.32(zod@4.1.5))(react@19.1.0)':
     dependencies:
-      '@ai-sdk-tools/store': 0.1.2(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(react@19.1.0)(zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0)))
+      '@ai-sdk-tools/store': 0.7.0-beta.4(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(react@19.1.0)(zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0)))
       ai: 5.0.32(zod@4.1.5)
       react: 19.1.0
       zod: 4.1.9
@@ -5226,7 +5226,7 @@ snapshots:
       - supports-color
       - zod
 
-  '@ai-sdk-tools/store@0.1.2(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(react@19.1.0)(zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0)))':
+  '@ai-sdk-tools/store@0.7.0-beta.4(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(react@19.1.0)(zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0)))':
     dependencies:
       '@ai-sdk/react': 2.0.32(react@19.1.0)(zod@4.1.5)
       react: 19.1.0

@@ -130,13 +130,22 @@ export default function PerformanceResult({
                       Chrome User Experience Report (CrUX) Data
                     </p>
                     <p className="text-sm">
-                      This data represents Chrome users who visited your PUBLIC
+                      This data represents Chrome users who visited your public
                       pages in the last 28 days. It may not reflect your
                       specific users or recent changes.
                     </p>
-                    <p className="text-sm text-blue-600 dark:text-blue-400">
-                      For YOUR actual user metrics, consider implementing Sentry
-                      RUM or similar monitoring.
+                    <p className="text-sm">
+                      For RUM (Real User Metrics), consider implementing{" "}
+                      <a
+                        href="https://docs.sentry.io/product/sentry-basics/performance-monitoring/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:text-blue-600"
+                      >
+                        Sentry Performance Monitoring
+                      </a>{" "}
+                      or similar solutions. Performance Monitoring or similar
+                      solutions.
                     </p>
                   </div>
                 </TooltipContent>

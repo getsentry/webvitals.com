@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  useChatError,
+  useChatMessages,
+  useChatStatus,
+  useChatStore,
+} from "@ai-sdk-tools/store";
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo } from "react";
 import {
@@ -8,36 +14,19 @@ import {
   ConversationScrollButton,
 } from "@/components/ui/ai-elements/conversation";
 import { WebVitalsScoreProvider } from "@/contexts/WebVitalsScoreContext";
-
+import FollowUpSuggestions from "./FollowUpSuggestions";
 import MessageRenderer from "./MessageRenderer";
 import WebVitalsFacts from "./WebVitalsFacts";
-
-interface ChatInterfaceProps {
-  messages: Array<{
-    id: string;
-    role: "system" | "user" | "assistant";
-    parts?: Array<{
-      type: string;
-      text?: string;
-    }>;
-  }>;
-  status: string;
-  error?: Error | null;
-  onSendMessage: (message: {
-    role: "user";
-    parts: Array<{ type: "text"; text: string }>;
-  }) => void;
-}
 
 // Extract style objects to prevent recreation on every render
 const cardStyles = { maxHeight: "60vh" };
 
-export default function ChatInterface({
-  messages,
-  status,
-  error,
-  onSendMessage,
-}: ChatInterfaceProps) {
+export default function ChatInterface() {
+  const messages = useChatMessages();
+  const status = useChatStatus();
+  const error = useChatError();
+  const { sendMessage } = useChatStore();
+
   // Memoize expensive calculations
   const hasAIResponses = useMemo(
     () =>
@@ -60,6 +49,55 @@ export default function ChatInterface({
       ),
     [messages],
   );
+
+  // Find the latest assistant message with follow-up actions (loading or complete)
+  const latestFollowUpData = useMemo(() => {
+    // Only show follow-ups if the most recent message is an assistant message
+    const mostRecentMessage = messages[messages.length - 1];
+    if (!mostRecentMessage || mostRecentMessage.role !== "assistant") {
+      return null;
+    }
+
+    // Check if this most recent assistant message has follow-up actions
+    if (mostRecentMessage.parts) {
+      const followUpPart = mostRecentMessage.parts.find(
+        (part) => part.type === "tool-generateFollowUpActions",
+      );
+
+      if (followUpPart && "state" in followUpPart) {
+        // Show loading skeleton while streaming or processing
+        if (
+          followUpPart.state === "input-streaming" ||
+          followUpPart.state === "input-available"
+        ) {
+          return {
+            messageId: mostRecentMessage.id,
+            actions: undefined,
+            isLoading: true,
+          };
+        }
+
+        // Show completed follow-up actions
+        if (
+          followUpPart.state === "output-available" &&
+          "output" in followUpPart &&
+          followUpPart.output
+        ) {
+          return {
+            messageId: mostRecentMessage.id,
+            actions: (
+              followUpPart.output as {
+                actions?: Array<{ id: string; title: string }>;
+              }
+            )?.actions,
+            isLoading: false,
+          };
+        }
+      }
+    }
+
+    return null;
+  }, [messages, status]);
 
   // Show fade overlays when there's scrollable content
   const showFadeOverlays = useMemo(
@@ -107,11 +145,7 @@ export default function ChatInterface({
             <Conversation className="h-full max-h-[60vh]">
               <ConversationContent>
                 {messages.map((message) => (
-                  <MessageRenderer
-                    key={message.id}
-                    message={message}
-                    onSendMessage={onSendMessage}
-                  />
+                  <MessageRenderer key={message.id} message={message} />
                 ))}
 
                 <AnimatePresence>
@@ -166,6 +200,43 @@ export default function ChatInterface({
                       className="text-center text-sm text-red-500 py-4"
                     >
                       Analysis failed: {error.message}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Follow-up suggestions at the end of conversation */}
+                <AnimatePresence>
+                  {latestFollowUpData && (
+                    <motion.div
+                      key="follow-up-suggestions"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          duration: 0.3,
+                          ease: [0.25, 0.46, 0.45, 0.94], // ease-out-quad
+                        },
+                      }}
+                      exit={{
+                        opacity: 0,
+                        y: -10,
+                        transition: {
+                          duration: 0.2,
+                          ease: [0.55, 0.085, 0.68, 0.53], // ease-in-quad
+                        },
+                      }}
+                    >
+                      <FollowUpSuggestions
+                        actions={latestFollowUpData.actions}
+                        isLoading={latestFollowUpData.isLoading}
+                        onSuggestionClick={(suggestion) => {
+                          sendMessage?.({
+                            role: "user",
+                            parts: [{ type: "text", text: suggestion }],
+                          });
+                        }}
+                      />
                     </motion.div>
                   )}
                 </AnimatePresence>

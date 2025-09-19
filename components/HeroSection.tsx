@@ -1,6 +1,6 @@
 "use client";
 
-import { useChat } from "@ai-sdk/react";
+import { useChat } from "@ai-sdk-tools/store";
 import * as Sentry from "@sentry/nextjs";
 import { AnimatePresence, motion } from "motion/react";
 import type { PerformanceConfig } from "@/types/performance-config";
@@ -9,7 +9,7 @@ import ChatInterface from "./ChatInterface";
 import HeroLanding from "./HeroLanding";
 
 export default function HeroSection() {
-  const { messages, sendMessage, status, error } = useChat({
+  const { messages, sendMessage, status } = useChat({
     onFinish: (message) => {
       Sentry.logger.info("Chat analysis completed", {
         messageCount: messages.length + 1,
@@ -112,12 +112,7 @@ export default function HeroSection() {
               }}
               className="flex-1"
             >
-              <ChatInterface
-                messages={messages}
-                status={status}
-                error={error}
-                onSendMessage={sendMessage}
-              />
+              <ChatInterface />
             </motion.div>
           )}
         </AnimatePresence>

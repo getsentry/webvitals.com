@@ -43,6 +43,10 @@ class CloudflareTechDetector {
     const response = await fetch(url, {
       ...options,
       headers,
+      next: {
+        revalidate: 3600, // 1 hour cache
+        tags: [`cloudflare:${endpoint}`],
+      },
     });
 
     if (!response.ok) {

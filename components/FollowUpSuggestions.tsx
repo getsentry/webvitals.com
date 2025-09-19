@@ -1,11 +1,11 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Suggestion,
   Suggestions,
 } from "@/components/ui/ai-elements/suggestion";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface FollowUpAction {
   id: string;

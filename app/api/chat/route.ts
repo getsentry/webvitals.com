@@ -1,10 +1,15 @@
 import { openai } from "@ai-sdk/openai";
 import * as Sentry from "@sentry/nextjs";
-import { convertToModelMessages, stepCountIs, streamText } from "ai";
+import {
+  convertToModelMessages,
+  hasToolCall,
+  stepCountIs,
+  streamText,
+} from "ai";
 import { webAnalysisSystemPrompt } from "@/lib/system-prompts";
+import { followUpActionsTool } from "@/tools/follow-up-actions-tool";
 import { realWorldPerformanceTool } from "@/tools/real-world-performance-tool";
 import { techDetectionTool } from "@/tools/tech-detection-tool";
-import { followUpActionsTool } from "@/tools/follow-up-actions-tool";
 
 export async function POST(request: Request) {
   try {
@@ -26,9 +31,20 @@ export async function POST(request: Request) {
     const result = streamText({
       model: openai("gpt-4o"),
       messages: modelMessages,
-      stopWhen: stepCountIs(5),
+      stopWhen: [
+        stepCountIs(10), // Safety limit
+        ({ steps }) => {
+          // Only stop after generateFollowUpActions is called in the CURRENT turn
+          const lastStep = steps[steps.length - 1];
+          const isCurrentStep = lastStep && steps.length > 0;
+          const hasJustCalledFollowUp = lastStep?.toolCalls?.some(
+            (call) => call.toolName === "generateFollowUpActions"
+          );
+
+          return isCurrentStep && hasJustCalledFollowUp;
+        },
+      ],
       tools: {
-        // Simplified tools for real-world performance analysis
         getRealWorldPerformance: realWorldPerformanceTool,
         detectTechnologies: techDetectionTool,
         generateFollowUpActions: followUpActionsTool,
@@ -42,17 +58,23 @@ export async function POST(request: Request) {
         Sentry.logger.debug("AI step finished", {
           toolCalls: step.toolCalls?.length || 0,
           toolResults: step.toolResults?.length || 0,
+          toolNames: step.toolCalls?.map((call) => call.toolName) || [],
         });
 
         if (step.toolResults) {
           step.toolResults.forEach((result: unknown, index) => {
             const toolName = step.toolCalls?.[index]?.toolName;
 
+            Sentry.logger.debug("Tool result", {
+              toolName,
+              result,
+            });
+
             if (result && typeof result === "object" && "error" in result) {
               const errorResult = result as { error: unknown };
               Sentry.captureException(
                 new Error(
-                  `Tool execution failed: ${String(errorResult.error)}`,
+                  `Tool execution failed: ${String(errorResult.error)}`
                 ),
                 {
                   tags: {
@@ -67,7 +89,7 @@ export async function POST(request: Request) {
                       toolError: step.toolCalls?.[index]?.error,
                     },
                   },
-                },
+                }
               );
             }
           });
@@ -102,7 +124,7 @@ Configuration: ${JSON.stringify(performanceConfig || {})}`,
         error: "Failed to process chat request",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
