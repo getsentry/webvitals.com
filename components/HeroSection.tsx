@@ -116,6 +116,7 @@ export default function HeroSection() {
                 messages={messages}
                 status={status}
                 error={error}
+                onSendMessage={sendMessage}
               />
             </motion.div>
           )}

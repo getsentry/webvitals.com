@@ -8,9 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@ai-sdk-tools/artifacts':
+        specifier: ^0.4.0
+        version: 0.4.0(@ai-sdk-tools/store@0.1.2(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(react@19.1.0)(zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0))))(ai@5.0.32(zod@4.1.5))(react@19.1.0)
       '@ai-sdk-tools/devtools':
         specifier: ^0.6.1
         version: 0.6.1(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(@types/react@19.1.12)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.1.5)
+      '@ai-sdk-tools/store':
+        specifier: ^0.1.2
+        version: 0.1.2(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(react@19.1.0)(zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0)))
       '@ai-sdk/openai':
         specifier: ^2.0.24
         version: 2.0.24(zod@4.1.5)
@@ -240,12 +246,26 @@ importers:
 
 packages:
 
+  '@ai-sdk-tools/artifacts@0.4.0':
+    resolution: {integrity: sha512-YVwTag4fsCs+jBdO49oPYiFVHoRWXJTkGFshg/cBudxxVvyIZ3CfbvUM0rfvv5I0HBttPQtGMyE8tgInn+JZdg==}
+    peerDependencies:
+      '@ai-sdk-tools/store': '*'
+      ai: ^4.0.0
+      react: ^18.0.0 || ^19.0.0
+
   '@ai-sdk-tools/devtools@0.6.1':
     resolution: {integrity: sha512-KDOO2NRAuxeTnXlIiNnq1LeYGNoLkGn6rNE/yPvx7sOOmukoX9cW6UVD2NV4fp2+7QKujklG+pA5fCsfPoH08g==}
     peerDependencies:
       '@ai-sdk/react': '>=0.0.1'
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
+
+  '@ai-sdk-tools/store@0.1.2':
+    resolution: {integrity: sha512-HalfDEe2fFGtcG9TX9USnBKJUOghfHYbuqixNXQbBSLgbTLIYlKi+NdRvNhhiKviMijgOlaaup8A0buGz1FueQ==}
+    peerDependencies:
+      '@ai-sdk/react': '>=2.0.0'
+      react: '>=18.0.0'
+      zustand: '>=5.0.0'
 
   '@ai-sdk/gateway@1.0.17':
     resolution: {integrity: sha512-9wP4tVaOnf9yQSCGwSGSg2m4+7DTCSFbwRkNf4hlhWF/HmFDtIbqVypB/i/MfQuROFh897g/uX3FyVd3DMQIJQ==}
@@ -5155,10 +5175,38 @@ packages:
   zod@4.1.5:
     resolution: {integrity: sha512-rcUUZqlLJgBC33IT3PNMgsCq6TzLQEG/Ei/KTCU0PedSWRMAXoOUN+4t/0H+Q8bdnLPdqUYnvboJT0bn/229qg==}
 
+  zod@4.1.9:
+    resolution: {integrity: sha512-HI32jTq0AUAC125z30E8bQNz0RQ+9Uc+4J7V97gLYjZVKRjeydPgGt6dvQzFrav7MYOUGFqqOGiHpA/fdbd0cQ==}
+
+  zustand@5.0.8:
+    resolution: {integrity: sha512-gyPKpIaxY9XcO2vSMrLbiER7QMAMGOQZVRdJ6Zi782jkbzZygq5GI9nG8g+sMgitRtndwaBSl7uiqC49o1SSiw==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      immer: '>=9.0.6'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
+      use-sync-external-store:
+        optional: true
+
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
+
+  '@ai-sdk-tools/artifacts@0.4.0(@ai-sdk-tools/store@0.1.2(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(react@19.1.0)(zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0))))(ai@5.0.32(zod@4.1.5))(react@19.1.0)':
+    dependencies:
+      '@ai-sdk-tools/store': 0.1.2(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(react@19.1.0)(zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0)))
+      ai: 5.0.32(zod@4.1.5)
+      react: 19.1.0
+      zod: 4.1.9
 
   '@ai-sdk-tools/devtools@0.6.1(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(@types/react@19.1.12)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.1.5)':
     dependencies:
@@ -5177,6 +5225,12 @@ snapshots:
       - '@types/react'
       - supports-color
       - zod
+
+  '@ai-sdk-tools/store@0.1.2(@ai-sdk/react@2.0.32(react@19.1.0)(zod@4.1.5))(react@19.1.0)(zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0)))':
+    dependencies:
+      '@ai-sdk/react': 2.0.32(react@19.1.0)(zod@4.1.5)
+      react: 19.1.0
+      zustand: 5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0))
 
   '@ai-sdk/gateway@1.0.17(zod@4.1.5)':
     dependencies:
@@ -10726,5 +10780,13 @@ snapshots:
   zod@3.25.76: {}
 
   zod@4.1.5: {}
+
+  zod@4.1.9: {}
+
+  zustand@5.0.8(@types/react@19.1.12)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0)):
+    optionalDependencies:
+      '@types/react': 19.1.12
+      react: 19.1.0
+      use-sync-external-store: 1.5.0(react@19.1.0)
 
   zwitch@2.0.4: {}

@@ -23,6 +23,10 @@ interface ChatInterfaceProps {
   }>;
   status: string;
   error?: Error | null;
+  onSendMessage: (message: {
+    role: "user";
+    parts: Array<{ type: "text"; text: string }>;
+  }) => void;
 }
 
 // Extract style objects to prevent recreation on every render
@@ -32,6 +36,7 @@ export default function ChatInterface({
   messages,
   status,
   error,
+  onSendMessage,
 }: ChatInterfaceProps) {
   // Memoize expensive calculations
   const hasAIResponses = useMemo(
@@ -102,7 +107,11 @@ export default function ChatInterface({
             <Conversation className="h-full max-h-[60vh]">
               <ConversationContent>
                 {messages.map((message) => (
-                  <MessageRenderer key={message.id} message={message} />
+                  <MessageRenderer
+                    key={message.id}
+                    message={message}
+                    onSendMessage={onSendMessage}
+                  />
                 ))}
 
                 <AnimatePresence>

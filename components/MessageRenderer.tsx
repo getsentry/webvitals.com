@@ -17,9 +17,9 @@ import type {
   RealWorldPerformanceOutput,
 } from "@/types/real-world-performance";
 import type { TechnologyDetectionOutput } from "@/types/web-vitals";
+import FollowUpSuggestions from "./FollowUpSuggestions";
 import TextMessage from "./message/TextMessage";
 import PerformanceResult from "./results/PerformanceResult";
-
 
 type PerformanceToolUIPart = ToolUIPart<{
   getRealWorldPerformance: {
@@ -32,6 +32,23 @@ type TechnologyToolUIPart = ToolUIPart<{
   detectTechnologies: {
     input: { url: string };
     output: TechnologyDetectionOutput;
+  };
+}>;
+
+type FollowUpActionsToolUIPart = ToolUIPart<{
+  generateFollowUpActions: {
+    input: {
+      performanceData: RealWorldPerformanceOutput;
+      technologyData: TechnologyDetectionOutput;
+    };
+    output: {
+      url: string;
+      actions: Array<{
+        id: string;
+        title: string;
+      }>;
+      generatedAt: string;
+    };
   };
 }>;
 
@@ -49,51 +66,74 @@ interface MessageRendererProps {
       text?: string;
     }>;
   };
+  onSendMessage?: (message: {
+    role: "user";
+    parts: Array<{ type: "text"; text: string }>;
+  }) => void;
 }
 
 const MessageRenderer = memo(function MessageRenderer({
   message,
+  onSendMessage,
 }: MessageRendererProps) {
+  console.log("MessageRenderer", message);
   const { setScores } = useWebVitalsScore();
 
   // Memoize part separation to avoid expensive filtering on every render
-  const { toolParts, textParts, performanceParts } = useMemo(() => {
-    if (!message.parts) {
-      return {
-        toolParts: [] as (PerformanceToolUIPart | TechnologyToolUIPart)[],
-        textParts: [] as TextPart[],
-        performanceParts: [] as PerformanceToolUIPart[],
-      };
-    }
-
-    const tools: (PerformanceToolUIPart | TechnologyToolUIPart)[] = [];
-    const texts: TextPart[] = [];
-    const performance: PerformanceToolUIPart[] = [];
-
-    // Single pass through parts for better performance
-    for (const part of message.parts) {
-      if (part.type.startsWith("tool-")) {
-        const toolPart = part as PerformanceToolUIPart | TechnologyToolUIPart;
-        tools.push(toolPart);
-        if (part.type === "tool-getRealWorldPerformance") {
-          performance.push(part as PerformanceToolUIPart);
-        }
-      } else if (part.type === "text") {
-        // Type guard for text parts
-        const textPart: TextPart = {
-          type: "text",
-          text: part.text,
+  const { toolParts, textParts, performanceParts, followUpActionsParts } =
+    useMemo(() => {
+      if (!message.parts) {
+        return {
+          toolParts: [] as (
+            | PerformanceToolUIPart
+            | TechnologyToolUIPart
+            | FollowUpActionsToolUIPart
+          )[],
+          textParts: [] as TextPart[],
+          performanceParts: [] as PerformanceToolUIPart[],
+          followUpActionsParts: [] as FollowUpActionsToolUIPart[],
         };
-        texts.push(textPart);
       }
-    }
 
-    return {
-      toolParts: tools,
-      textParts: texts,
-      performanceParts: performance,
-    };
-  }, [message.parts]);
+      const tools: (
+        | PerformanceToolUIPart
+        | TechnologyToolUIPart
+        | FollowUpActionsToolUIPart
+      )[] = [];
+      const texts: TextPart[] = [];
+      const performance: PerformanceToolUIPart[] = [];
+      const followUpActions: FollowUpActionsToolUIPart[] = [];
+
+      // Single pass through parts for better performance
+      for (const part of message.parts) {
+        if (part.type.startsWith("tool-")) {
+          const toolPart = part as
+            | PerformanceToolUIPart
+            | TechnologyToolUIPart
+            | FollowUpActionsToolUIPart;
+          tools.push(toolPart);
+          if (part.type === "tool-getRealWorldPerformance") {
+            performance.push(part as PerformanceToolUIPart);
+          } else if (part.type === "tool-generateFollowUpActions") {
+            followUpActions.push(part as FollowUpActionsToolUIPart);
+          }
+        } else if (part.type === "text") {
+          // Type guard for text parts
+          const textPart: TextPart = {
+            type: "text",
+            text: part.text,
+          };
+          texts.push(textPart);
+        }
+      }
+
+      return {
+        toolParts: tools,
+        textParts: texts,
+        performanceParts: performance,
+        followUpActionsParts: followUpActions,
+      };
+    }, [message.parts]);
 
   // Memoize performance score calculation
   const updateScores = useCallback(() => {
@@ -176,6 +216,11 @@ const MessageRenderer = memo(function MessageRenderer({
           );
         }
 
+        // Skip rendering follow-up actions as tool UI - handled separately
+        if (part.type === "tool-generateFollowUpActions") {
+          return null;
+        }
+
         return null;
       })}
 
@@ -194,6 +239,28 @@ const MessageRenderer = memo(function MessageRenderer({
         }
         return null;
       })}
+
+      {/* Follow-up Suggestions - rendered after all text messages */}
+      {followUpActionsParts.length > 0 && onSendMessage && (
+        <FollowUpSuggestions
+          actions={
+            followUpActionsParts.find(
+              (part) => part.state === "output-available",
+            )?.output?.actions
+          }
+          isLoading={followUpActionsParts.some(
+            (part) =>
+              part.state === "input-streaming" ||
+              part.state === "input-available",
+          )}
+          onSuggestionClick={(suggestion) => {
+            onSendMessage({
+              role: "user",
+              parts: [{ type: "text", text: suggestion }],
+            });
+          }}
+        />
+      )}
 
       {textParts.map((part, i) => {
         return (

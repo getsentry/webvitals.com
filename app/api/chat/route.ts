@@ -4,6 +4,7 @@ import { convertToModelMessages, stepCountIs, streamText } from "ai";
 import { webAnalysisSystemPrompt } from "@/lib/system-prompts";
 import { realWorldPerformanceTool } from "@/tools/real-world-performance-tool";
 import { techDetectionTool } from "@/tools/tech-detection-tool";
+import { followUpActionsTool } from "@/tools/follow-up-actions-tool";
 
 export async function POST(request: Request) {
   try {
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
         // Simplified tools for real-world performance analysis
         getRealWorldPerformance: realWorldPerformanceTool,
         detectTechnologies: techDetectionTool,
+        generateFollowUpActions: followUpActionsTool,
       },
 
       experimental_telemetry: {
@@ -43,12 +45,15 @@ export async function POST(request: Request) {
         });
 
         if (step.toolResults) {
-          step.toolResults.forEach((result: any, index) => {
+          step.toolResults.forEach((result: unknown, index) => {
             const toolName = step.toolCalls?.[index]?.toolName;
 
-            if ("error" in result) {
+            if (result && typeof result === "object" && "error" in result) {
+              const errorResult = result as { error: unknown };
               Sentry.captureException(
-                new Error(`Tool execution failed: ${result.error}`),
+                new Error(
+                  `Tool execution failed: ${String(errorResult.error)}`,
+                ),
                 {
                   tags: {
                     area: "ai-tool-execution",

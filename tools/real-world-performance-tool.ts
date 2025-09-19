@@ -3,6 +3,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import type {
   FieldMetrics,
+  PerformanceCategory,
   RealWorldPerformanceOutput,
 } from "@/types/real-world-performance";
 
@@ -41,7 +42,7 @@ async function fetchPerformanceData(
   return data;
 }
 
-function transformMetrics(rawMetrics: Record<string, any>): FieldMetrics {
+function transformMetrics(rawMetrics: Record<string, unknown>): FieldMetrics {
   const result: FieldMetrics = {};
 
   const fieldMapping: Record<string, keyof FieldMetrics> = {
@@ -57,8 +58,13 @@ function transformMetrics(rawMetrics: Record<string, any>): FieldMetrics {
   };
 
   for (const [apiKey, fieldKey] of Object.entries(fieldMapping)) {
-    if (rawMetrics[apiKey]) {
-      const metric = rawMetrics[apiKey];
+    const rawMetric = rawMetrics[apiKey];
+    if (rawMetric && typeof rawMetric === "object") {
+      const metric = rawMetric as {
+        percentile: number;
+        category: PerformanceCategory;
+        distributions?: Array<{ min: number; max: number; proportion: number }>;
+      };
       result[fieldKey] = {
         percentile: metric.percentile,
         category: metric.category,
@@ -82,7 +88,7 @@ async function getRealWorldPerformance(
   }
 
   try {
-    const promises: Promise<any>[] = [];
+    const promises: Promise<unknown>[] = [];
     const deviceOrder: Array<"mobile" | "desktop"> = [];
 
     if (devices.includes("mobile")) {
@@ -97,10 +103,20 @@ async function getRealWorldPerformance(
 
     const results = await Promise.all(promises);
     const mobileData = deviceOrder.includes("mobile")
-      ? results[deviceOrder.indexOf("mobile")]
+      ? (results[deviceOrder.indexOf("mobile")] as {
+          loadingExperience?: {
+            overall_category: PerformanceCategory;
+            metrics?: Record<string, unknown>;
+          };
+        })
       : null;
     const desktopData = deviceOrder.includes("desktop")
-      ? results[deviceOrder.indexOf("desktop")]
+      ? (results[deviceOrder.indexOf("desktop")] as {
+          loadingExperience?: {
+            overall_category: PerformanceCategory;
+            metrics?: Record<string, unknown>;
+          };
+        })
       : null;
 
     const result: RealWorldPerformanceOutput = {
@@ -111,7 +127,8 @@ async function getRealWorldPerformance(
     };
 
     if (mobileData?.loadingExperience) {
-      result.mobile!.fieldData = {
+      if (!result.mobile) result.mobile = {};
+      result.mobile.fieldData = {
         overallCategory: mobileData.loadingExperience.overall_category,
         metrics: transformMetrics(mobileData.loadingExperience.metrics || {}),
       };
@@ -119,7 +136,8 @@ async function getRealWorldPerformance(
     }
 
     if (desktopData?.loadingExperience) {
-      result.desktop!.fieldData = {
+      if (!result.desktop) result.desktop = {};
+      result.desktop.fieldData = {
         overallCategory: desktopData.loadingExperience.overall_category,
         metrics: transformMetrics(desktopData.loadingExperience.metrics || {}),
       };

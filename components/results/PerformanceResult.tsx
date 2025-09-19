@@ -1,10 +1,16 @@
 "use client";
 
-import { MonitorIcon, SmartphoneIcon } from "lucide-react";
+import { InfoIcon, MonitorIcon, SmartphoneIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useWebVitalsScore } from "@/contexts/WebVitalsScoreContext";
 import type { DeviceType } from "@/types/performance-config";
 import type { RealWorldPerformanceOutput } from "@/types/real-world-performance";
@@ -108,7 +114,35 @@ export default function PerformanceResult({
     >
       <Card className={className}>
         <CardHeader>
-          <CardTitle>Real-World Performance Data</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle>Real-World Performance Data</CardTitle>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <InfoIcon
+                    size={16}
+                    className="text-muted-foreground cursor-help hover:text-foreground transition-colors"
+                  />
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-sm">
+                  <div className="space-y-2">
+                    <p className="font-medium">
+                      Chrome User Experience Report (CrUX) Data
+                    </p>
+                    <p className="text-sm">
+                      This data represents Chrome users who visited your PUBLIC
+                      pages in the last 28 days. It may not reflect your
+                      specific users or recent changes.
+                    </p>
+                    <p className="text-sm text-blue-600 dark:text-blue-400">
+                      For YOUR actual user metrics, consider implementing Sentry
+                      RUM or similar monitoring.
+                    </p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </CardHeader>
         <CardContent>
           {navigationMarkup}
