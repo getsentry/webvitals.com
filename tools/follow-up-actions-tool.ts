@@ -12,23 +12,23 @@ const followUpActionsInputSchema = z.object({
   performanceData: z
     .any()
     .describe(
-      "Complete real-world performance data from getRealWorldPerformance tool"
+      "Complete real-world performance data from getRealWorldPerformance tool",
     ),
   technologyData: z
     .any()
     .describe(
-      "Complete technology detection data from detectTechnologies tool"
+      "Complete technology detection data from detectTechnologies tool",
     ),
   conversationHistory: z
     .array(
       z.object({
         role: z.enum(["user", "assistant"]),
         content: z.string(),
-      })
+      }),
     )
     .optional()
     .describe(
-      "Full conversation history to understand context and avoid repetition"
+      "Full conversation history to understand context and avoid repetition",
     ),
 });
 
@@ -102,7 +102,7 @@ Examples of good follow-ups:
       }
 
       return {
-        url: (performanceData as any)?.url || "",
+        url: (performanceData as RealWorldPerformanceOutput)?.url || "",
         actions: result.object.actions,
         generatedAt: new Date().toISOString(),
       };
@@ -131,7 +131,7 @@ Examples of good follow-ups:
       ];
 
       return {
-        url: (performanceData as any)?.url || "",
+        url: (performanceData as RealWorldPerformanceOutput)?.url || "",
         actions: fallbackActions,
         generatedAt: new Date().toISOString(),
       };

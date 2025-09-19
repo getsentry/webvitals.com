@@ -38,7 +38,7 @@ export async function POST(request: Request) {
           const lastStep = steps[steps.length - 1];
           const isCurrentStep = lastStep && steps.length > 0;
           const hasJustCalledFollowUp = lastStep?.toolCalls?.some(
-            (call) => call.toolName === "generateFollowUpActions"
+            (call) => call.toolName === "generateFollowUpActions",
           );
 
           return isCurrentStep && hasJustCalledFollowUp;
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
               const errorResult = result as { error: unknown };
               Sentry.captureException(
                 new Error(
-                  `Tool execution failed: ${String(errorResult.error)}`
+                  `Tool execution failed: ${String(errorResult.error)}`,
                 ),
                 {
                   tags: {
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
                       toolError: step.toolCalls?.[index]?.error,
                     },
                   },
-                }
+                },
               );
             }
           });
@@ -124,7 +124,7 @@ Configuration: ${JSON.stringify(performanceConfig || {})}`,
         error: "Failed to process chat request",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
