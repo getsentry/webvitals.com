@@ -8,11 +8,10 @@ import {
   streamText,
   type UIMessage,
 } from "ai";
+import { generateFollowUpActions, webAnalysisSystemPrompt } from "@/ai";
 import { followUpActionsArtifact } from "@/ai/artifacts";
 import { setContext } from "@/ai/context";
 import { realWorldPerformanceTool, techDetectionTool } from "@/ai/tools";
-import { generateFollowUpActions } from "@/lib/follow-up-generator";
-import { webAnalysisSystemPrompt } from "@/lib/system-prompts";
 
 export async function POST(request: Request) {
   try {
@@ -98,19 +97,62 @@ export async function POST(request: Request) {
 Configuration: ${JSON.stringify(performanceConfig || {})}`,
           async onFinish({ steps }) {
             // After the main conversation finishes, generate and stream follow-up actions
+            const debugContext = {
+              timestamp: new Date().toISOString(),
+              messagesLength: messages.length,
+              stepsCount: steps.length,
+              messagesBreakdown: messages.map((m) => ({
+                role: m.role,
+                contentType: typeof m.content,
+              })),
+            };
+
+            console.log("[SERVER] 🏁 onFinish triggered:", debugContext);
+
             try {
               // Extract performance and technology data from the completed steps
               let performanceData: unknown = null;
               let technologyData: unknown = null;
 
+              console.log("[SERVER] 🔍 Processing steps for tool data:", {
+                stepsWithToolResults: steps.filter(
+                  (s) => s.toolResults?.length > 0,
+                ).length,
+                allToolCalls: steps.flatMap(
+                  (s) => s.toolCalls?.map((tc) => tc.toolName) || [],
+                ),
+              });
+
               for (const step of steps) {
                 if (step.toolResults) {
                   step.toolResults.forEach((result, index) => {
                     const toolName = step.toolCalls?.[index]?.toolName;
+                    console.log("[SERVER] 🔧 Processing tool result:", {
+                      toolName,
+                      hasResult: !!result,
+                      resultType: typeof result,
+                    });
+
                     if (toolName === "getRealWorldPerformance") {
                       performanceData = result;
+                      console.log("[SERVER] 📊 Performance data found:", {
+                        url:
+                          (result as any)?.output?.url || (result as any)?.url,
+                        hasData: !!result,
+                        fullResult: result,
+                      });
                     } else if (toolName === "detectTechnologies") {
                       technologyData = result;
+                      console.log("[SERVER] 🔧 Technology data found:", {
+                        hasData: !!result,
+                        techCount: Array.isArray(
+                          (result as { technologies?: unknown[] })
+                            ?.technologies,
+                        )
+                          ? (result as { technologies: unknown[] }).technologies
+                              .length
+                          : 0,
+                      });
                     }
                   });
                 }
@@ -125,31 +167,124 @@ Configuration: ${JSON.stringify(performanceConfig || {})}`,
                     : JSON.stringify(msg.content),
               }));
 
-              // Only generate follow-ups if we have the necessary data
-              if (performanceData || technologyData) {
+              // Count user messages to determine if we should generate follow-ups
+              const userMessageCount = messages.filter(
+                (msg) => msg.role === "user",
+              ).length;
+
+              console.log("[SERVER] 📊 Follow-up decision factors:", {
+                hasPerformanceData: !!performanceData,
+                hasTechnologyData: !!technologyData,
+                userMessageCount,
+                conversationLength: conversationHistory.length,
+                messagesRoles: messages.map((m) => m.role),
+              });
+
+              // Generate follow-ups if:
+              // 1. We have tool data (initial analysis or re-analysis), OR
+              // 2. It's a follow-up conversation with context (but limit to 3 total user messages)
+              const shouldGenerateFollowUps =
+                performanceData ||
+                technologyData ||
+                (conversationHistory.length > 2 && userMessageCount < 3);
+
+              console.log("[SERVER] 🤔 Should generate follow-ups?", {
+                shouldGenerateFollowUps,
+                reason: shouldGenerateFollowUps
+                  ? performanceData || technologyData
+                    ? "has_tool_data"
+                    : "follow_up_conversation"
+                  : "no_conditions_met",
+                conditions: {
+                  hasPerformanceData: !!performanceData,
+                  hasTechnologyData: !!technologyData,
+                  hasConversationContext: conversationHistory.length > 2,
+                  withinUserLimit: userMessageCount < 3,
+                },
+              });
+
+              if (shouldGenerateFollowUps) {
+                console.log("[SERVER] ✅ Generating follow-up actions");
+                Sentry.logger.debug("Generating follow-up actions", {
+                  hasPerformanceData: !!performanceData,
+                  hasTechnologyData: !!technologyData,
+                  userMessageCount,
+                  conversationLength: conversationHistory.length,
+                });
+
+                // Clear any previous artifact state and start fresh
                 // Start streaming the follow-up actions artifact
+                const expectedConversationLength = messages.length + 1; // Account for new assistant message
+
+                // Extract URL from tool output
+                const performanceUrl =
+                  (performanceData as any)?.output?.url ||
+                  (performanceData as any)?.url ||
+                  "";
+
+                console.log("[SERVER] 🎯 Starting artifact stream:", {
+                  expectedConversationLength,
+                  currentMessagesLength: messages.length,
+                  url: performanceUrl,
+                });
+
                 const followUpStream = followUpActionsArtifact.stream({
                   status: "loading",
                   progress: 0,
-                  url: (performanceData as { url?: string })?.url,
+                  url: performanceUrl,
                   actions: [],
+                  context: {
+                    generatedAt: new Date().toISOString(),
+                    basedOnTools: [],
+                    conversationLength: expectedConversationLength,
+                  },
                 });
 
                 try {
+                  console.log("[SERVER] 🔄 Updating to generating status");
                   // Update to generating status
                   await followUpStream.update({
                     status: "generating",
                     progress: 0.3,
                   });
 
+                  console.log(
+                    "[SERVER] 🤖 Calling generateFollowUpActions with:",
+                    {
+                      hasPerformanceData: !!performanceData,
+                      hasTechnologyData: !!technologyData,
+                      conversationHistoryLength: conversationHistory.length,
+                      lastUserMessage: conversationHistory
+                        .filter((m) => m.role === "user")
+                        .slice(-1)[0]
+                        ?.content?.substring(0, 100),
+                      conversationSummary: conversationHistory.map(
+                        (m) => `${m.role}: ${m.content.substring(0, 50)}...`,
+                      ),
+                    },
+                  );
+
                   // Generate the follow-up actions
                   const followUpData = await generateFollowUpActions({
-                    performanceData,
+                    performanceData: performanceData
+                      ? {
+                          ...performanceData,
+                          url: performanceUrl, // Ensure URL is included
+                        }
+                      : null,
                     technologyData,
                     conversationHistory,
                   });
 
+                  console.log("[SERVER] ✅ Follow-up generation complete:", {
+                    actionsCount: followUpData.actions.length,
+                    url: followUpData.url,
+                    basedOnTools: followUpData.basedOnTools,
+                    actions: followUpData.actions.map((a) => a.title),
+                  });
+
                   // Complete the artifact with final data
+                  // Include the new assistant message in the count (messages.length + 1)
                   await followUpStream.complete({
                     status: "complete",
                     progress: 1,
@@ -158,8 +293,13 @@ Configuration: ${JSON.stringify(performanceConfig || {})}`,
                     context: {
                       generatedAt: followUpData.generatedAt,
                       basedOnTools: followUpData.basedOnTools,
-                      conversationLength: messages.length,
+                      conversationLength: expectedConversationLength,
                     },
+                  });
+
+                  console.log("[SERVER] 🎉 Artifact stream completed:", {
+                    conversationLength: expectedConversationLength,
+                    actionsCount: followUpData.actions.length,
                   });
 
                   Sentry.logger.info(
@@ -170,15 +310,22 @@ Configuration: ${JSON.stringify(performanceConfig || {})}`,
                     },
                   );
                 } catch (generationError) {
+                  console.error(
+                    "[SERVER] ❌ Follow-up generation failed:",
+                    generationError,
+                  );
                   Sentry.logger.error("Follow-up generation failed", {
                     error: generationError,
                   });
 
+                  console.log(
+                    "[SERVER] 🔄 Using fallback actions due to error",
+                  );
                   // Still complete the artifact but with error state or fallback
                   await followUpStream.complete({
                     status: "complete",
                     progress: 1,
-                    url: (performanceData as { url?: string })?.url || "",
+                    url: performanceUrl,
                     actions: [
                       {
                         id: "sentry-rum-setup",
@@ -199,10 +346,38 @@ Configuration: ${JSON.stringify(performanceConfig || {})}`,
                     context: {
                       generatedAt: new Date().toISOString(),
                       basedOnTools: ["fallback"],
-                      conversationLength: messages.length,
+                      conversationLength: expectedConversationLength,
                     },
                   });
+
+                  console.log("[SERVER] 🎉 Fallback artifact completed");
                 }
+              } else {
+                console.log("[SERVER] ❌ Skipping follow-up generation:", {
+                  reason:
+                    userMessageCount >= 3
+                      ? "conversation_limit"
+                      : "no_tool_data_and_short_conversation",
+                  details: {
+                    hasPerformanceData: !!performanceData,
+                    hasTechnologyData: !!technologyData,
+                    userMessageCount,
+                    conversationLength: conversationHistory.length,
+                    hasConversationContext: conversationHistory.length > 2,
+                    withinUserLimit: userMessageCount < 3,
+                  },
+                });
+
+                Sentry.logger.debug("Skipping follow-up generation", {
+                  hasPerformanceData: !!performanceData,
+                  hasTechnologyData: !!technologyData,
+                  userMessageCount,
+                  conversationLength: conversationHistory.length,
+                  reason:
+                    userMessageCount >= 3
+                      ? "conversation_limit"
+                      : "no_tool_data_and_short_conversation",
+                });
               }
             } catch (error) {
               Sentry.logger.error("Follow-up artifact creation failed", {

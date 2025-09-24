@@ -42,4 +42,3 @@ export const followUpActionsArtifact = artifact(
       .describe("Metadata about the generation context"),
   }),
 );
-

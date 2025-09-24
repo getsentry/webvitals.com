@@ -1,15 +1,12 @@
 "use client";
 
-import { useArtifact } from "@ai-sdk-tools/artifacts/client";
 import {
   useChatError,
   useChatMessages,
   useChatStatus,
-  useChatStore,
 } from "@ai-sdk-tools/store";
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo } from "react";
-import { followUpActionsArtifact } from "@/ai/artifacts";
 import {
   Conversation,
   ConversationContent,
@@ -23,22 +20,8 @@ export default function ChatInterface() {
   const messages = useChatMessages();
   const status = useChatStatus();
   const error = useChatError();
-  const { sendMessage } = useChatStore();
 
-  // Use the follow-up actions artifact with event listeners
-  const followUpArtifact = useArtifact(followUpActionsArtifact, {
-    onStatusChange: (newStatus, oldStatus) => {
-      console.log(`Follow-up status changed: ${oldStatus} -> ${newStatus}`);
-    },
-    onUpdate: (newData, oldData) => {
-      if (newData.status === "generating" && oldData?.status === "loading") {
-        console.log("Generating follow-up actions...");
-      }
-    },
-    onError: (error) => {
-      console.error("Follow-up generation failed:", error);
-    },
-  });
+  // No artifact consumption here - moved to FollowUpSuggestions
 
   // Memoize expensive calculations
   const hasAIResponses = useMemo(
@@ -63,39 +46,7 @@ export default function ChatInterface() {
     [messages],
   );
 
-  // Determine follow-up data from artifact
-  const latestFollowUpData = useMemo(() => {
-    // Only show follow-ups if the most recent message is an assistant message
-    const mostRecentMessage = messages[messages.length - 1];
-    if (!mostRecentMessage || mostRecentMessage.role !== "assistant") {
-      return null;
-    }
-
-    // Check if we have artifact data or if it's loading
-    if (
-      followUpArtifact?.status === "loading" ||
-      followUpArtifact?.status === "streaming"
-    ) {
-      return {
-        messageId: mostRecentMessage.id,
-        actions: undefined,
-        isLoading: true,
-      };
-    }
-
-    if (
-      followUpArtifact?.data?.actions &&
-      followUpArtifact.data.actions.length > 0
-    ) {
-      return {
-        messageId: mostRecentMessage.id,
-        actions: followUpArtifact.data.actions,
-        isLoading: false,
-      };
-    }
-
-    return null;
-  }, [messages, followUpArtifact?.data, followUpArtifact?.status]);
+  // Simplified - just pass messages to FollowUpSuggestions for internal logic
 
   // Show fade overlays when there's scrollable content
   const showFadeOverlays = useMemo(
@@ -180,41 +131,7 @@ export default function ChatInterface() {
                 )}
               </AnimatePresence>
 
-              <AnimatePresence>
-                {latestFollowUpData && (
-                  <motion.div
-                    key="follow-up-suggestions"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                      transition: {
-                        duration: 0.3,
-                        ease: [0.25, 0.46, 0.45, 0.94], // ease-out-quad
-                      },
-                    }}
-                    exit={{
-                      opacity: 0,
-                      y: -10,
-                      transition: {
-                        duration: 0.2,
-                        ease: [0.55, 0.085, 0.68, 0.53], // ease-in-quad
-                      },
-                    }}
-                  >
-                    <FollowUpSuggestions
-                      actions={latestFollowUpData.actions}
-                      isLoading={latestFollowUpData.isLoading}
-                      onSuggestionClick={(suggestion) => {
-                        sendMessage?.({
-                          role: "user",
-                          parts: [{ type: "text", text: suggestion }],
-                        });
-                      }}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <FollowUpSuggestions />
             </ConversationContent>
             <ConversationScrollButton />
           </Conversation>

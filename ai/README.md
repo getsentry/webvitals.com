@@ -14,6 +14,8 @@ This directory contains the AI-powered components for web performance analysis.
   - `index.ts` - Exports all tools
 
 - **`context.ts`** - Typed context management for artifacts and tools
+- **`follow-up-generator.ts`** - AI-powered follow-up question generation logic
+- **`system-prompts.ts`** - System prompts for AI agent behavior
 - **`index.ts`** - Main exports for the AI system
 
 ## Usage
@@ -53,6 +55,29 @@ setContext({
   sessionId: "session-123",
   analyzeUrl: "https://example.com",
 });
+```
+
+### Follow-up Generation
+Generate contextual follow-up questions based on conversation and tool data:
+
+```typescript
+import { generateFollowUpActions } from "@/ai/follow-up-generator";
+
+const followUpData = await generateFollowUpActions({
+  performanceData,
+  technologyData,
+  conversationHistory,
+});
+```
+
+### System Prompts
+Use consistent system prompts for AI agent behavior:
+
+```typescript
+import { webAnalysisSystemPrompt } from "@/ai/system-prompts";
+
+// In your streamText configuration
+system: webAnalysisSystemPrompt,
 ```
 
 ## Architecture

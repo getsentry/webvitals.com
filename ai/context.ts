@@ -19,4 +19,3 @@ export function getCurrentSession() {
 }
 
 export { setContext, getContext };
-

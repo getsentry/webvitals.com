@@ -1,7 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
-import type { RealWorldPerformanceOutput } from "@/types/real-world-performance";
 
 const followUpActionSchema = z.object({
   id: z.string().describe("Unique identifier for the action"),
@@ -30,9 +29,25 @@ export async function generateFollowUpActions(
 ) {
   const { performanceData, technologyData, conversationHistory } = input;
 
+  console.log("[GENERATOR] 🚀 Starting follow-up generation:", {
+    timestamp: new Date().toISOString(),
+    hasPerformanceData: !!performanceData,
+    hasTechnologyData: !!technologyData,
+    conversationHistoryLength: conversationHistory?.length || 0,
+    performanceUrl:
+      (performanceData as any)?.url || (performanceData as any)?.output?.url,
+    lastUserMessage: conversationHistory
+      ?.filter((m) => m.role === "user")
+      .slice(-1)[0]
+      ?.content?.substring(0, 150),
+    fullConversationPreview: conversationHistory?.map(
+      (m) => `${m.role}: ${m.content.substring(0, 50)}...`,
+    ),
+  });
+
   try {
     const result = await generateObject({
-      model: openai("gpt-4o"),
+      model: openai("gpt-4o-mini"),
       schema: followUpActionsOutputSchema,
       prompt: `You are analyzing web performance data and generating contextual follow-up questions. 
 
@@ -80,18 +95,43 @@ Examples of good follow-ups:
       },
     });
 
+    console.log("[GENERATOR] 🤖 AI generation result:", {
+      hasResult: !!result.object,
+      hasActions: !!result.object?.actions,
+      actionsCount: result.object?.actions?.length || 0,
+      usage: result.usage,
+    });
+
     if (!result.object?.actions) {
+      console.error("[GENERATOR] ❌ No actions generated from AI");
       throw new Error("No actions generated");
     }
 
-    return {
-      url: (performanceData as RealWorldPerformanceOutput)?.url || "",
+    const finalResult = {
+      url:
+        (performanceData as any)?.url ||
+        (performanceData as any)?.output?.url ||
+        "",
       actions: result.object.actions,
       generatedAt: new Date().toISOString(),
       basedOnTools: ["getRealWorldPerformance", "detectTechnologies"],
     };
+
+    console.log("[GENERATOR] ✅ Follow-up generation successful:", {
+      actionsCount: finalResult.actions.length,
+      url: finalResult.url,
+      actions: finalResult.actions.map((a) => ({
+        id: a.id,
+        title: a.title.substring(0, 80),
+      })),
+    });
+
+    return finalResult;
   } catch (error) {
-    console.error("AI generation failed, using fallback:", error);
+    console.error(
+      "[GENERATOR] ❌ AI generation failed, using fallback:",
+      error,
+    );
 
     // Simple fallback actions
     const fallbackActions = [
@@ -114,11 +154,22 @@ Examples of good follow-ups:
       },
     ];
 
-    return {
-      url: (performanceData as RealWorldPerformanceOutput)?.url || "",
+    const fallbackResult = {
+      url:
+        (performanceData as any)?.url ||
+        (performanceData as any)?.output?.url ||
+        "",
       actions: fallbackActions,
       generatedAt: new Date().toISOString(),
-      basedOnTools: ["getRealWorldPerformance", "detectTechnologies"],
+      basedOnTools: ["fallback"],
     };
+
+    console.log("[GENERATOR] 🔄 Using fallback actions:", {
+      actionsCount: fallbackResult.actions.length,
+      url: fallbackResult.url,
+      actions: fallbackResult.actions.map((a) => a.title),
+    });
+
+    return fallbackResult;
   }
 }
