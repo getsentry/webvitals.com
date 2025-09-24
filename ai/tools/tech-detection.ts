@@ -256,3 +256,4 @@ export const techDetectionTool = tool({
     return detectTechnologies(url);
   },
 });
+

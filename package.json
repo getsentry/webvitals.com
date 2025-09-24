@@ -74,6 +74,7 @@
     "react-hook-form": "^7.62.0",
     "react-resizable-panels": "^3.0.5",
     "react-syntax-highlighter": "^15.6.6",
+    "react-use-measure": "^2.1.7",
     "recharts": "2.15.4",
     "require-in-the-middle": "^7.5.2",
     "shiki": "^3.12.2",

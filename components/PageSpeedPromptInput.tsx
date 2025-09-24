@@ -8,7 +8,8 @@ import {
   SmartphoneIcon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import {
   PromptInput,
@@ -72,6 +73,7 @@ export default function PageSpeedPromptInput({
   disabled = false,
   className,
 }: PageSpeedPromptInputProps) {
+  const searchParams = useSearchParams();
   const [domain, setDomain] = useState("");
   const [status, setStatus] = useState<ChatStatus>("ready");
   const [config, setConfig] = useState<PerformanceConfig>(
@@ -79,6 +81,12 @@ export default function PageSpeedPromptInput({
   );
   const [devicesPopoverOpen, setDevicesPopoverOpen] = useState(false);
   const { scrollRef, showLeftFade, showRightFade } = useScrollFade(domain);
+
+  useEffect(() => {
+    if (searchParams.get("domain") && searchParams.get("domain") !== domain) {
+      setDomain(searchParams.get("domain") || "");
+    }
+  }, []);
 
   // Validate URL using zod schema
   const isValidUrl = useMemo(() => {

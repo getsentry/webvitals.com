@@ -3,14 +3,18 @@
 import { useChat } from "@ai-sdk-tools/store";
 import * as Sentry from "@sentry/nextjs";
 import { AnimatePresence, motion } from "motion/react";
+import { useRouter } from "next/navigation";
 import type { PerformanceConfig } from "@/types/performance-config";
 import Background from "./Background";
 import ChatInterface from "./ChatInterface";
 import HeroLanding from "./HeroLanding";
 
 export default function HeroSection() {
+  const router = useRouter();
+
   const { messages, sendMessage, status } = useChat({
     onFinish: (message) => {
+      console.log("Chat analysis completed", message);
       Sentry.logger.info("Chat analysis completed", {
         messageCount: messages.length + 1,
         hasToolCalls: message.message.parts?.some((part) =>
@@ -49,6 +53,8 @@ export default function HeroSection() {
       timestamp: new Date().toISOString(),
     });
 
+    router.push(`/?domain=${domain}`);
+
     sendMessage(
       {
         role: "user",
@@ -65,7 +71,7 @@ export default function HeroSection() {
   const hasMessages = messages.length > 0;
 
   return (
-    <section className="relative md:h-[70vh] h-full flex flex-col">
+    <section className="relative h-full flex flex-col">
       <Background />
 
       <div className="relative z-10 flex-1 flex flex-col h-full">

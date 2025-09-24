@@ -185,3 +185,4 @@ export const realWorldPerformanceTool = tool({
     return getRealWorldPerformance(url, devices);
   },
 });
+

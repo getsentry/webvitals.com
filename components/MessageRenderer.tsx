@@ -41,10 +41,8 @@ interface MessageRendererProps {
 const MessageRenderer = memo(function MessageRenderer({
   message,
 }: MessageRendererProps) {
-  console.log("MessageRenderer", message);
   const { setScores } = useWebVitalsScore();
 
-  // Memoize part separation to avoid expensive filtering on every render
   const { toolParts, textParts, performanceParts } = useMemo(() => {
     const tools: (PerformanceToolUIPart | TechnologyToolUIPart)[] = [];
     const texts: TextUIPart[] = [];
@@ -53,11 +51,6 @@ const MessageRenderer = memo(function MessageRenderer({
     // Single pass through parts for better performance
     for (const part of message.parts) {
       if (part.type.startsWith("tool-")) {
-        // Skip follow-up actions - handled at ChatInterface level
-        if (part.type === "tool-generateFollowUpActions") {
-          continue;
-        }
-
         if (part.type === "tool-getRealWorldPerformance") {
           const performancePart = part as PerformanceToolUIPart;
           tools.push(performancePart);
@@ -107,14 +100,12 @@ const MessageRenderer = memo(function MessageRenderer({
     setScores(newScores);
   }, [performanceParts, setScores]);
 
-  // Extract performance data and update scores when available
   useEffect(() => {
     updateScores();
   }, [updateScores]);
 
   return (
     <div key={message.id}>
-      {/* 1. Tool components first */}
       {toolParts.map((part, i) => {
         if (part.type === "tool-getRealWorldPerformance") {
           const performanceTool = part as PerformanceToolUIPart;
@@ -163,7 +154,6 @@ const MessageRenderer = memo(function MessageRenderer({
         return null;
       })}
 
-      {/* 2. Performance results */}
       {performanceParts.map((performanceTool, i) => {
         if (
           performanceTool.state === "output-available" &&
@@ -180,7 +170,6 @@ const MessageRenderer = memo(function MessageRenderer({
         return null;
       })}
 
-      {/* 3. Text messages */}
       {textParts.map((part, i) => {
         return (
           <TextMessage
