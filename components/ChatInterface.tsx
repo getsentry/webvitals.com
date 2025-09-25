@@ -55,7 +55,7 @@ export default function ChatInterface() {
   );
   return (
     <motion.div className={`h-full flex flex-col items-center px-4 py-8`}>
-      <motion.div className="max-w-4xl">
+      <motion.div className="max-w-4xl w-full">
         {/* Fade overlays */}
         <div
           className={`absolute top-0 left-0 right-4 h-6 bg-gradient-to-b from-card/60 via-card/30 to-transparent pointer-events-none z-10 transition-opacity duration-300 ease-out ${

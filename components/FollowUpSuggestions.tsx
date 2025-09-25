@@ -4,7 +4,7 @@ import { useArtifact } from "@ai-sdk-tools/artifacts/client";
 import { useChatMessages, useChatStore } from "@ai-sdk-tools/store";
 
 import { AnimatePresence, motion } from "motion/react";
-import { useMemo, useRef, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { followUpActionsArtifact } from "@/ai/artifacts";
 import {
   Suggestion,
@@ -64,21 +64,25 @@ export default function FollowUpSuggestions() {
   const shouldShowSentryLink = useMemo(() => {
     const userMessageCount = messages.filter((m) => m.role === "user").length;
     const lastMessage = messages[messages.length - 1];
-    
-    return userMessageCount >= 2 && lastMessage?.role === "assistant" && assistantDoneStreaming;
+
+    return (
+      userMessageCount >= 2 &&
+      lastMessage?.role === "assistant" &&
+      assistantDoneStreaming
+    );
   }, [messages, assistantDoneStreaming]);
-  
+
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage?.role === "assistant") {
       // Reset the flag when new assistant message appears
       setAssistantDoneStreaming(false);
-      
+
       // Set a short delay to allow streaming to complete
       const timer = setTimeout(() => {
         setAssistantDoneStreaming(true);
       }, 1000); // 1 second delay after last message update
-      
+
       return () => clearTimeout(timer);
     }
   }, [messages]);
@@ -89,22 +93,23 @@ export default function FollowUpSuggestions() {
     const userMessageCount = messages.filter((m) => m.role === "user").length;
 
     // Show loading ONLY after the initial analysis (first user message)
-    // when assistant is done streaming but we don't have suggestions yet
+    // when we have an artifact that's loading/generating but not complete yet
     if (
-      lastMessage?.role === "assistant" && 
+      lastMessage?.role === "assistant" &&
       assistantDoneStreaming &&
       userMessageCount === 1 &&
-      !shouldShow
+      followUpArtifact?.data && // Artifact exists
+      (followUpArtifact.status === "loading" || followUpArtifact.status === "streaming") && // Still processing
+      followUpArtifact.data.status !== "complete" // Not complete yet
     ) {
       return true;
     }
 
     return false;
-  }, [messages, assistantDoneStreaming, shouldShow]);
+  }, [messages, assistantDoneStreaming, followUpArtifact]);
 
   // Determine if we should render (show follow-ups OR loading state OR sentry link)
   const shouldRender = shouldShow || shouldShowLoading || shouldShowSentryLink;
-
 
   if (!shouldRender) {
     return null;
@@ -147,7 +152,8 @@ export default function FollowUpSuggestions() {
             </h4>
             <div className="rounded-lg border border-border bg-muted/50 p-4">
               <p className="text-sm text-muted-foreground mb-3">
-                To learn more about performance monitoring and how you can use Sentry to track real user metrics:
+                To learn more about performance monitoring and how you can use
+                Sentry to track real user metrics:
               </p>
               <a
                 href="https://docs.sentry.io/product/sentry-basics/performance-monitoring/"
@@ -156,8 +162,18 @@ export default function FollowUpSuggestions() {
                 className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
               >
                 Sentry Performance Monitoring Guide
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                <svg
+                  className="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
                 </svg>
               </a>
             </div>

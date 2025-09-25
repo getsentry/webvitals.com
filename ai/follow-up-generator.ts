@@ -68,25 +68,24 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
     : ""
 }
 
-Based on this data and conversation context, generate 3-6 practical follow-up questions that would be most valuable for the user to explore next. 
+Based on this data and conversation context, generate 3-6 SHORT, actionable follow-up questions that would be most valuable for the user to explore next. 
 
 Guidelines:
-- Be specific to the actual performance issues found (don't suggest LCP improvements if LCP is already good)
-- Consider the technology stack detected and suggest relevant optimizations
-- Avoid repeating topics already covered in the conversation
-- Focus on actionable next steps and implementation details
-- ALWAYS include at least one suggestion about tracking Real User Metrics with Sentry performance monitoring unless RUM/Sentry has already been thoroughly discussed
-- Make questions conversational and specific to this site's context
+- Keep titles under 8-12 words maximum
+- Be specific to actual performance issues found
+- Consider the detected technology stack
+- Avoid repeating covered topics
+- Include one Sentry/RUM suggestion if not discussed
+- Use simple, direct language
 
-Examples of good follow-ups:
-- "How can I improve my slow mobile LCP?" (if LCP is actually slow)
-- "What's causing my high CLS and how do I fix it?" (if CLS is problematic)
-- "How do I set up Sentry to track Real User Metrics for Core Web Vitals?" (if RUM not discussed)
-- "Show me how to instrument Sentry performance monitoring for my Next.js app" (if using Next.js and RUM not covered)
-- "What are the best practices for optimizing React performance?" (if using React)
-- "How do I implement performance budgets for my team?"
-- "What's the business impact of my current performance issues?"
-- "How does Real User Monitoring with Sentry compare to CrUX data?" (if RUM comparison not discussed)`,
+Examples of CONCISE follow-ups:
+- "Fix slow mobile LCP?"
+- "Reduce high CLS?"
+- "Set up Sentry RUM tracking?"
+- "Optimize React performance?"
+- "Implement performance budgets?"
+- "Track business impact?"
+- "Compare RUM vs CrUX data?"`,
       experimental_telemetry: {
         isEnabled: true,
         recordInputs: true,
