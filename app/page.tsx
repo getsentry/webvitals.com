@@ -1,5 +1,7 @@
 import { Provider } from "@ai-sdk-tools/store";
 import CoreWebVitalsSection from "@/components/CoreWebVitalsSection";
+import FAQSection from "@/components/FAQSection";
+import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
 import { WebVitalsScoreProvider } from "@/contexts/WebVitalsScoreContext";
 
@@ -10,7 +12,9 @@ export default function Home() {
         <main>
           <HeroSection />
           <CoreWebVitalsSection />
+          <FAQSection />
         </main>
+        <Footer />
       </WebVitalsScoreProvider>
     </Provider>
   );

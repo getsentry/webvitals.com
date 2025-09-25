@@ -36,7 +36,7 @@ export default function ChatInterface() {
 
   return (
     <motion.div className={`h-full flex flex-col items-center`}>
-      <motion.div className="max-w-4xl w-full border rounded-lg">
+      <motion.div className="max-w-4xl w-full border rounded-lg bg-background">
         <div className="flex-1 min-h-0">
           <Conversation>
             <ConversationContent>

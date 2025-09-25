@@ -303,15 +303,6 @@ pnpm dev
 
 ### Environment Debugging
 
-**Development Debug Mode**:
-```bash
-# Enable verbose logging
-DEBUG=* pnpm dev
-
-# Check environment variables
-node -e "console.log(process.env)"
-```
-
 **Production Debugging**:
 ```bash
 # Check Vercel environment variables

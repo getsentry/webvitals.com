@@ -171,6 +171,29 @@ const MessageRenderer = memo(function MessageRenderer({
       })}
 
       {textParts.map((part, i) => {
+        // Check if this message has performance data with meaningful metrics
+        const hasPerformanceData = performanceParts.some((perfPart) => {
+          const output = perfPart.output;
+          return output?.hasData && (
+            (output.mobile?.fieldData?.metrics && Object.keys(output.mobile.fieldData.metrics).length > 0) ||
+            (output.desktop?.fieldData?.metrics && Object.keys(output.desktop.fieldData.metrics).length > 0)
+          );
+        });
+
+        // Only render text if we have meaningful performance data or if this is a user message
+        // For assistant messages, check if this is the first analysis (has tool parts) vs follow-up messages
+        if (message.role === "assistant") {
+          const hasToolParts = message.parts.some(p => p.type.startsWith("tool-"));
+          // If this is the first analysis message (has tools), require performance data
+          if (hasToolParts && !hasPerformanceData) {
+            return null;
+          }
+          // For follow-up messages (no tools), always render if there's text
+          if (!hasToolParts && !part.text?.trim()) {
+            return null;
+          }
+        }
+
         return (
           <TextMessage
             key={`${message.id}-text-${i}`}

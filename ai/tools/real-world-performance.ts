@@ -102,6 +102,7 @@ async function getRealWorldPerformance(
     }
 
     const results = await Promise.all(promises);
+
     const mobileData = deviceOrder.includes("mobile")
       ? (results[deviceOrder.indexOf("mobile")] as {
           loadingExperience?: {
@@ -128,20 +129,32 @@ async function getRealWorldPerformance(
 
     if (mobileData?.loadingExperience) {
       if (!result.mobile) result.mobile = {};
+      const metrics = transformMetrics(
+        mobileData.loadingExperience.metrics || {},
+      );
       result.mobile.fieldData = {
         overallCategory: mobileData.loadingExperience.overall_category,
-        metrics: transformMetrics(mobileData.loadingExperience.metrics || {}),
+        metrics,
       };
-      result.hasData = true;
+      // Only set hasData to true if we actually have meaningful metrics
+      if (Object.keys(metrics).length > 0) {
+        result.hasData = true;
+      }
     }
 
     if (desktopData?.loadingExperience) {
       if (!result.desktop) result.desktop = {};
+      const metrics = transformMetrics(
+        desktopData.loadingExperience.metrics || {},
+      );
       result.desktop.fieldData = {
         overallCategory: desktopData.loadingExperience.overall_category,
-        metrics: transformMetrics(desktopData.loadingExperience.metrics || {}),
+        metrics,
       };
-      result.hasData = true;
+      // Only set hasData to true if we actually have meaningful metrics
+      if (Object.keys(metrics).length > 0) {
+        result.hasData = true;
+      }
     }
 
     Sentry.logger.info("Real-world performance data fetched", {

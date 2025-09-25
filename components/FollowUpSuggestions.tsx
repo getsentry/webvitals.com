@@ -1,6 +1,7 @@
 "use client";
 
 import { useChatMessages, useChatStore } from "@ai-sdk-tools/store";
+import type { UIMessage } from "ai";
 
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
@@ -9,6 +10,7 @@ import {
   Suggestions,
 } from "@/components/ui/ai-elements/suggestion";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { RealWorldPerformanceOutput } from "@/types/real-world-performance";
 
 interface FollowUpAction {
   id: string;
@@ -22,6 +24,33 @@ interface FollowUpSuggestionsData {
   basedOnTools: string[];
   generatedAt: string;
   error?: string;
+}
+
+// Type guards for tool parts
+function isToolPart(part: UIMessage["parts"][0], toolType: string) {
+  return (
+    part.type === `tool-${toolType}` &&
+    "state" in part &&
+    part.state === "output-available" &&
+    "output" in part &&
+    "toolCallId" in part
+  );
+}
+
+function isRealWorldPerformanceOutput(
+  output: unknown,
+): output is RealWorldPerformanceOutput {
+  return (
+    typeof output === "object" &&
+    output !== null &&
+    "url" in output &&
+    "hasData" in output
+  );
+}
+
+interface ConversationMessage {
+  role: "user" | "assistant";
+  content: string;
 }
 
 function SuggestionSkeleton({ index }: { index: number }) {
@@ -50,26 +79,22 @@ export default function FollowUpSuggestions() {
   const userMessageCount = messages.filter((m) => m.role === "user").length;
   const isStreaming = status === "streaming" || status === "submitted";
 
-  // Extract analysis data from messages when available
   const analysisData = useMemo(() => {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage?.role === "assistant") {
-      let performanceData = null;
-      let technologyData = null;
-      let url = null;
+      let performanceData: RealWorldPerformanceOutput | null = null;
+      let technologyData: unknown = null;
+      let url: string | null = null;
 
-      for (const part of lastMessage.parts || []) {
-        if (
-          part.type === "tool-getRealWorldPerformance" &&
-          part.state === "output-available"
-        ) {
-          performanceData = part.output;
-          url = (part.output as any)?.url;
-        } else if (
-          part.type === "tool-detectTechnologies" &&
-          part.state === "output-available"
-        ) {
-          technologyData = part.output;
+      for (const part of lastMessage.parts) {
+        if (isToolPart(part, "getRealWorldPerformance")) {
+          const output = (part as any).output;
+          if (isRealWorldPerformanceOutput(output)) {
+            performanceData = output;
+            url = output.url;
+          }
+        } else if (isToolPart(part, "detectTechnologies")) {
+          technologyData = (part as any).output;
         }
       }
 
@@ -82,21 +107,31 @@ export default function FollowUpSuggestions() {
   useEffect(() => {
     const { performanceData, technologyData, url } = analysisData;
 
+    // Check if performance data has meaningful metrics
+    const hasPerformanceMetrics =
+      performanceData?.hasData &&
+      ((performanceData?.mobile?.fieldData?.metrics &&
+        Object.keys(performanceData.mobile.fieldData.metrics).length > 0) ||
+        (performanceData?.desktop?.fieldData?.metrics &&
+          Object.keys(performanceData.desktop.fieldData.metrics).length > 0));
+
     if (
       userMessageCount === 1 && // Only for initial analysis
-      (performanceData || technologyData) && // Has analysis data
+      hasPerformanceMetrics && // Only show when we have meaningful performance data
       !followUpData && // Haven't generated suggestions yet
       !isLoading && // Not currently loading
       !isStreaming // Wait for streaming to complete
     ) {
       setIsLoading(true);
 
-      const conversationHistory = messages.map((msg) => {
-        const textParts =
-          msg.parts
-            ?.filter((part) => part.type === "text")
-            ?.map((part) => part.text)
-            ?.filter(Boolean) || [];
+      const conversationHistory: ConversationMessage[] = messages.map((msg) => {
+        const textParts = msg.parts
+          .filter(
+            (part): part is { type: "text"; text: string } =>
+              part.type === "text",
+          )
+          .map((part) => part.text)
+          .filter(Boolean);
 
         return {
           role: msg.role as "user" | "assistant",
@@ -133,6 +168,31 @@ export default function FollowUpSuggestions() {
     messages,
   ]);
 
+  // Clear follow-up data if we don't have meaningful performance metrics
+  useEffect(() => {
+    const { performanceData } = analysisData;
+    const hasPerformanceMetrics =
+      performanceData?.hasData &&
+      ((performanceData?.mobile?.fieldData?.metrics &&
+        Object.keys(performanceData.mobile.fieldData.metrics).length > 0) ||
+        (performanceData?.desktop?.fieldData?.metrics &&
+          Object.keys(performanceData.desktop.fieldData.metrics).length > 0));
+
+    if (userMessageCount === 1 && !hasPerformanceMetrics && followUpData) {
+      setFollowUpData(null);
+    }
+
+    // Also clear if performanceData exists but hasData is false
+    if (
+      userMessageCount === 1 &&
+      performanceData &&
+      !performanceData.hasData &&
+      followUpData
+    ) {
+      setFollowUpData(null);
+    }
+  }, [analysisData, userMessageCount, followUpData]);
+
   // Simple state-based rendering
   const shouldShowLoading = isLoading;
   const shouldShowSuggestions = followUpData && userMessageCount === 1;
@@ -144,8 +204,8 @@ export default function FollowUpSuggestions() {
 
   const handleSuggestionClick = (suggestion: string) => {
     sendMessage?.({
-      role: "user",
-      parts: [{ type: "text", text: suggestion }],
+      role: "user" as const,
+      parts: [{ type: "text" as const, text: suggestion }],
     });
   };
 
