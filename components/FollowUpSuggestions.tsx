@@ -1,16 +1,28 @@
 "use client";
 
-import { useArtifact } from "@ai-sdk-tools/artifacts/client";
 import { useChatMessages, useChatStore } from "@ai-sdk-tools/store";
 
 import { AnimatePresence, motion } from "motion/react";
-import { useMemo } from "react";
-import { followUpActionsArtifact } from "@/ai/artifacts";
+import { useEffect, useMemo, useState } from "react";
 import {
   Suggestion,
   Suggestions,
 } from "@/components/ui/ai-elements/suggestion";
 import { Skeleton } from "@/components/ui/skeleton";
+
+interface FollowUpAction {
+  id: string;
+  title: string;
+}
+
+interface FollowUpSuggestionsData {
+  success: boolean;
+  actions: FollowUpAction[];
+  url?: string;
+  basedOnTools: string[];
+  generatedAt: string;
+  error?: string;
+}
 
 function SuggestionSkeleton({ index }: { index: number }) {
   return (
@@ -29,73 +41,104 @@ function SuggestionSkeleton({ index }: { index: number }) {
 }
 
 export default function FollowUpSuggestions() {
-  // Consume the follow-up artifact directly
   const messages = useChatMessages();
-  const { sendMessage, status, isLoading } = useChatStore();
-  const followUpArtifact = useArtifact(followUpActionsArtifact);
+  const { sendMessage, status } = useChatStore();
+  const [followUpData, setFollowUpData] =
+    useState<FollowUpSuggestionsData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const actions = followUpArtifact?.data?.actions || [];
+  const userMessageCount = messages.filter((m) => m.role === "user").length;
+  const isStreaming = status === "streaming" || status === "submitted";
 
-  // Simple logic for when to show follow-ups - only show after first analysis
-  const shouldShow = useMemo(() => {
-    // Only show after assistant messages
+  // Extract analysis data from messages when available
+  const analysisData = useMemo(() => {
     const lastMessage = messages[messages.length - 1];
-    if (!lastMessage || lastMessage.role !== "assistant") {
-      return false;
+    if (lastMessage?.role === "assistant") {
+      let performanceData = null;
+      let technologyData = null;
+      let url = null;
+
+      for (const part of lastMessage.parts || []) {
+        if (
+          part.type === "tool-getRealWorldPerformance" &&
+          part.state === "output-available"
+        ) {
+          performanceData = part.output;
+          url = (part.output as any)?.url;
+        } else if (
+          part.type === "tool-detectTechnologies" &&
+          part.state === "output-available"
+        ) {
+          technologyData = part.output;
+        }
+      }
+
+      return { performanceData, technologyData, url };
     }
+    return { performanceData: null, technologyData: null, url: null };
+  }, [messages]);
 
-    // Only show after the FIRST user message (initial analysis)
-    const userMessageCount = messages.filter((m) => m.role === "user").length;
-    if (userMessageCount !== 1) {
-      return false;
-    }
+  // Generate follow-up suggestions when analysis data is available AND streaming is complete
+  useEffect(() => {
+    const { performanceData, technologyData, url } = analysisData;
 
-    // Must have artifact with actions and be in complete status
-    const hasActions = followUpArtifact?.data?.actions?.length > 0;
-    const isComplete = followUpArtifact?.status === "complete";
-
-    return hasActions && isComplete;
-  }, [messages, followUpArtifact?.data, followUpArtifact?.status]);
-
-  // Show Sentry docs link after follow-up questions are used
-  const shouldShowSentryLink = useMemo(() => {
-    const userMessageCount = messages.filter((m) => m.role === "user").length;
-    const lastMessage = messages[messages.length - 1];
-
-    // Check different possible streaming states from the store
-    const isStreaming =
-      isLoading || status === "streaming" || status === "submitted";
-
-    return (
-      userMessageCount >= 2 && lastMessage?.role === "assistant" && !isStreaming // Don't show while streaming
-    );
-  }, [messages, isLoading, status]);
-
-  // Determine if we should show loading indicators
-  const shouldShowLoading = useMemo(() => {
-    const lastMessage = messages[messages.length - 1];
-    const userMessageCount = messages.filter((m) => m.role === "user").length;
-
-    // Show loading ONLY after the initial analysis (first user message)
-    // when we have an artifact that's loading/generating but not complete yet
     if (
-      lastMessage?.role === "assistant" &&
-      userMessageCount === 1 &&
-      followUpArtifact?.data && // Artifact exists
-      (followUpArtifact.status === "loading" ||
-        followUpArtifact.status === "streaming") && // Still processing
-      followUpArtifact.data.status !== "complete" // Not complete yet
+      userMessageCount === 1 && // Only for initial analysis
+      (performanceData || technologyData) && // Has analysis data
+      !followUpData && // Haven't generated suggestions yet
+      !isLoading && // Not currently loading
+      !isStreaming // Wait for streaming to complete
     ) {
-      return true;
+      setIsLoading(true);
+
+      const conversationHistory = messages.map((msg) => {
+        const textParts =
+          msg.parts
+            ?.filter((part) => part.type === "text")
+            ?.map((part) => part.text)
+            ?.filter(Boolean) || [];
+
+        return {
+          role: msg.role as "user" | "assistant",
+          content: textParts.join(" ") || "[no text content]",
+        };
+      });
+
+      fetch("/api/follow-up-suggestions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          performanceData,
+          technologyData,
+          conversationHistory,
+          url,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setFollowUpData(data);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Failed to generate follow-up suggestions:", error);
+          setIsLoading(false);
+        });
     }
+  }, [
+    analysisData,
+    userMessageCount,
+    followUpData,
+    isLoading,
+    isStreaming,
+    messages,
+  ]);
 
-    return false;
-  }, [messages, followUpArtifact]);
+  // Simple state-based rendering
+  const shouldShowLoading = isLoading;
+  const shouldShowSuggestions = followUpData && userMessageCount === 1;
+  const shouldShowSentryLink = userMessageCount >= 2 && !isStreaming;
 
-  // Determine if we should render (show follow-ups OR loading state OR sentry link)
-  const shouldRender = shouldShow || shouldShowLoading || shouldShowSentryLink;
-
-  if (!shouldRender) {
+  if (!shouldShowLoading && !shouldShowSuggestions && !shouldShowSentryLink) {
     return null;
   }
 
@@ -129,7 +172,7 @@ export default function FollowUpSuggestions() {
         }}
         className="mt-4 space-y-3"
       >
-        {shouldShowSentryLink ? (
+        {shouldShowSentryLink && (
           <div className="rounded-lg border border-border bg-muted/50 p-4">
             <p className="text-sm text-muted-foreground mb-3">
               To learn more about performance monitoring and how you can use
@@ -157,7 +200,9 @@ export default function FollowUpSuggestions() {
               </svg>
             </a>
           </div>
-        ) : (
+        )}
+
+        {(shouldShowLoading || shouldShowSuggestions) && (
           <>
             <h4 className="text-sm font-medium text-muted-foreground">
               {shouldShowLoading
@@ -169,7 +214,7 @@ export default function FollowUpSuggestions() {
                 ? [0, 1, 2].map((index) => (
                     <SuggestionSkeleton key={index} index={index} />
                   ))
-                : actions.map((action, index) => (
+                : followUpData?.actions?.map((action, index) => (
                     <motion.div
                       key={action.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -185,7 +230,7 @@ export default function FollowUpSuggestions() {
                         onClick={handleSuggestionClick}
                       />
                     </motion.div>
-                  ))}
+                  )) || []}
             </Suggestions>
           </>
         )}

@@ -4,17 +4,11 @@ This directory contains the AI-powered components for web performance analysis.
 
 ## Structure
 
-- **`artifacts/`** - Artifact definitions for streaming data to the UI
-  - `follow-up-actions.ts` - Follow-up question generation artifact
-  - `index.ts` - Exports all artifacts
-
 - **`tools/`** - AI tools for data collection and analysis
   - `real-world-performance.ts` - CrUX real user metrics analysis
   - `tech-detection.ts` - Technology stack detection via Cloudflare
   - `index.ts` - Exports all tools
 
-- **`context.ts`** - Typed context management for artifacts and tools
-- **`follow-up-generator.ts`** - AI-powered follow-up question generation logic
 - **`system-prompts.ts`** - System prompts for AI agent behavior
 - **`index.ts`** - Main exports for the AI system
 
@@ -33,43 +27,6 @@ tools: {
 }
 ```
 
-### Artifacts
-Artifacts stream structured data to the UI after conversations complete:
-
-```typescript
-import { followUpActionsArtifact } from "@/ai/artifacts";
-
-// In your client components
-const followUpData = useArtifact(followUpActionsArtifact);
-```
-
-### Context
-Context provides session information to tools and artifacts:
-
-```typescript
-import { setContext, getCurrentSession } from "@/ai/context";
-
-// Set context in your API route
-setContext({
-  writer,
-  sessionId: "session-123",
-  analyzeUrl: "https://example.com",
-});
-```
-
-### Follow-up Generation
-Generate contextual follow-up questions based on conversation and tool data:
-
-```typescript
-import { generateFollowUpActions } from "@/ai/follow-up-generator";
-
-const followUpData = await generateFollowUpActions({
-  performanceData,
-  technologyData,
-  conversationHistory,
-});
-```
-
 ### System Prompts
 Use consistent system prompts for AI agent behavior:
 
@@ -80,13 +37,35 @@ import { webAnalysisSystemPrompt } from "@/ai/system-prompts";
 system: webAnalysisSystemPrompt,
 ```
 
+### Follow-up Suggestions
+Follow-up suggestions are generated via a dedicated API endpoint after analysis completes:
+
+```typescript
+// POST /api/follow-up-suggestions
+{
+  performanceData,
+  technologyData, 
+  conversationHistory,
+  url
+}
+```
+
+The component automatically calls this endpoint when analysis data becomes available.
+
 ## Architecture
 
 The AI system follows a clean separation of concerns:
 
 1. **Tools** collect raw data during conversations
-2. **Artifacts** process and stream structured data to the UI
-3. **Context** provides shared state across the system
+2. **Follow-up API** generates contextual questions via separate endpoint
+3. **System Prompts** provide consistent AI behavior
 
-This enables progressive enhancement where the main analysis completes first, followed by contextual enhancements like follow-up suggestions.
+This enables a clean chat experience where analysis completes first, followed by contextual follow-up suggestions generated separately.
 
+## Chat Flow
+
+1. User submits URL for analysis
+2. AI agent runs performance and technology tools
+3. Agent provides analysis text response
+4. Frontend component detects completed tools and calls follow-up API
+5. Follow-up suggestions appear after analysis is complete
