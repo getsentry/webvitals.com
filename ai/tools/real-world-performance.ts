@@ -22,10 +22,10 @@ async function fetchPerformanceData(
 ) {
   const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(
     url,
-  )}&strategy=${strategy}&fields=loadingExperience,originLoadingExperience&key=${apiKey}`;
+  )}&strategy=${strategy}&fields=loadingExperience&key=${apiKey}`;
 
   const response = await fetch(apiUrl, {
-    signal: AbortSignal.timeout(60000), // 1 minute timeout
+    signal: AbortSignal.timeout(90000), // 1.5 minute timeout
     next: {
       revalidate: 3600, // 1 hour cache
       tags: [`crux:${strategy}:${url}`],
@@ -118,7 +118,10 @@ async function getRealWorldPerformance(
           } else {
             Sentry.logger.warn("Mobile CrUX data fetch failed", {
               url: normalizedUrl,
-              error: mobileResult.reason instanceof Error ? mobileResult.reason.message : "Unknown error",
+              error:
+                mobileResult.reason instanceof Error
+                  ? mobileResult.reason.message
+                  : "Unknown error",
             });
             Sentry.captureException(mobileResult.reason, {
               tags: {
@@ -147,7 +150,10 @@ async function getRealWorldPerformance(
           } else {
             Sentry.logger.warn("Desktop CrUX data fetch failed", {
               url: normalizedUrl,
-              error: desktopResult.reason instanceof Error ? desktopResult.reason.message : "Unknown error",
+              error:
+                desktopResult.reason instanceof Error
+                  ? desktopResult.reason.message
+                  : "Unknown error",
             });
             Sentry.captureException(desktopResult.reason, {
               tags: {
@@ -202,9 +208,12 @@ async function getRealWorldPerformance(
     // Check if we got any data at all
     const hasMobileData = !!result.mobile?.fieldData;
     const hasDesktopData = !!result.desktop?.fieldData;
-    const requestedBothDevices = devices.includes("mobile") && devices.includes("desktop");
-    const requestedOnlyMobile = devices.includes("mobile") && !devices.includes("desktop");
-    const requestedOnlyDesktop = !devices.includes("mobile") && devices.includes("desktop");
+    const requestedBothDevices =
+      devices.includes("mobile") && devices.includes("desktop");
+    const requestedOnlyMobile =
+      devices.includes("mobile") && !devices.includes("desktop");
+    const requestedOnlyDesktop =
+      !devices.includes("mobile") && devices.includes("desktop");
 
     // Only throw if we completely failed to get any requested data
     if (
@@ -213,7 +222,7 @@ async function getRealWorldPerformance(
       (requestedOnlyDesktop && !hasDesktopData)
     ) {
       throw new Error(
-        `Failed to fetch CrUX data for all requested devices (${devices.join(", ")})`
+        `Failed to fetch CrUX data for all requested devices (${devices.join(", ")})`,
       );
     }
 
@@ -239,11 +248,12 @@ async function getRealWorldPerformance(
       extra: { url: normalizedUrl },
     });
 
-    throw new Error(
-      `Real-world performance analysis failed: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`,
-    );
+    return {
+      url: normalizedUrl,
+      hasData: false,
+      mobile: {},
+      desktop: {},
+    };
   }
 }
 

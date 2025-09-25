@@ -8,6 +8,11 @@ import { Card, CardContent } from "./ui/card";
 
 const faqs = [
   {
+    question: "Do Web Vitals still matter in the AI era?",
+    answer:
+      "More than ever. AI-generated code often creates performance-heavy applications with excessive JavaScript, unoptimized assets, and inefficient patterns. Fast sites convert better and rank higher regardless of how they're built. We're developing an MCP integration to bring real performance data directly into AI coding assistants like Claude and Cursor.",
+  },
+  {
     question: "What are Core Web Vitals?",
     answer:
       "Core Web Vitals are a set of specific factors that Google considers important in a webpage's overall user experience. They include Largest Contentful Paint (LCP), Cumulative Layout Shift (CLS), and First Input Delay (FID). We also track additional metrics like First Contentful Paint (FCP) and Time to First Byte (TTFB) for comprehensive performance insights.",
@@ -36,6 +41,11 @@ const faqs = [
     question: "What's the difference between lab and field data?",
     answer:
       "Lab data comes from controlled testing environments using tools like Lighthouse, while field data comes from real users visiting your site through the Chrome User Experience Report. Our tool uses field data to show you real-world performance, which is more representative of your users' actual experiences.",
+  },
+  {
+    question: "What's on the roadmap for WebVitals?",
+    answer:
+      "We're actively developing several exciting features: In-depth Lighthouse analysis with actionable recommendations, historical data tracking to monitor performance trends over time, unique shareable URLs for easy collaboration, user accounts to persist and track results across sessions, competitive benchmarking against similar sites, performance budgets with automated alerts, CI/CD integration for continuous monitoring, multi-page site analysis, custom performance thresholds, API access for automation, exportable PDF reports, team collaboration features, and integrations with popular tools like GitHub and Slack. Follow our progress and request features through our feedback channels!",
   },
 ];
 

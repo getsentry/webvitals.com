@@ -27,6 +27,36 @@ We combine multiple authoritative data sources:
 - **OpenAI GPT-4o**: AI-powered analysis and recommendations
 - **Sentry**: Real user monitoring integration (optional)
 
+## 🤖 Web Performance in the AI Era
+
+### Do web vitals still matter in the age of AI?
+
+More than ever. While AI tools generate code faster, they often create performance-heavy applications. AI-generated sites frequently have:
+- Excessive JavaScript bundles
+- Unoptimized images and assets
+- Poor loading strategies
+- Inefficient rendering patterns
+
+Fast sites convert better, rank higher in search, and provide better user experience regardless of how they're built.
+
+### Why not just let AI handle performance optimization?
+
+Current AI coding assistants lack real-world performance context. They can't:
+- Access your site's actual user data
+- Understand your specific performance bottlenecks
+- Provide technology-specific optimizations
+- Monitor performance over time
+
+WebVitals.com bridges this gap by providing contextual performance analysis that you can share with AI tools.
+
+### How will WebVitals.com work with AI coding assistants?
+
+We're developing MCP (Model Context Protocol) integration to flow performance insights directly into Claude, Cursor, and other AI tools, enabling them to:
+- Generate optimizations based on your actual performance data
+- Suggest framework-specific improvements
+- Prioritize fixes by user impact
+- Write code that addresses real bottlenecks
+
 ## 📊 Core Web Vitals
 
 ### What are Core Web Vitals?
@@ -269,3 +299,82 @@ Yes! Feature requests are handled internally:
 4. **Discuss in team sync** - get engineering team input
 
 Feature development is prioritized based on business impact and technical feasibility.
+
+## 🗺️ Roadmap & Future Features
+
+### What's on the development roadmap?
+
+We're actively building several exciting features to make WebVitals.com the most comprehensive web performance platform:
+
+#### **🔬 Enhanced Analysis**
+- **In-depth Lighthouse Analysis**: Full synthetic testing with actionable recommendations beyond Core Web Vitals
+- **Multi-page Site Analysis**: Scan entire sites, not just individual pages
+- **Competitive Benchmarking**: Compare your performance against similar sites in your industry
+- **Custom Performance Thresholds**: Set organization-specific targets beyond Google's recommendations
+
+#### **📊 Data & Tracking**
+- **Historical Data Tracking**: Monitor performance trends over time with charts and analytics
+- **Performance Budgets**: Set limits with automated alerts when thresholds are exceeded
+- **Regression Detection**: AI-powered alerts when performance significantly degrades
+- **A/B Testing Integration**: Compare performance between different versions
+
+#### **👥 Collaboration Features**
+- **User Accounts**: Persist and track results across sessions
+- **Team Collaboration**: Share analyses and track improvements across team members
+- **Unique Shareable URLs**: Easy collaboration with stakeholders
+- **Exportable PDF Reports**: Professional reports for presentations and documentation
+
+#### **🔧 Developer Integration**
+- **CI/CD Integration**: Automated performance checks in your deployment pipeline
+- **GitHub Actions**: Pre-built workflows for continuous performance monitoring
+- **API Access**: Full REST API for automation and custom integrations
+- **AI Assistant Integration**: Planned MCP (Model Context Protocol) support for Claude, Cursor, and other AI coding assistants
+- **Webhook Support**: Real-time notifications for performance changes
+
+#### **🏢 Enterprise Features**
+- **SSO Integration**: Enterprise authentication and user management
+- **Custom Branding**: White-label reports and interface customization
+- **Advanced Analytics**: Custom dashboards and detailed performance insights
+- **SLA Monitoring**: Track performance against service level agreements
+
+#### **🔌 Platform Integrations**
+- **Sentry Deep Integration**: Seamless connection with Sentry performance monitoring
+- **Slack Notifications**: Performance alerts and reports in team channels
+- **Jira Integration**: Automatic ticket creation for performance issues
+- **Popular Tool Integrations**: Connect with your existing development workflow
+
+#### **📱 Mobile & Advanced Analysis**
+- **Mobile-First Analysis**: Specialized insights for mobile performance optimization
+- **Core Web Vitals Forecasting**: Predict future performance based on current trends
+- **Resource Analysis**: Deep dive into asset optimization and third-party impact
+- **Advanced Diagnostics**: Performance waterfall analysis and bottleneck identification
+
+### When will these features be available?
+
+We're following an iterative development approach:
+
+- **Q1 2024**: Historical tracking, user accounts, enhanced Lighthouse analysis
+- **Q2 2024**: Team collaboration, CI/CD integration, API access
+- **Q3 2024**: Advanced analytics, competitive benchmarking, enterprise features
+- **Q4 2024**: Mobile optimization, forecasting, advanced diagnostics
+
+### How can I influence the roadmap?
+
+We prioritize features based on:
+
+1. **User Feedback**: Share your needs through GitHub issues or team discussions
+2. **Business Impact**: Features that drive Sentry's performance monitoring goals
+3. **Technical Feasibility**: Engineering effort and infrastructure requirements
+4. **Market Demand**: Most requested features from the community
+
+### Will existing features remain free?
+
+Our goal is to keep core analysis features available while adding value through premium capabilities:
+
+- **Always Free**: Basic Core Web Vitals analysis, AI recommendations, technology detection
+- **Enhanced Features**: Historical data, team collaboration, advanced analytics
+- **Enterprise**: Custom branding, SSO, advanced integrations, SLA monitoring
+
+### How does this align with Sentry's vision?
+
+WebVitals.com serves as the entry point for performance optimization, naturally leading to Sentry's comprehensive Real User Monitoring platform. This creates a complete performance monitoring ecosystem from initial analysis to ongoing production monitoring.
