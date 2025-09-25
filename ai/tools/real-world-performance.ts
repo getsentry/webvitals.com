@@ -25,6 +25,7 @@ async function fetchPerformanceData(
   )}&strategy=${strategy}&fields=loadingExperience,originLoadingExperience&key=${apiKey}`;
 
   const response = await fetch(apiUrl, {
+    signal: AbortSignal.timeout(60000), // 1 minute timeout
     next: {
       revalidate: 3600, // 1 hour cache
       tags: [`crux:${strategy}:${url}`],
@@ -101,23 +102,64 @@ async function getRealWorldPerformance(
       deviceOrder.push("desktop");
     }
 
-    const results = await Promise.all(promises);
+    const results = await Promise.allSettled(promises);
 
+    // Extract mobile data
     const mobileData = deviceOrder.includes("mobile")
-      ? (results[deviceOrder.indexOf("mobile")] as {
-          loadingExperience?: {
-            overall_category: PerformanceCategory;
-            metrics?: Record<string, unknown>;
-          };
-        })
+      ? (() => {
+          const mobileResult = results[deviceOrder.indexOf("mobile")];
+          if (mobileResult.status === "fulfilled") {
+            return mobileResult.value as {
+              loadingExperience?: {
+                overall_category: PerformanceCategory;
+                metrics?: Record<string, unknown>;
+              };
+            };
+          } else {
+            Sentry.logger.warn("Mobile CrUX data fetch failed", {
+              url: normalizedUrl,
+              error: mobileResult.reason instanceof Error ? mobileResult.reason.message : "Unknown error",
+            });
+            Sentry.captureException(mobileResult.reason, {
+              tags: {
+                component: "real-world-performance-tool",
+                operation: "fetchPerformanceData",
+                strategy: "mobile",
+              },
+              extra: { url: normalizedUrl },
+            });
+            return null;
+          }
+        })()
       : null;
+
+    // Extract desktop data
     const desktopData = deviceOrder.includes("desktop")
-      ? (results[deviceOrder.indexOf("desktop")] as {
-          loadingExperience?: {
-            overall_category: PerformanceCategory;
-            metrics?: Record<string, unknown>;
-          };
-        })
+      ? (() => {
+          const desktopResult = results[deviceOrder.indexOf("desktop")];
+          if (desktopResult.status === "fulfilled") {
+            return desktopResult.value as {
+              loadingExperience?: {
+                overall_category: PerformanceCategory;
+                metrics?: Record<string, unknown>;
+              };
+            };
+          } else {
+            Sentry.logger.warn("Desktop CrUX data fetch failed", {
+              url: normalizedUrl,
+              error: desktopResult.reason instanceof Error ? desktopResult.reason.message : "Unknown error",
+            });
+            Sentry.captureException(desktopResult.reason, {
+              tags: {
+                component: "real-world-performance-tool",
+                operation: "fetchPerformanceData",
+                strategy: "desktop",
+              },
+              extra: { url: normalizedUrl },
+            });
+            return null;
+          }
+        })()
       : null;
 
     const result: RealWorldPerformanceOutput = {
@@ -157,10 +199,29 @@ async function getRealWorldPerformance(
       }
     }
 
+    // Check if we got any data at all
+    const hasMobileData = !!result.mobile?.fieldData;
+    const hasDesktopData = !!result.desktop?.fieldData;
+    const requestedBothDevices = devices.includes("mobile") && devices.includes("desktop");
+    const requestedOnlyMobile = devices.includes("mobile") && !devices.includes("desktop");
+    const requestedOnlyDesktop = !devices.includes("mobile") && devices.includes("desktop");
+
+    // Only throw if we completely failed to get any requested data
+    if (
+      (requestedBothDevices && !hasMobileData && !hasDesktopData) ||
+      (requestedOnlyMobile && !hasMobileData) ||
+      (requestedOnlyDesktop && !hasDesktopData)
+    ) {
+      throw new Error(
+        `Failed to fetch CrUX data for all requested devices (${devices.join(", ")})`
+      );
+    }
+
     Sentry.logger.info("Real-world performance data fetched", {
       url: normalizedUrl,
-      hasMobileData: !!result.mobile?.fieldData,
-      hasDesktopData: !!result.desktop?.fieldData,
+      hasMobileData,
+      hasDesktopData,
+      requestedDevices: devices,
     });
 
     return result;
