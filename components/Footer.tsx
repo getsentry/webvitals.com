@@ -1,4 +1,5 @@
-import { Github, Twitter, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 const footerLinks = {
   resources: [
@@ -75,33 +76,22 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <h3 className="text-lg font-bold text-foreground mb-4">
-              WebVitals
+              WebVitals{" "}
+              <span className="text-xs text-muted-foreground">
+                <Link
+                  href="https://sentry.io/welcome?ref=webvitals.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  by Sentry
+                </Link>
+              </span>
             </h3>
             <p className="text-muted-foreground max-w-md mb-6">
               Unlock your website's potential with instant Web Vitals analysis
               powered by Lighthouse. Get actionable insights to improve your
               site's performance and user experience.
             </p>
-            <div className="flex space-x-4">
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-colors duration-200"
-                aria-label="GitHub"
-              >
-                <Github className="w-5 h-5" />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-colors duration-200"
-                aria-label="Twitter"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
-            </div>
           </div>
 
           {/* Resources */}
@@ -118,10 +108,9 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Tools */}
           <div>
             <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">
-              Tools
+              Other tools
             </h4>
             <ul className="space-y-3">
               {footerLinks.tools.map((link) => (
@@ -136,23 +125,9 @@ export default function Footer() {
         <div className="mt-12 pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-muted-foreground text-sm">
-              © {new Date().getFullYear()} WebVitals. Built with Next.js and
-              Tailwind CSS.
+              © {new Date().getFullYear()} WebVitals. Built with Robots, Next.js
+              and Tailwind CSS.
             </p>
-            <div className="mt-4 md:mt-0 flex space-x-6 text-sm">
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-foreground transition-colors duration-200"
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-foreground transition-colors duration-200"
-              >
-                Terms of Service
-              </a>
-            </div>
           </div>
         </div>
       </div>

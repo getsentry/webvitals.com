@@ -224,7 +224,9 @@ export default function PerformanceResult({
           </div>
         </CardHeader>
         <CardContent>
-          {navigationMarkup}
+          <div className="flex justify-center sm:justify-start mb-4">
+            {navigationMarkup}
+          </div>
           {contentMarkup}
         </CardContent>
       </Card>

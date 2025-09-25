@@ -248,7 +248,7 @@ export default function CoreWebVitalsSection() {
   };
 
   return (
-    <section className="py-24 px-4 bg-background">
+    <section className="py-24 pb-0 px-4 bg-background">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
@@ -266,7 +266,7 @@ export default function CoreWebVitalsSection() {
           </p>
         </div>
 
-        <BentoGrid className="grid-cols-3 auto-rows-[22rem] mb-16">
+        <BentoGrid className="grid-cols-3 auto-rows-[22rem]">
           {metrics.map((metric, idx) => {
             const metricMappings: Record<string, string> = {
               "Largest Contentful Paint": "largest-contentful-paint",

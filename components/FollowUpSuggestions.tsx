@@ -10,6 +10,7 @@ import {
   Suggestions,
 } from "@/components/ui/ai-elements/suggestion";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useScrollFade } from "@/hooks/useScrollFade";
 import type { RealWorldPerformanceOutput } from "@/types/real-world-performance";
 
 interface FollowUpAction {
@@ -75,6 +76,7 @@ export default function FollowUpSuggestions() {
   const [followUpData, setFollowUpData] =
     useState<FollowUpSuggestionsData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { scrollRef, showLeftFade, showRightFade } = useScrollFade(followUpData);
 
   const userMessageCount = messages.filter((m) => m.role === "user").length;
   const isStreaming = status === "streaming" || status === "submitted";
@@ -269,12 +271,44 @@ export default function FollowUpSuggestions() {
                 ? "Generating follow-up suggestions..."
                 : "Explore these follow-up questions:"}
             </h4>
-            <Suggestions className="gap-2">
-              {shouldShowLoading
-                ? [0, 1, 2].map((index) => (
-                    <SuggestionSkeleton key={index} index={index} />
-                  ))
-                : followUpData?.actions?.map((action, index) => (
+            {shouldShowLoading ? (
+              <Suggestions className="gap-2">
+                {[0, 1, 2].map((index) => (
+                  <SuggestionSkeleton key={index} index={index} />
+                ))}
+              </Suggestions>
+            ) : (
+              <div className="relative grid w-full">
+                <AnimatePresence>
+                  {showLeftFade && (
+                    <motion.div
+                      key="left-fade"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{
+                        duration: 0.2,
+                        ease: [0.25, 0.46, 0.45, 0.94],
+                      }}
+                      className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-background to-transparent pointer-events-none z-10"
+                    />
+                  )}
+                  {showRightFade && (
+                    <motion.div
+                      key="right-fade"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{
+                        duration: 0.2,
+                        ease: [0.25, 0.46, 0.45, 0.94],
+                      }}
+                      className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-background to-transparent pointer-events-none z-10"
+                    />
+                  )}
+                </AnimatePresence>
+                <Suggestions ref={scrollRef} className="gap-2">
+                  {followUpData?.actions?.map((action, index) => (
                     <motion.div
                       key={action.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -291,7 +325,9 @@ export default function FollowUpSuggestions() {
                       />
                     </motion.div>
                   )) || []}
-            </Suggestions>
+                </Suggestions>
+              </div>
+            )}
           </>
         )}
       </motion.div>

@@ -82,20 +82,17 @@ export default function HeroSection() {
           className="z-10"
           animate={{
             height: bounds.height,
-            translateY: hasMessages ? 0 : isMobile ? 150 : 300,
+            translateY: hasMessages ? 0 : "min(300px, 20vh)",
           }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <div ref={ref} className="px-4 py-12">
             <motion.h1
-              className=" text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent text-center mb-8"
+              className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent text-center mb-8"
               animate={{
-                fontSize: hasMessages
-                  ? "2rem"
-                  : isMobile
-                    ? "2.25rem"
-                    : "4.5rem",
+                scale: hasMessages ? (isMobile ? 1 : 0.5) : 1,
               }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
             >
               Analyze. Optimize. Ship.
             </motion.h1>
