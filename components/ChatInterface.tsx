@@ -12,6 +12,7 @@ import {
   ConversationContent,
   ConversationScrollButton,
 } from "@/components/ui/ai-elements/conversation";
+import { Loader } from "@/components/ui/ai-elements/loader";
 import FollowUpSuggestions from "./FollowUpSuggestions";
 import MessageRenderer from "./MessageRenderer";
 import WebVitalsFacts from "./WebVitalsFacts";
@@ -68,6 +69,18 @@ export default function ChatInterface() {
                     className="p-4 bg-muted/30 rounded-lg border"
                   >
                     <WebVitalsFacts />
+                  </motion.div>
+                )}
+                {status === "submitted" && hasAIText && (
+                  <motion.div
+                    key="streaming-loader"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                    }}
+                  >
+                    <Loader />
                   </motion.div>
                 )}
               </AnimatePresence>
