@@ -14,7 +14,6 @@ export default function HeroSection() {
 
   const { messages, sendMessage, status } = useChat({
     onFinish: (message) => {
-      console.log("Chat analysis completed", message);
       Sentry.logger.info("Chat analysis completed", {
         messageCount: messages.length + 1,
         hasToolCalls: message.message.parts?.some((part) =>

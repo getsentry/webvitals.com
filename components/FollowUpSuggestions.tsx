@@ -4,7 +4,7 @@ import { useArtifact } from "@ai-sdk-tools/artifacts/client";
 import { useChatMessages, useChatStore } from "@ai-sdk-tools/store";
 
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { followUpActionsArtifact } from "@/ai/artifacts";
 import {
   Suggestion,
@@ -31,13 +31,10 @@ function SuggestionSkeleton({ index }: { index: number }) {
 export default function FollowUpSuggestions() {
   // Consume the follow-up artifact directly
   const messages = useChatMessages();
-  const { sendMessage } = useChatStore();
+  const { sendMessage, status, isLoading } = useChatStore();
   const followUpArtifact = useArtifact(followUpActionsArtifact);
 
   const actions = followUpArtifact?.data?.actions || [];
-
-  // Use a simple delay-based approach to detect when assistant is done streaming
-  const [assistantDoneStreaming, setAssistantDoneStreaming] = useState(false);
 
   // Simple logic for when to show follow-ups - only show after first analysis
   const shouldShow = useMemo(() => {
@@ -65,27 +62,14 @@ export default function FollowUpSuggestions() {
     const userMessageCount = messages.filter((m) => m.role === "user").length;
     const lastMessage = messages[messages.length - 1];
 
+    // Check different possible streaming states from the store
+    const isStreaming =
+      isLoading || status === "streaming" || status === "submitted";
+
     return (
-      userMessageCount >= 2 &&
-      lastMessage?.role === "assistant" &&
-      assistantDoneStreaming
+      userMessageCount >= 2 && lastMessage?.role === "assistant" && !isStreaming // Don't show while streaming
     );
-  }, [messages, assistantDoneStreaming]);
-
-  useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.role === "assistant") {
-      // Reset the flag when new assistant message appears
-      setAssistantDoneStreaming(false);
-
-      // Set a short delay to allow streaming to complete
-      const timer = setTimeout(() => {
-        setAssistantDoneStreaming(true);
-      }, 1000); // 1 second delay after last message update
-
-      return () => clearTimeout(timer);
-    }
-  }, [messages]);
+  }, [messages, isLoading, status]);
 
   // Determine if we should show loading indicators
   const shouldShowLoading = useMemo(() => {
@@ -96,17 +80,17 @@ export default function FollowUpSuggestions() {
     // when we have an artifact that's loading/generating but not complete yet
     if (
       lastMessage?.role === "assistant" &&
-      assistantDoneStreaming &&
       userMessageCount === 1 &&
       followUpArtifact?.data && // Artifact exists
-      (followUpArtifact.status === "loading" || followUpArtifact.status === "streaming") && // Still processing
+      (followUpArtifact.status === "loading" ||
+        followUpArtifact.status === "streaming") && // Still processing
       followUpArtifact.data.status !== "complete" // Not complete yet
     ) {
       return true;
     }
 
     return false;
-  }, [messages, assistantDoneStreaming, followUpArtifact]);
+  }, [messages, followUpArtifact]);
 
   // Determine if we should render (show follow-ups OR loading state OR sentry link)
   const shouldRender = shouldShow || shouldShowLoading || shouldShowSentryLink;
@@ -146,38 +130,33 @@ export default function FollowUpSuggestions() {
         className="mt-4 space-y-3"
       >
         {shouldShowSentryLink ? (
-          <>
-            <h4 className="text-sm font-medium text-muted-foreground">
-              Learn more about performance monitoring
-            </h4>
-            <div className="rounded-lg border border-border bg-muted/50 p-4">
-              <p className="text-sm text-muted-foreground mb-3">
-                To learn more about performance monitoring and how you can use
-                Sentry to track real user metrics:
-              </p>
-              <a
-                href="https://docs.sentry.io/product/sentry-basics/performance-monitoring/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+          <div className="rounded-lg border border-border bg-muted/50 p-4">
+            <p className="text-sm text-muted-foreground mb-3">
+              To learn more about performance monitoring and how you can use
+              Sentry to track real user metrics:
+            </p>
+            <a
+              href="https://docs.sentry.io/product/sentry-basics/performance-monitoring/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              Sentry Performance Monitoring Guide
+              <svg
+                className="w-3 h-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                Sentry Performance Monitoring Guide
-                <svg
-                  className="w-3 h-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                  />
-                </svg>
-              </a>
-            </div>
-          </>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+            </a>
+          </div>
         ) : (
           <>
             <h4 className="text-sm font-medium text-muted-foreground">

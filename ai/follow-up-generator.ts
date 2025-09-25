@@ -1,4 +1,5 @@
 import { openai } from "@ai-sdk/openai";
+import * as Sentry from "@sentry/nextjs";
 import { generateObject } from "ai";
 import { z } from "zod";
 
@@ -28,22 +29,6 @@ export async function generateFollowUpActions(
   input: GenerateFollowUpActionsInput,
 ) {
   const { performanceData, technologyData, conversationHistory } = input;
-
-  console.log("[GENERATOR] 🚀 Starting follow-up generation:", {
-    timestamp: new Date().toISOString(),
-    hasPerformanceData: !!performanceData,
-    hasTechnologyData: !!technologyData,
-    conversationHistoryLength: conversationHistory?.length || 0,
-    performanceUrl:
-      (performanceData as any)?.url || (performanceData as any)?.output?.url,
-    lastUserMessage: conversationHistory
-      ?.filter((m) => m.role === "user")
-      .slice(-1)[0]
-      ?.content?.substring(0, 150),
-    fullConversationPreview: conversationHistory?.map(
-      (m) => `${m.role}: ${m.content?.substring(0, 50) || "[no content]"}...`,
-    ),
-  });
 
   try {
     const result = await generateObject({
@@ -94,15 +79,8 @@ Examples of CONCISE follow-ups:
       },
     });
 
-    console.log("[GENERATOR] 🤖 AI generation result:", {
-      hasResult: !!result.object,
-      hasActions: !!result.object?.actions,
-      actionsCount: result.object?.actions?.length || 0,
-      usage: result.usage,
-    });
-
     if (!result.object?.actions) {
-      console.error("[GENERATOR] ❌ No actions generated from AI");
+      Sentry.captureMessage("No actions generated");
       throw new Error("No actions generated");
     }
 
@@ -116,21 +94,9 @@ Examples of CONCISE follow-ups:
       basedOnTools: ["getRealWorldPerformance", "detectTechnologies"],
     };
 
-    console.log("[GENERATOR] ✅ Follow-up generation successful:", {
-      actionsCount: finalResult.actions.length,
-      url: finalResult.url,
-      actions: finalResult.actions.map((a) => ({
-        id: a.id,
-        title: a.title.substring(0, 80),
-      })),
-    });
-
     return finalResult;
   } catch (error) {
-    console.error(
-      "[GENERATOR] ❌ AI generation failed, using fallback:",
-      error,
-    );
+    Sentry.captureException(error);
 
     // Simple fallback actions
     const fallbackActions = [
@@ -162,12 +128,6 @@ Examples of CONCISE follow-ups:
       generatedAt: new Date().toISOString(),
       basedOnTools: ["fallback"],
     };
-
-    console.log("[GENERATOR] 🔄 Using fallback actions:", {
-      actionsCount: fallbackResult.actions.length,
-      url: fallbackResult.url,
-      actions: fallbackResult.actions.map((a) => a.title),
-    });
 
     return fallbackResult;
   }
