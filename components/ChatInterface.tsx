@@ -21,18 +21,6 @@ export default function ChatInterface() {
   const status = useChatStatus();
   const error = useChatError();
 
-  // No artifact consumption here - moved to FollowUpSuggestions
-
-  // Memoize expensive calculations
-  const hasAIResponses = useMemo(
-    () =>
-      messages.some(
-        (msg) =>
-          msg.role === "assistant" && msg.parts?.length && msg.parts.length > 3,
-      ),
-    [messages],
-  );
-
   const hasAIText = useMemo(
     () =>
       messages.some(
@@ -46,28 +34,9 @@ export default function ChatInterface() {
     [messages],
   );
 
-  // Simplified - just pass messages to FollowUpSuggestions for internal logic
-
-  // Show fade overlays when there's scrollable content
-  const showFadeOverlays = useMemo(
-    () => messages.length > 0 && hasAIResponses,
-    [messages.length, hasAIResponses],
-  );
   return (
-    <motion.div className={`h-full flex flex-col items-center px-4 py-8`}>
-      <motion.div className="max-w-4xl w-full">
-        {/* Fade overlays */}
-        <div
-          className={`absolute top-0 left-0 right-4 h-6 bg-gradient-to-b from-card/60 via-card/30 to-transparent pointer-events-none z-10 transition-opacity duration-300 ease-out ${
-            showFadeOverlays ? "opacity-100" : "opacity-0"
-          }`}
-        />
-        <div
-          className={`absolute bottom-0 left-0 right-4 h-6 bg-gradient-to-t from-card/60 via-card/30 to-transparent pointer-events-none z-10 transition-opacity duration-300 ease-out ${
-            showFadeOverlays ? "opacity-100" : "opacity-0"
-          }`}
-        />
-
+    <motion.div className={`h-full flex flex-col items-center`}>
+      <motion.div className="max-w-4xl w-full border rounded-lg">
         <div className="flex-1 min-h-0">
           <Conversation>
             <ConversationContent>

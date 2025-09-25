@@ -10,7 +10,6 @@ import {
 } from "ai";
 import { generateFollowUpActions, webAnalysisSystemPrompt } from "@/ai";
 import { followUpActionsArtifact } from "@/ai/artifacts";
-import { setContext } from "@/ai/context";
 import { realWorldPerformanceTool, techDetectionTool } from "@/ai/tools";
 
 export async function POST(request: Request) {
@@ -32,13 +31,6 @@ export async function POST(request: Request) {
 
     const stream = createUIMessageStream({
       execute: ({ writer }) => {
-        // Set up context with writer for artifacts
-        setContext({
-          writer,
-          sessionId: `session-${Date.now()}`,
-          analyzeUrl: performanceConfig ? "analysis-session" : undefined,
-        });
-
         const result = streamText({
           model: openai("gpt-4o"),
           messages: convertToModelMessages(messages),
@@ -97,7 +89,6 @@ export async function POST(request: Request) {
 
 Configuration: ${JSON.stringify(performanceConfig || {})}`,
           async onFinish({ steps }) {
-
             try {
               // Extract performance and technology data from the completed steps
               let performanceData: unknown = null;
@@ -192,7 +183,6 @@ Configuration: ${JSON.stringify(performanceConfig || {})}`,
                     conversationHistory,
                   });
 
-
                   // Complete the artifact with final data
                   // Include the new assistant message in the count (messages.length + 1)
                   await followUpStream.complete({
@@ -206,7 +196,6 @@ Configuration: ${JSON.stringify(performanceConfig || {})}`,
                       conversationLength: expectedConversationLength,
                     },
                   });
-
 
                   Sentry.logger.info(
                     "Follow-up actions generated successfully",
@@ -247,7 +236,6 @@ Configuration: ${JSON.stringify(performanceConfig || {})}`,
                       conversationLength: expectedConversationLength,
                     },
                   });
-
                 }
               } else {
                 Sentry.logger.debug("Skipping follow-up generation", {

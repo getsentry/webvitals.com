@@ -4,13 +4,18 @@ import { useChat } from "@ai-sdk-tools/store";
 import * as Sentry from "@sentry/nextjs";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
+import useMeasure from "react-use-measure";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { PerformanceConfig } from "@/types/performance-config";
 import Background from "./Background";
 import ChatInterface from "./ChatInterface";
-import HeroLanding from "./HeroLanding";
+import FeatureHighlights from "./FeatureHighlights";
+import PageSpeedPromptInput from "./PageSpeedPromptInput";
 
 export default function HeroSection() {
   const router = useRouter();
+  const [ref, bounds] = useMeasure();
+  const isMobile = useIsMobile();
 
   const { messages, sendMessage, status } = useChat({
     onFinish: (message) => {
@@ -70,58 +75,68 @@ export default function HeroSection() {
   const hasMessages = messages.length > 0;
 
   return (
-    <section className="relative h-full flex flex-col">
+    <section className="relative min-h-[70vh] flex flex-col">
       <Background />
-
-      <div className="relative z-10 flex-1 flex flex-col h-full">
-        <AnimatePresence mode="wait">
-          {!hasMessages ? (
-            <motion.div
-              key="hero"
-              initial={{ opacity: 1 }}
-              exit={{
-                opacity: 0,
-                y: -20,
-                transition: {
-                  duration: 0.3,
-                  ease: [0.55, 0.085, 0.68, 0.53],
-                },
-              }}
-              className="flex-1 flex flex-col items-center justify-center"
-            >
-              <HeroLanding
-                onSubmit={handlePerformanceSubmit}
-                disabled={status !== "ready"}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="conversation"
-              initial={{ opacity: 0, y: 20 }}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          className="z-10"
+          animate={{
+            height: bounds.height,
+            translateY: hasMessages ? 0 : isMobile ? 150 : 300,
+          }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        >
+          <div ref={ref} className="px-4 py-12">
+            <motion.h1
+              className=" text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent text-center mb-8"
               animate={{
-                opacity: 1,
-                y: 0,
-                transition: {
-                  duration: 0.3,
-                  delay: 0.15,
-                  ease: [0.215, 0.61, 0.355, 1],
-                },
+                fontSize: hasMessages
+                  ? "2rem"
+                  : isMobile
+                    ? "2.25rem"
+                    : "4.5rem",
               }}
-              exit={{
-                opacity: 0,
-                y: -10,
-                transition: {
-                  duration: 0.2,
-                  ease: [0.55, 0.085, 0.68, 0.53],
-                },
-              }}
-              className="flex-1"
             >
-              <ChatInterface />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+              Analyze. Optimize. Ship.
+            </motion.h1>
+            {!hasMessages ? (
+              <motion.div
+                key="hero-content"
+                initial={{ opacity: 1 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
+                <div className="max-w-4xl mx-auto text-center space-y-8">
+                  <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                    Unlock your website's potential with real-world performance
+                    analysis from actual user experiences
+                  </p>
+
+                  <div className="max-w-2xl mx-auto">
+                    <PageSpeedPromptInput
+                      onSubmit={handlePerformanceSubmit}
+                      disabled={status !== "ready"}
+                      className="max-w-2xl"
+                    />
+                  </div>
+
+                  <FeatureHighlights />
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="chat-content"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="flex-1"
+              >
+                <ChatInterface />
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
+      </AnimatePresence>
     </section>
   );
 }
