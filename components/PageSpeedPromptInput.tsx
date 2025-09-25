@@ -44,13 +44,13 @@ import {
 } from "@/types/performance-config";
 
 const SUGGESTED_URLS = [
-  "vercel.com",
-  "claude.ai",
+  "sentry.io",
+  "claude.com",
   "linear.app",
   "tailwindcss.com",
   "shadcn.com",
   "openai.com",
-  "sentry.io",
+  "vercel.com",
   "cloudflare.com",
 ];
 

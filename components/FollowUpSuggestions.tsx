@@ -4,7 +4,7 @@ import { useArtifact } from "@ai-sdk-tools/artifacts/client";
 import { useChatMessages, useChatStore } from "@ai-sdk-tools/store";
 
 import { AnimatePresence, motion } from "motion/react";
-import { useMemo } from "react";
+import { useMemo, useRef, useEffect, useState } from "react";
 import { followUpActionsArtifact } from "@/ai/artifacts";
 import {
   Suggestion,
@@ -34,7 +34,12 @@ export default function FollowUpSuggestions() {
   const { sendMessage } = useChatStore();
   const followUpArtifact = useArtifact(followUpActionsArtifact);
 
-  // Simple logic for when to show follow-ups
+  const actions = followUpArtifact?.data?.actions || [];
+
+  // Use a simple delay-based approach to detect when assistant is done streaming
+  const [assistantDoneStreaming, setAssistantDoneStreaming] = useState(false);
+
+  // Simple logic for when to show follow-ups - only show after first analysis
   const shouldShow = useMemo(() => {
     // Only show after assistant messages
     const lastMessage = messages[messages.length - 1];
@@ -42,79 +47,70 @@ export default function FollowUpSuggestions() {
       return false;
     }
 
-    // Limit to 3 user messages max
+    // Only show after the FIRST user message (initial analysis)
     const userMessageCount = messages.filter((m) => m.role === "user").length;
-    if (userMessageCount >= 3) {
+    if (userMessageCount !== 1) {
       return false;
     }
 
-    // Must have artifact with actions
+    // Must have artifact with actions and be in complete status
     const hasActions = followUpArtifact?.data?.actions?.length > 0;
+    const isComplete = followUpArtifact?.status === "complete";
 
-    // Check if artifact is for current conversation state
-    // Artifact should be for messages.length (current state) not older
-    const artifactConversationLength =
-      followUpArtifact?.data?.context?.conversationLength || 0;
-    const isArtifactCurrent = artifactConversationLength === messages.length;
+    return hasActions && isComplete;
+  }, [messages, followUpArtifact?.data, followUpArtifact?.status]);
 
-    return hasActions && isArtifactCurrent;
-  }, [messages, followUpArtifact?.data]);
-
-  const isLoading =
-    followUpArtifact?.status === "loading" ||
-    followUpArtifact?.status === "generating";
-  const actions = followUpArtifact?.data?.actions || [];
-
-  console.log("[FOLLOW_UP_UI] FollowUpSuggestions state:", {
-    timestamp: new Date().toISOString(),
-    shouldShow,
-    isLoading,
-    artifactStatus: followUpArtifact?.status,
-    actionsCount: actions.length,
-    messagesLength: messages.length,
-    artifactConversationLength:
-      followUpArtifact?.data?.context?.conversationLength,
-    isArtifactCurrent:
-      followUpArtifact?.data?.context?.conversationLength === messages.length,
-    lastMessageRole: messages[messages.length - 1]?.role,
-    userMessageCount: messages.filter((m) => m.role === "user").length,
-    artifactUrl: followUpArtifact?.data?.url,
-  });
-
-  // Determine if we should render (show follow-ups OR loading state)
-  const shouldRender = useMemo(() => {
-    // Always show during loading/generating
-    if (isLoading) return true;
-
-    // Show if should show follow-ups
-    if (shouldShow) return true;
-
-    // Check if we're waiting for new follow-ups after a user message
+  // Show Sentry docs link after follow-up questions are used
+  const shouldShowSentryLink = useMemo(() => {
+    const userMessageCount = messages.filter((m) => m.role === "user").length;
     const lastMessage = messages[messages.length - 1];
-    const secondLastMessage = messages[messages.length - 2];
+    
+    return userMessageCount >= 2 && lastMessage?.role === "assistant" && assistantDoneStreaming;
+  }, [messages, assistantDoneStreaming]);
+  
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage?.role === "assistant") {
+      // Reset the flag when new assistant message appears
+      setAssistantDoneStreaming(false);
+      
+      // Set a short delay to allow streaming to complete
+      const timer = setTimeout(() => {
+        setAssistantDoneStreaming(true);
+      }, 1000); // 1 second delay after last message update
+      
+      return () => clearTimeout(timer);
+    }
+  }, [messages]);
 
-    // If last message is user and second last is assistant, we're waiting for new follow-ups
+  // Determine if we should show loading indicators
+  const shouldShowLoading = useMemo(() => {
+    const lastMessage = messages[messages.length - 1];
+    const userMessageCount = messages.filter((m) => m.role === "user").length;
+
+    // Show loading ONLY after the initial analysis (first user message)
+    // when assistant is done streaming but we don't have suggestions yet
     if (
-      lastMessage?.role === "user" &&
-      secondLastMessage?.role === "assistant"
+      lastMessage?.role === "assistant" && 
+      assistantDoneStreaming &&
+      userMessageCount === 1 &&
+      !shouldShow
     ) {
-      const userMessageCount = messages.filter((m) => m.role === "user").length;
-      return userMessageCount < 3; // Still within conversation limit
+      return true;
     }
 
     return false;
-  }, [messages, isLoading, shouldShow]);
+  }, [messages, assistantDoneStreaming, shouldShow]);
+
+  // Determine if we should render (show follow-ups OR loading state OR sentry link)
+  const shouldRender = shouldShow || shouldShowLoading || shouldShowSentryLink;
+
 
   if (!shouldRender) {
     return null;
   }
 
   const handleSuggestionClick = (suggestion: string) => {
-    console.log("[CLIENT] 📤 Sending follow-up as user message:", {
-      timestamp: new Date().toISOString(),
-      suggestion: suggestion.substring(0, 100),
-      currentMessagesLength: messages.length,
-    });
     sendMessage?.({
       role: "user",
       parts: [{ type: "text", text: suggestion }],
@@ -144,34 +140,60 @@ export default function FollowUpSuggestions() {
         }}
         className="mt-4 space-y-3"
       >
-        <h4 className="text-sm font-medium text-muted-foreground">
-          {isLoading || !shouldShow
-            ? "Generating follow-up suggestions..."
-            : "Explore these follow-up questions:"}
-        </h4>
-        <Suggestions className="gap-2">
-          {isLoading || !shouldShow
-            ? [0, 1, 2].map((index) => (
-                <SuggestionSkeleton key={index} index={index} />
-              ))
-            : actions.map((action, index) => (
-                <motion.div
-                  key={action.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.3,
-                    delay: index * 0.1,
-                    ease: [0.25, 0.46, 0.45, 0.94],
-                  }}
-                >
-                  <Suggestion
-                    suggestion={action.title}
-                    onClick={handleSuggestionClick}
-                  />
-                </motion.div>
-              ))}
-        </Suggestions>
+        {shouldShowSentryLink ? (
+          <>
+            <h4 className="text-sm font-medium text-muted-foreground">
+              Learn more about performance monitoring
+            </h4>
+            <div className="rounded-lg border border-border bg-muted/50 p-4">
+              <p className="text-sm text-muted-foreground mb-3">
+                To learn more about performance monitoring and how you can use Sentry to track real user metrics:
+              </p>
+              <a
+                href="https://docs.sentry.io/product/sentry-basics/performance-monitoring/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                Sentry Performance Monitoring Guide
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          </>
+        ) : (
+          <>
+            <h4 className="text-sm font-medium text-muted-foreground">
+              {shouldShowLoading
+                ? "Generating follow-up suggestions..."
+                : "Explore these follow-up questions:"}
+            </h4>
+            <Suggestions className="gap-2">
+              {shouldShowLoading
+                ? [0, 1, 2].map((index) => (
+                    <SuggestionSkeleton key={index} index={index} />
+                  ))
+                : actions.map((action, index) => (
+                    <motion.div
+                      key={action.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.3,
+                        delay: index * 0.1,
+                        ease: [0.25, 0.46, 0.45, 0.94],
+                      }}
+                    >
+                      <Suggestion
+                        suggestion={action.title}
+                        onClick={handleSuggestionClick}
+                      />
+                    </motion.div>
+                  ))}
+            </Suggestions>
+          </>
+        )}
       </motion.div>
     </AnimatePresence>
   );

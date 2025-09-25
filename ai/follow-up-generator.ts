@@ -41,7 +41,7 @@ export async function generateFollowUpActions(
       .slice(-1)[0]
       ?.content?.substring(0, 150),
     fullConversationPreview: conversationHistory?.map(
-      (m) => `${m.role}: ${m.content.substring(0, 50)}...`,
+      (m) => `${m.role}: ${m.content?.substring(0, 50) || "[no content]"}...`,
     ),
   });
 

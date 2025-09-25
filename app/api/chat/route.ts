@@ -51,6 +51,7 @@ export async function POST(request: Request) {
             isEnabled: true,
             functionId: "pagespeed-analysis-chat",
           },
+
           onStepFinish: (step) => {
             Sentry.logger.debug("AI step finished", {
               toolCalls: step.toolCalls?.length || 0,
@@ -159,13 +160,23 @@ Configuration: ${JSON.stringify(performanceConfig || {})}`,
               }
 
               // Build conversation history for context
-              const conversationHistory = messages.map((msg) => ({
-                role: msg.role as "user" | "assistant",
-                content:
-                  typeof msg.content === "string"
-                    ? msg.content
-                    : JSON.stringify(msg.content),
-              }));
+              const conversationHistory = messages.map((msg) => {
+                let content = "";
+
+                // Extract text content from message parts
+                if (msg.parts) {
+                  const textParts = msg.parts
+                    .filter((part) => part.type === "text")
+                    .map((part) => part.text)
+                    .filter(Boolean);
+                  content = textParts.join(" ");
+                }
+
+                return {
+                  role: msg.role as "user" | "assistant",
+                  content: content || "[no text content]",
+                };
+              });
 
               // Count user messages to determine if we should generate follow-ups
               const userMessageCount = messages.filter(
@@ -180,26 +191,19 @@ Configuration: ${JSON.stringify(performanceConfig || {})}`,
                 messagesRoles: messages.map((m) => m.role),
               });
 
-              // Generate follow-ups if:
-              // 1. We have tool data (initial analysis or re-analysis), OR
-              // 2. It's a follow-up conversation with context (but limit to 3 total user messages)
+              // Generate follow-ups only after the initial analysis (first user message)
               const shouldGenerateFollowUps =
-                performanceData ||
-                technologyData ||
-                (conversationHistory.length > 2 && userMessageCount < 3);
+                userMessageCount === 1 && (performanceData || technologyData);
 
               console.log("[SERVER] 🤔 Should generate follow-ups?", {
                 shouldGenerateFollowUps,
                 reason: shouldGenerateFollowUps
-                  ? performanceData || technologyData
-                    ? "has_tool_data"
-                    : "follow_up_conversation"
-                  : "no_conditions_met",
+                  ? "initial_analysis_with_tool_data"
+                  : "not_initial_analysis_or_no_tool_data",
                 conditions: {
+                  isFirstUserMessage: userMessageCount === 1,
                   hasPerformanceData: !!performanceData,
                   hasTechnologyData: !!technologyData,
-                  hasConversationContext: conversationHistory.length > 2,
-                  withinUserLimit: userMessageCount < 3,
                 },
               });
 
@@ -259,7 +263,8 @@ Configuration: ${JSON.stringify(performanceConfig || {})}`,
                         .slice(-1)[0]
                         ?.content?.substring(0, 100),
                       conversationSummary: conversationHistory.map(
-                        (m) => `${m.role}: ${m.content.substring(0, 50)}...`,
+                        (m) =>
+                          `${m.role}: ${m.content?.substring(0, 50) || "[no content]"}...`,
                       ),
                     },
                   );
@@ -355,28 +360,26 @@ Configuration: ${JSON.stringify(performanceConfig || {})}`,
               } else {
                 console.log("[SERVER] ❌ Skipping follow-up generation:", {
                   reason:
-                    userMessageCount >= 3
-                      ? "conversation_limit"
-                      : "no_tool_data_and_short_conversation",
+                    userMessageCount !== 1
+                      ? "not_initial_analysis"
+                      : "no_tool_data",
                   details: {
+                    userMessageCount,
+                    isFirstUserMessage: userMessageCount === 1,
                     hasPerformanceData: !!performanceData,
                     hasTechnologyData: !!technologyData,
-                    userMessageCount,
-                    conversationLength: conversationHistory.length,
-                    hasConversationContext: conversationHistory.length > 2,
-                    withinUserLimit: userMessageCount < 3,
                   },
                 });
 
                 Sentry.logger.debug("Skipping follow-up generation", {
+                  userMessageCount,
+                  isFirstUserMessage: userMessageCount === 1,
                   hasPerformanceData: !!performanceData,
                   hasTechnologyData: !!technologyData,
-                  userMessageCount,
-                  conversationLength: conversationHistory.length,
                   reason:
-                    userMessageCount >= 3
-                      ? "conversation_limit"
-                      : "no_tool_data_and_short_conversation",
+                    userMessageCount !== 1
+                      ? "not_initial_analysis"
+                      : "no_tool_data",
                 });
               }
             } catch (error) {
