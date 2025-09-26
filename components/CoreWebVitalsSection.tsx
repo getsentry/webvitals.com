@@ -306,8 +306,8 @@ export default function CoreWebVitalsSection() {
               <Dialog key={metric.id}>
                 <DialogTrigger asChild>
                   {/* Card Container */}
-                  <div
-                    className={`group ${metric.className} rounded-xl cursor-pointer overflow-hidden transition-all duration-300 shadow-sm hover:shadow-lg active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 relative flex flex-col`}
+                  <button
+                    className={`group ${metric.className} rounded-xl cursor-pointer overflow-hidden transition-all duration-300 shadow-sm hover:shadow-lg active:scale-[0.98] outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px] focus-visible:border-ring relative flex flex-col text-left`}
                   >
                     {/* Background */}
                     <div className="flex-1 relative min-h-[12rem] md:min-h-[14rem] lg:min-h-[16rem]">
@@ -346,11 +346,11 @@ export default function CoreWebVitalsSection() {
                         {metric.cta} →
                       </div>
                     </div>
-                  </div>
+                  </button>
                 </DialogTrigger>
 
                 <DialogContent
-                  className="max-w-6xl w-[95vw] lg:w-[90vw] h-[90vh] lg:h-[80vh] p-0 gap-0"
+                  className="max-w-6xl w-[95vw] lg:w-[90vw] p-0 gap-0"
                   showCloseButton={false}
                 >
                   <div className="w-full h-full flex flex-col lg:flex-row">
