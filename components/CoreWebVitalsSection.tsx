@@ -2,6 +2,13 @@
 
 import { Clock, MousePointer, Move3D, Paintbrush, Server } from "lucide-react";
 import {
+  CLSAnimation,
+  FCPAnimation,
+  INPAnimation,
+  LCPAnimation,
+  TTFBAnimation,
+} from "@/components/animations";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -10,13 +17,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Heading from "@/components/ui/heading";
-import {
-  CLSBackground,
-  FCPBackground,
-  INPBackground,
-  LCPBackground,
-  TTFBBackground,
-} from "@/components/WebVitalBackgrounds";
 import { useWebVitalsScore } from "@/contexts/WebVitalsScoreContext";
 
 const metrics = [
@@ -31,7 +31,7 @@ const metrics = [
     Icon: Clock,
     className: "col-span-1 md:col-span-2 lg:col-span-2",
     color: "var(--color-metric-lcp)",
-    BackgroundComponent: LCPBackground,
+    BackgroundComponent: LCPAnimation,
     href: "https://web.dev/articles/lcp",
     cta: "Learn More",
   },
@@ -45,7 +45,7 @@ const metrics = [
     Icon: MousePointer,
     className: "col-span-1 md:col-span-1 lg:col-span-1",
     color: "var(--color-metric-inp)",
-    BackgroundComponent: INPBackground,
+    BackgroundComponent: INPAnimation,
     href: "https://web.dev/articles/inp",
     cta: "Learn More",
   },
@@ -60,7 +60,7 @@ const metrics = [
     Icon: Move3D,
     className: "col-span-1 md:col-span-1 lg:col-span-1",
     color: "var(--color-metric-cls)",
-    BackgroundComponent: CLSBackground,
+    BackgroundComponent: CLSAnimation,
     href: "https://web.dev/articles/cls",
     cta: "Learn More",
   },
@@ -75,7 +75,7 @@ const metrics = [
     Icon: Paintbrush,
     className: "col-span-1 md:col-span-1 lg:col-span-1",
     color: "var(--color-metric-fcp)",
-    BackgroundComponent: FCPBackground,
+    BackgroundComponent: FCPAnimation,
     href: "https://web.dev/articles/fcp",
     cta: "Learn More",
   },
@@ -90,7 +90,7 @@ const metrics = [
     Icon: Server,
     className: "col-span-1 md:col-span-1 lg:col-span-1",
     color: "var(--color-metric-ttfb)",
-    BackgroundComponent: TTFBBackground,
+    BackgroundComponent: TTFBAnimation,
     href: "https://web.dev/articles/ttfb",
     cta: "Learn More",
   },

@@ -1,0 +1,189 @@
+"use client";
+
+import { Check, Server, Smartphone } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useState } from "react";
+
+export function TTFBAnimation({ color }: { color: string }) {
+  const [state, setState] = useState<{
+    packetPosition: number; // 0-100
+    showComplete: boolean;
+    showTimer: boolean;
+    currentTime: number; // Current elapsed time in ms
+    animationKey: number; // For AnimatePresence
+  }>({
+    packetPosition: 0,
+    showComplete: false,
+    showTimer: false,
+    currentTime: 0,
+    animationKey: 0,
+  });
+
+  useEffect(() => {
+    const runAnimation = () => {
+      // Reset state with new animation key
+      setState(prev => ({
+        packetPosition: 0,
+        showComplete: false,
+        showTimer: true,
+        currentTime: 0,
+        animationKey: prev.animationKey + 1,
+      }));
+
+      // Animate packet from 0 to 100 in exactly 350ms
+      const startTime = Date.now();
+      const duration = 350;
+
+      const animate = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        setState((prev) => ({
+          ...prev,
+          packetPosition: progress * 100,
+          currentTime: Math.round(elapsed),
+        }));
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          // Animation complete - show checkmark and final time
+          setState((prev) => ({
+            ...prev,
+            showComplete: true,
+            currentTime: 350,
+          }));
+
+          // Wait 1 second then reset (triggering exit animations)
+          setTimeout(() => {
+            setState(prev => ({
+              ...prev,
+              showComplete: false,
+              showTimer: false,
+            }));
+          }, 1000);
+        }
+      };
+
+      animate();
+    };
+
+    // Start first animation after initial delay
+    setTimeout(() => {
+      runAnimation();
+      // Repeat every 2.5 seconds (350ms animation + 1000ms pause + 600ms exit + 550ms buffer)
+      const interval = setInterval(runAnimation, 2500);
+      return () => clearInterval(interval);
+    }, 500);
+  }, []);
+
+  return (
+    <div
+      className="absolute inset-0"
+      style={{
+        background: `linear-gradient(135deg, color-mix(in srgb, ${color} 20%, transparent), color-mix(in srgb, ${color} 40%, transparent))`,
+      }}
+    >
+      <div className="absolute inset-0 flex items-start justify-between px-8 pt-16">
+        {/* Server (left) */}
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 rounded-lg flex items-center justify-center"
+            style={{
+              backgroundColor: `color-mix(in srgb, ${color} 60%, transparent)`,
+            }}
+          >
+            <Server className="w-5 h-5" style={{ color: color }} />
+          </div>
+          <div className="text-xs font-medium" style={{ color: color }}>
+            Server
+          </div>
+        </div>
+
+        {/* Connection line with packet */}
+        <div className="flex-1 relative mx-6 mt-5">
+          {/* Timer */}
+          <AnimatePresence mode="wait">
+            {state.showTimer && (
+              <motion.div
+                key={`timer-${state.animationKey}`}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 rounded text-xs font-mono"
+                style={{
+                  backgroundColor: `color-mix(in srgb, ${color} 20%, transparent)`,
+                  color: color,
+                  border: `1px solid color-mix(in srgb, ${color} 40%, transparent)`,
+                }}
+              >
+                {state.currentTime}ms
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Connection line */}
+          <div
+            className="absolute top-1/2 left-0 right-0 rounded-full"
+            style={{
+              height: "2px",
+              backgroundColor: `color-mix(in srgb, ${color} 30%, transparent)`,
+              transform: "translateY(-50%)",
+            }}
+          />
+
+          {/* Traveling packet */}
+          <AnimatePresence>
+            {state.packetPosition > 0 && (
+              <motion.div
+                key={`packet-${state.animationKey}`}
+                className="absolute -top-[6px] w-3 h-3 rounded-full shadow-sm"
+                style={{
+                  backgroundColor: color,
+                  left: `${Math.min(state.packetPosition, 95)}%`,
+                }}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.6, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              />
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Client (right) */}
+        <div className="flex flex-col items-center space-y-3">
+          <div
+            className="w-10 h-10 rounded-lg flex items-center justify-center relative"
+            style={{
+              backgroundColor: `color-mix(in srgb, ${color} 60%, transparent)`,
+            }}
+          >
+            <Smartphone className="w-5 h-5" style={{ color: color }} />
+
+            {/* Success checkmark when packet arrives */}
+            <AnimatePresence>
+              {state.showComplete && (
+                <motion.div
+                  key={`checkmark-${state.animationKey}`}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: color }}
+                >
+                  <Check className="w-2.5 h-2.5 text-white" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          <div className="text-xs font-medium" style={{ color: color }}>
+            Client
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
