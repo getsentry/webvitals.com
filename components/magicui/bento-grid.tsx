@@ -1,6 +1,8 @@
-import { ArrowRightIcon } from "@radix-ui/react-icons";
-import type * as React from "react";
+"use client";
 
+import { ArrowRightIcon } from "@radix-ui/react-icons";
+import Link from "next/link";
+import type * as React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +19,7 @@ interface BentoCardProps extends React.ComponentPropsWithoutRef<"div"> {
   description: string;
   href: string;
   cta: string;
+  isExternalLink?: boolean;
 }
 
 const BentoGrid = ({ children, className, ...props }: BentoGridProps) => {
@@ -41,6 +44,7 @@ const BentoCard = ({
   description,
   href,
   cta,
+  isExternalLink,
   ...props
 }: BentoCardProps) => (
   <div
@@ -74,10 +78,14 @@ const BentoCard = ({
           size="sm"
           className="pointer-events-auto !px-0 !py-0"
         >
-          <a href={href}>
+          <Link
+            href={href}
+            target={isExternalLink ? "_blank" : undefined}
+            rel={isExternalLink ? "noopener noreferrer" : undefined}
+          >
             {cta}
             <ArrowRightIcon className="ms-2 h-4 w-4 rtl:rotate-180" />
-          </a>
+          </Link>
         </Button>
       </div>
     </div>
@@ -93,10 +101,14 @@ const BentoCard = ({
         size="sm"
         className="pointer-events-auto !px-0 !py-0"
       >
-        <a href={href}>
+        <Link
+          href={href}
+          target={isExternalLink ? "_blank" : undefined}
+          rel={isExternalLink ? "noopener noreferrer" : undefined}
+        >
           {cta}
           <ArrowRightIcon className="ms-2 h-4 w-4 rtl:rotate-180" />
-        </a>
+        </Link>
       </Button>
     </div>
 

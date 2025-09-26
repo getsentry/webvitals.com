@@ -7,7 +7,7 @@ import {
   MonitorIcon,
   SmartphoneIcon,
 } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
@@ -18,10 +18,7 @@ import {
   PromptInputToolbar,
   PromptInputTools,
 } from "@/components/ui/ai-elements/prompt-input";
-import {
-  Suggestion,
-  Suggestions,
-} from "@/components/ui/ai-elements/suggestion";
+
 import { ComboboxTrigger } from "@/components/ui/combobox-trigger";
 import {
   Command,
@@ -35,24 +32,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useScrollFade } from "@/hooks/useScrollFade";
+
 import { cn } from "@/lib/utils";
 import type { DeviceType, PerformanceConfig } from "@/types/performance-config";
 import {
   DEFAULT_PERFORMANCE_CONFIG,
   DEVICE_LABELS,
 } from "@/types/performance-config";
-
-const SUGGESTED_URLS = [
-  "sentry.io",
-  "claude.com",
-  "linear.app",
-  "tailwindcss.com",
-  "shadcn.com",
-  "openai.com",
-  "vercel.com",
-  "cloudflare.com",
-];
 
 // URL validation schema that accepts URLs with or without protocol
 const urlSchema = z
@@ -80,7 +66,6 @@ export default function PageSpeedPromptInput({
     DEFAULT_PERFORMANCE_CONFIG,
   );
   const [devicesPopoverOpen, setDevicesPopoverOpen] = useState(false);
-  const { scrollRef, showLeftFade, showRightFade } = useScrollFade(domain);
 
   useEffect(() => {
     if (searchParams.get("domain") && searchParams.get("domain") !== domain) {
@@ -221,47 +206,6 @@ export default function PageSpeedPromptInput({
           />
         </PromptInputToolbar>
       </PromptInput>
-
-      <div className="mt-3 relative grid w-full">
-        <AnimatePresence>
-          {showLeftFade && (
-            <motion.div
-              key="left-fade"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{
-                duration: 0.2,
-                ease: [0.25, 0.46, 0.45, 0.94],
-              }}
-              className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-background to-transparent pointer-events-none z-10"
-            />
-          )}
-          {showRightFade && (
-            <motion.div
-              key="right-fade"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{
-                duration: 0.2,
-                ease: [0.25, 0.46, 0.45, 0.94],
-              }}
-              className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-background to-transparent pointer-events-none z-10"
-            />
-          )}
-        </AnimatePresence>
-        <Suggestions ref={scrollRef}>
-          <h2 className="sr-only">Suggested URLs</h2>
-          {SUGGESTED_URLS.map((url) => (
-            <Suggestion
-              key={url}
-              suggestion={url}
-              onClick={(suggestion) => setDomain(suggestion)}
-            />
-          ))}
-        </Suggestions>
-      </div>
     </div>
   );
 }

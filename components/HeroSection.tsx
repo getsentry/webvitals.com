@@ -10,6 +10,7 @@ import type { PerformanceConfig } from "@/types/performance-config";
 import Background from "./Background";
 import ChatInterface from "./ChatInterface";
 import FeatureHighlights from "./FeatureHighlights";
+import Heading from "./ui/heading";
 import PageSpeedPromptInputWrapper from "./PageSpeedPromptInputWrapper";
 
 export default function HeroSection() {
@@ -87,15 +88,20 @@ export default function HeroSection() {
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <div ref={ref} className="px-4 py-12">
-            <motion.h1
-              className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent text-center mb-8"
+            <motion.div
               animate={{
                 scale: hasMessages ? (isMobile ? 1 : 0.5) : 1,
               }}
               transition={{ duration: 0.3, ease: "easeOut" }}
             >
-              Analyze. Optimize. Ship.
-            </motion.h1>
+              <Heading
+                level={1}
+                size="4xl"
+                className="bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent text-center mb-8"
+              >
+                Analyze. Optimize. Ship.
+              </Heading>
+            </motion.div>
             {!hasMessages ? (
               <motion.div
                 key="hero-content"
