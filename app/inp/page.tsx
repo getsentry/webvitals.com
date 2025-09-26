@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { onINP } from "web-vitals";
+
 import DemoHeader from "@/components/demo/DemoHeader";
 import DemoLayout from "@/components/demo/DemoLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLoadState } from "@/hooks/useLoadState";
 import { triggerVisibilityChange } from "@/lib/triggerVisibilityChange";
 import { SENTRY_THRESHOLDS } from "@/types/real-world-performance";
 
@@ -15,42 +16,30 @@ export const dynamic = "force-dynamic";
 export default function INPPage() {
   const [clickCount, setClickCount] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [lastInteractionTime, setLastInteractionTime] = useState<number | null>(
-    null,
-  );
-  const [currentINP, setCurrentINP] = useState<number | null>(null);
+
+  const { setLoading } = useLoadState();
 
   // Listen for INP values from web-vitals
   useEffect(() => {
-    onINP((metric) => {
-      setCurrentINP(metric.value);
-    });
+    setTimeout(() => {
+      setLoading(false);
+    }, 0);
   }, []);
 
-  const handleSlowButton = () => {
+  const handleProgressiveButton = () => {
     setIsProcessing(true);
+    const newClickCount = clickCount + 1;
 
-    // Random delay between 200-700ms
-    const delay = Math.floor(Math.random() * (700 - 200 + 1)) + 200;
+    // Progressive delay: 100ms * click count (100ms, 200ms, 300ms, etc.)
+    const delay = 100 * newClickCount;
     const start = performance.now();
     do {
       // Intentionally block the main thread - this is what INP measures
     } while (performance.now() - start < delay);
 
-    setClickCount((prev) => prev + 1);
-    setLastInteractionTime(delay);
+    setClickCount(newClickCount);
+
     setIsProcessing(false);
-
-    // Trigger visibility change to force INP reporting
-    setTimeout(() => {
-      triggerVisibilityChange(document, true);
-    }, 100);
-  };
-
-  const handleFastButton = () => {
-    const start = performance.now();
-    setClickCount((prev) => prev + 1);
-    setLastInteractionTime(performance.now() - start);
 
     // Trigger visibility change to force INP reporting
     setTimeout(() => {
@@ -60,7 +49,6 @@ export default function INPPage() {
 
   const handleResetButton = () => {
     setClickCount(0);
-    setLastInteractionTime(null);
   };
 
   return (
@@ -202,27 +190,22 @@ export default function INPPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-6">
-              Try these buttons to see how different types of interactions
-              affect INP. The slow button simulates heavy JavaScript
-              computation.
+              Click the button to progressively increase response time. Each
+              click adds 100ms delay (100ms, 200ms, 300ms...) to demonstrate how
+              INP tracks the largest interaction delays.
             </p>
 
             <div className="space-y-4">
               <div className="flex flex-wrap gap-4">
                 <Button
-                  onClick={handleFastButton}
-                  variant="default"
-                  disabled={isProcessing}
-                >
-                  Fast Response
-                </Button>
-
-                <Button
-                  onClick={handleSlowButton}
+                  onClick={handleProgressiveButton}
                   variant="destructive"
                   disabled={isProcessing}
+                  className="min-w-32"
                 >
-                  {isProcessing ? "Processing..." : "Slow Response"}
+                  {isProcessing
+                    ? `Processing ${100 * (clickCount + 1)}ms...`
+                    : `Click Me (+${100 * (clickCount + 1)}ms)`}
                 </Button>
 
                 <Button
@@ -238,21 +221,6 @@ export default function INPPage() {
                 <Badge variant="outline" className="text-sm">
                   Clicks: {clickCount}
                 </Badge>
-
-                {currentINP !== null && (
-                  <Badge
-                    variant="outline"
-                    className={`text-sm ${
-                      currentINP > 500
-                        ? "text-score-poor"
-                        : currentINP > 200
-                          ? "text-score-needs-improvement"
-                          : "text-score-good"
-                    }`}
-                  >
-                    Current INP: {Math.round(currentINP)}ms
-                  </Badge>
-                )}
               </div>
             </div>
 
@@ -272,16 +240,16 @@ export default function INPPage() {
                 <strong className="text-foreground">Real-world impact</strong>
               </div>
               <p className="text-sm text-muted-foreground">
-                Poor INP makes interfaces feel sluggish and unresponsive. Users
-                expect interactions to respond within 100ms for optimal
-                experience.
+                Poor INP makes interfaces feel sluggish and unresponsive. Each
+                progressive click demonstrates how longer delays impact user
+                experience, with INP tracking the worst interaction.
               </p>
             </div>
 
             <p className="text-xs text-muted-foreground mt-4 p-3 bg-muted/50 rounded">
-              <strong>Note:</strong> Your browser may freeze temporarily when
-              clicking the slow button. This demonstrates how blocking
-              JavaScript affects user experience and INP scores.
+              <strong>Note:</strong> Your browser may freeze temporarily as
+              delays increase. This demonstrates how blocking JavaScript affects
+              user experience and why INP measures the largest delay.
             </p>
           </CardContent>
         </Card>
