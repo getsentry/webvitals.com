@@ -22,7 +22,7 @@ export function TTFBAnimation({ color }: { color: string }) {
   useEffect(() => {
     const runAnimation = () => {
       // Reset state with new animation key
-      setState(prev => ({
+      setState((prev) => ({
         packetPosition: 0,
         showComplete: false,
         showTimer: true,
@@ -56,7 +56,7 @@ export function TTFBAnimation({ color }: { color: string }) {
 
           // Wait 1 second then reset (triggering exit animations)
           setTimeout(() => {
-            setState(prev => ({
+            setState((prev) => ({
               ...prev,
               showComplete: false,
               showTimer: false,

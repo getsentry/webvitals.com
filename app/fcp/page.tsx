@@ -1,5 +1,5 @@
-import DemoLayout from "@/components/demo/DemoLayout";
 import DemoHeader from "@/components/demo/DemoHeader";
+import DemoLayout from "@/components/demo/DemoLayout";
 import LoadingSimulation from "@/components/demo/LoadingSimulation";
 import { Card, CardContent } from "@/components/ui/card";
 import Heading from "@/components/ui/heading";
@@ -40,7 +40,7 @@ export default async function FCPPage() {
             </Heading>
             <ol className="space-y-4">
               <li className="flex gap-3">
-                <span 
+                <span
                   className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-1"
                   style={{ backgroundColor: "oklch(0.75 0.13 162)" }}
                 >
@@ -54,7 +54,7 @@ export default async function FCPPage() {
                 </div>
               </li>
               <li className="flex gap-3">
-                <span 
+                <span
                   className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-1"
                   style={{ backgroundColor: "oklch(0.75 0.13 162)" }}
                 >
@@ -68,7 +68,7 @@ export default async function FCPPage() {
                 </div>
               </li>
               <li className="flex gap-3">
-                <span 
+                <span
                   className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-1"
                   style={{ backgroundColor: "oklch(0.75 0.13 162)" }}
                 >
@@ -82,11 +82,12 @@ export default async function FCPPage() {
                 </div>
               </li>
             </ol>
-            
+
             <div className="mt-6 p-4 bg-muted/50 rounded-lg">
               <p className="text-sm text-muted-foreground">
-                <strong>Optimization Tips:</strong> Use font-display: swap, optimize images, 
-                and minimize render-blocking resources to improve FCP.
+                <strong>Optimization Tips:</strong> Use font-display: swap,
+                optimize images, and minimize render-blocking resources to
+                improve FCP.
               </p>
             </div>
           </CardContent>
@@ -98,8 +99,9 @@ export default async function FCPPage() {
               What you just experienced
             </Heading>
             <p className="text-muted-foreground mb-6">
-              This page was intentionally delayed by {FCP_DELAY / 1000} seconds to simulate a slow First Contentful Paint. 
-              Notice how the blank screen made you wait before any content appeared.
+              This page was intentionally delayed by {FCP_DELAY / 1000} seconds
+              to simulate a slow First Contentful Paint. Notice how the blank
+              screen made you wait before any content appeared.
             </p>
 
             <LoadingSimulation
@@ -131,22 +133,23 @@ export default async function FCPPage() {
               </div>
             </LoadingSimulation>
 
-            <div 
+            <div
               className="p-4 rounded-lg mb-4"
-              style={{ 
-                backgroundColor: "color-mix(in srgb, oklch(0.75 0.13 162) 10%, transparent)",
-                borderLeft: "4px solid oklch(0.75 0.13 162)"
+              style={{
+                backgroundColor:
+                  "color-mix(in srgb, oklch(0.75 0.13 162) 10%, transparent)",
+                borderLeft: "4px solid oklch(0.75 0.13 162)",
               }}
             >
               <div className="flex items-center gap-3 mb-2">
-                <div 
+                <div
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: "oklch(0.75 0.13 162)" }}
                 />
                 <strong className="text-foreground">Real-world impact</strong>
               </div>
               <p className="text-sm text-muted-foreground">
-                Users perceive pages with slow FCP as broken or unresponsive. 
+                Users perceive pages with slow FCP as broken or unresponsive.
                 Every 100ms delay can reduce conversion rates by up to 1%.
               </p>
             </div>
@@ -163,7 +166,9 @@ export default async function FCPPage() {
                 <div className="w-4 h-4 rounded-full bg-score-needs-improvement" />
                 <div>
                   <span className="font-semibold">Needs Improvement</span>
-                  <span className="text-muted-foreground ml-2">1.8s - 3.0s</span>
+                  <span className="text-muted-foreground ml-2">
+                    1.8s - 3.0s
+                  </span>
                 </div>
               </div>
               <div className="flex items-center gap-3">

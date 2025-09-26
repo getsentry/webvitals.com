@@ -1,9 +1,9 @@
 "use client";
 
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import DemoLayout from "@/components/demo/DemoLayout";
 import DemoHeader from "@/components/demo/DemoHeader";
-import { motion, AnimatePresence } from "motion/react";
+import DemoLayout from "@/components/demo/DemoLayout";
 
 export const dynamic = "force-dynamic";
 
@@ -91,7 +91,9 @@ export default function CLSPage() {
 
           <ol className="list-decimal ml-6 space-y-3">
             <li>
-              <strong className="text-foreground">Layout Shift Detection</strong>
+              <strong className="text-foreground">
+                Layout Shift Detection
+              </strong>
               : The browser monitors when visible elements change their start
               position between frames.
             </li>

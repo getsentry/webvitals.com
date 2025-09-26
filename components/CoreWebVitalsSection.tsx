@@ -1,6 +1,7 @@
 "use client";
 
 import { Clock, MousePointer, Move3D, Paintbrush, Server } from "lucide-react";
+import Link from "next/link";
 import {
   CLSAnimation,
   FCPAnimation,
@@ -10,7 +11,6 @@ import {
 } from "@/components/animations";
 import Heading from "@/components/ui/heading";
 import { useWebVitalsScore } from "@/contexts/WebVitalsScoreContext";
-import Link from "next/link";
 
 const metrics = [
   {

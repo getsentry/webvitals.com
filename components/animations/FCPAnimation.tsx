@@ -17,7 +17,7 @@ export function FCPAnimation({ color }: { color: string }) {
   useEffect(() => {
     const runAnimation = () => {
       // Reset
-      setState(prev => ({
+      setState((prev) => ({
         fcpReached: false,
         allLoaded: false,
         animationKey: prev.animationKey + 1,
@@ -25,17 +25,17 @@ export function FCPAnimation({ color }: { color: string }) {
 
       // FCP at 75ms
       setTimeout(() => {
-        setState(prev => ({ ...prev, fcpReached: true }));
+        setState((prev) => ({ ...prev, fcpReached: true }));
       }, 75);
 
       // All content at 800ms
       setTimeout(() => {
-        setState(prev => ({ ...prev, allLoaded: true }));
+        setState((prev) => ({ ...prev, allLoaded: true }));
       }, 800);
 
       // Reset after pause
       setTimeout(() => {
-        setState(prev => ({
+        setState((prev) => ({
           fcpReached: false,
           allLoaded: false,
           animationKey: prev.animationKey,
@@ -69,17 +69,20 @@ export function FCPAnimation({ color }: { color: string }) {
           const shouldShow = element.isFCP ? state.fcpReached : state.allLoaded;
 
           return (
-            <div key={element.id} className="relative flex items-center gap-3 min-h-[12px]">
+            <div
+              key={element.id}
+              className="relative flex items-center gap-3 min-h-[12px]"
+            >
               {/* Content block */}
               <AnimatePresence>
                 {shouldShow && (
                   <motion.div
                     key={`content-${element.id}-${state.animationKey}`}
                     className="h-3 rounded"
-                    style={{ 
+                    style={{
                       width: element.width,
                       backgroundColor: `color-mix(in srgb, ${color} ${element.isFCP ? 85 : 70}%, transparent)`,
-                      border: element.isFCP 
+                      border: element.isFCP
                         ? `2px solid color-mix(in srgb, ${color} 100%, transparent)`
                         : "none",
                     }}

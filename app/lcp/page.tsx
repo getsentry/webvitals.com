@@ -4,17 +4,23 @@ import { useEffect, useState } from "react";
 import DemoHeader from "@/components/demo/DemoHeader";
 import DemoLayout from "@/components/demo/DemoLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Heading from "@/components/ui/heading";
 import { Progress } from "@/components/ui/progress";
+import { useLoadState } from "@/hooks/useLoadState";
+import { triggerVisibilityChange } from "@/lib/triggerVisibilityChange";
 import { SENTRY_THRESHOLDS } from "@/types/real-world-performance";
 
 const LCP_DELAY = 3000; // ms
 
 export default function LCPPage() {
+  const { setLoading } = useLoadState();
   const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 0);
+
     const startTime = Date.now();
 
     const progressInterval = setInterval(() => {
@@ -29,13 +35,18 @@ export default function LCPPage() {
 
     const showContentTimeout = setTimeout(() => {
       setVisible(true);
+      setTimeout(() => {
+        console.log("triggering visibility change");
+
+        triggerVisibilityChange(document, true);
+      }, 100);
     }, LCP_DELAY);
 
     return () => {
       clearInterval(progressInterval);
       clearTimeout(showContentTimeout);
     };
-  }, []);
+  }, [setLoading]);
 
   return (
     <DemoLayout currentMetric="LCP">

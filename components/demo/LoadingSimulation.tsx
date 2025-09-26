@@ -23,9 +23,9 @@ export default function LoadingSimulation({
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTime;
       const currentProgress = Math.min((elapsed / duration) * 100, 100);
-      
+
       setProgress(currentProgress);
-      
+
       if (currentProgress >= 100) {
         setIsComplete(true);
         clearInterval(interval);
@@ -58,7 +58,7 @@ export default function LoadingSimulation({
         <p className="font-semibold text-foreground mb-2">
           Loading {vitalName} Content...
         </p>
-        
+
         <div className="w-full bg-muted rounded-full h-2 mb-2">
           <div
             className="h-2 rounded-full transition-all duration-75 ease-out"
@@ -68,9 +68,10 @@ export default function LoadingSimulation({
             }}
           />
         </div>
-        
+
         <p className="text-sm text-muted-foreground">
-          {Math.round(progress)}% • {((progress / 100) * (duration / 1000)).toFixed(1)}s elapsed
+          {Math.round(progress)}% •{" "}
+          {((progress / 100) * (duration / 1000)).toFixed(1)}s elapsed
         </p>
       </div>
     </div>

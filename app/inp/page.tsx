@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { onINP } from "web-vitals";
 import DemoHeader from "@/components/demo/DemoHeader";
 import DemoLayout from "@/components/demo/DemoLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SENTRY_THRESHOLDS } from "@/types/real-world-performance";
 import { triggerVisibilityChange } from "@/lib/triggerVisibilityChange";
+import { SENTRY_THRESHOLDS } from "@/types/real-world-performance";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +51,7 @@ export default function INPPage() {
     const start = performance.now();
     setClickCount((prev) => prev + 1);
     setLastInteractionTime(performance.now() - start);
-    
+
     // Trigger visibility change to force INP reporting
     setTimeout(() => {
       triggerVisibilityChange(document, true);

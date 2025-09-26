@@ -1,13 +1,13 @@
 export function triggerVisibilityChange(
   document: Document,
-  hidden: boolean
+  visibility: boolean,
 ) {
   Object.defineProperty(document, "visibilityState", {
-    value: hidden ? "hidden" : "visible",
+    value: "hidden",
     writable: true,
   });
   Object.defineProperty(document, "hidden", {
-    value: hidden,
+    value: visibility,
     writable: true,
   });
   document.dispatchEvent(new Event("visibilitychange"));

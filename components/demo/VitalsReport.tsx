@@ -50,7 +50,13 @@ function getScoreColor(
   return "text-score-poor";
 }
 
-function VitalItem({ vital, isHighlighted }: { vital: VitalData; isHighlighted?: boolean }) {
+function VitalItem({
+  vital,
+  isHighlighted,
+}: {
+  vital: VitalData;
+  isHighlighted?: boolean;
+}) {
   const scoreColor = getScoreColor(vital.score, vital.thresholds);
   const formattedScore = formatScore(vital.score, vital.formatter);
 
@@ -61,13 +67,15 @@ function VitalItem({ vital, isHighlighted }: { vital: VitalData; isHighlighted?:
           <Link
             href={vital.href}
             className={`block p-3 rounded-lg border transition-colors ${
-              isHighlighted 
-                ? "border-primary bg-primary/5 shadow-sm" 
+              isHighlighted
+                ? "border-primary bg-primary/5 shadow-sm"
                 : "border-border hover:bg-accent"
             }`}
           >
             <div className="flex justify-between items-center">
-              <span className={`text-sm font-medium ${isHighlighted ? "text-primary" : "text-foreground"}`}>
+              <span
+                className={`text-sm font-medium ${isHighlighted ? "text-primary" : "text-foreground"}`}
+              >
                 {vital.name}
               </span>
               <Badge variant="outline" className={scoreColor}>
@@ -84,7 +92,11 @@ function VitalItem({ vital, isHighlighted }: { vital: VitalData; isHighlighted?:
   );
 }
 
-export default function VitalsReport({ currentMetric }: { currentMetric?: string } = {}) {
+export default function VitalsReport({
+  currentMetric,
+}: {
+  currentMetric?: string;
+} = {}) {
   const [vitals, setVitals] = useState({
     FCP: "n/a",
     TTFB: "n/a",
@@ -95,34 +107,17 @@ export default function VitalsReport({ currentMetric }: { currentMetric?: string
 
   useEffect(() => {
     const onMetric = (metric: Metric) => {
-      console.log(`[VitalsReport] Received metric:`, {
-        name: metric.name,
-        value: metric.value,
-        id: metric.id,
-        delta: metric.delta,
-        navigationType: metric.navigationType,
-      });
-      
-      setVitals((prev) => {
-        const updated = {
-          ...prev,
-          [metric.name]: String(metric.value),
-        };
-        console.log(`[VitalsReport] Updated vitals:`, updated);
-        return updated;
-      });
+      setVitals((vitals) => ({
+        ...vitals,
+        [metric.name]: String(metric.value),
+      }));
     };
 
-    console.log("[VitalsReport] Setting up web vitals listeners");
-    
     onFCP(onMetric);
     onLCP(onMetric);
     onTTFB(onMetric);
     onCLS(onMetric);
     onINP(onMetric);
-    
-    // Debug current vitals state
-    console.log("[VitalsReport] Initial vitals state:", vitals);
   }, []);
 
   const coreVitals: VitalData[] = [
@@ -186,10 +181,13 @@ export default function VitalsReport({ currentMetric }: { currentMetric?: string
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {coreVitals.map((vital) => (
-                <VitalItem 
-                  key={vital.name} 
-                  vital={vital} 
-                  isHighlighted={currentMetric && vital.href === `/${currentMetric.toLowerCase()}`}
+                <VitalItem
+                  key={vital.name}
+                  vital={vital}
+                  isHighlighted={Boolean(
+                    currentMetric &&
+                      vital.href === `/${currentMetric.toLowerCase()}`,
+                  )}
                 />
               ))}
             </div>
@@ -201,10 +199,13 @@ export default function VitalsReport({ currentMetric }: { currentMetric?: string
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {otherVitals.map((vital) => (
-                <VitalItem 
-                  key={vital.name} 
-                  vital={vital} 
-                  isHighlighted={currentMetric && vital.href === `/${currentMetric.toLowerCase()}`}
+                <VitalItem
+                  key={vital.name}
+                  vital={vital}
+                  isHighlighted={Boolean(
+                    currentMetric &&
+                      vital.href === `/${currentMetric.toLowerCase()}`,
+                  )}
                 />
               ))}
             </div>

@@ -10,8 +10,8 @@ import type { PerformanceConfig } from "@/types/performance-config";
 import Background from "./Background";
 import ChatInterface from "./ChatInterface";
 import FeatureHighlights from "./FeatureHighlights";
-import Heading from "./ui/heading";
 import PageSpeedPromptInputWrapper from "./PageSpeedPromptInputWrapper";
+import Heading from "./ui/heading";
 
 export default function HeroSection() {
   const router = useRouter();

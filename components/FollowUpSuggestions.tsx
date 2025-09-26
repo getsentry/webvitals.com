@@ -76,7 +76,8 @@ export default function FollowUpSuggestions() {
   const [followUpData, setFollowUpData] =
     useState<FollowUpSuggestionsData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { scrollRef, showLeftFade, showRightFade } = useScrollFade(followUpData);
+  const { scrollRef, showLeftFade, showRightFade } =
+    useScrollFade(followUpData);
 
   const userMessageCount = messages.filter((m) => m.role === "user").length;
   const isStreaming = status === "streaming" || status === "submitted";

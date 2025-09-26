@@ -4,8 +4,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Card, CardContent } from "./ui/card";
 import Heading from "@/components/ui/heading";
+import { Card, CardContent } from "./ui/card";
 
 const faqs = [
   {

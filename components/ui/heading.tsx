@@ -65,6 +65,6 @@ export default function Heading({
   return React.createElement(
     `h${level}`,
     { className: headingClasses, ...props },
-    children
+    children,
   );
 }
