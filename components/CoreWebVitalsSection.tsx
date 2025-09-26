@@ -30,8 +30,8 @@ const metrics = [
       "LCP identifies the render time of the largest image or text block visible in the viewport. It represents when the main content has finished loading.",
     Icon: Clock,
     className: "col-span-1 md:col-span-2 lg:col-span-2",
-    color: "#ff0088",
-    background: <LCPBackground color="#ff0088" />,
+    color: "var(--color-metric-lcp)",
+    BackgroundComponent: LCPBackground,
     href: "https://web.dev/articles/lcp",
     cta: "Learn More",
   },
@@ -44,8 +44,8 @@ const metrics = [
       "INP tracks the time from when a user interacts with your page (click, tap, key press) to when the browser paints the visual response.",
     Icon: MousePointer,
     className: "col-span-1 md:col-span-1 lg:col-span-1",
-    color: "#dd00ee",
-    background: <INPBackground color="#dd00ee" />,
+    color: "var(--color-metric-inp)",
+    BackgroundComponent: INPBackground,
     href: "https://web.dev/articles/inp",
     cta: "Learn More",
   },
@@ -59,8 +59,8 @@ const metrics = [
       "CLS quantifies unexpected layout shifts that occur during page load. Every time a visible element changes position, it contributes to the CLS score.",
     Icon: Move3D,
     className: "col-span-1 md:col-span-1 lg:col-span-1",
-    color: "#9911ff",
-    background: <CLSBackground color="#9911ff" />,
+    color: "var(--color-metric-cls)",
+    BackgroundComponent: CLSBackground,
     href: "https://web.dev/articles/cls",
     cta: "Learn More",
   },
@@ -74,8 +74,8 @@ const metrics = [
       "FCP marks the time when the browser renders the first piece of DOM content (text, images, non-white canvas elements, or SVGs).",
     Icon: Paintbrush,
     className: "col-span-1 md:col-span-1 lg:col-span-1",
-    color: "#0d63f8",
-    background: <FCPBackground color="#0d63f8" />,
+    color: "var(--color-metric-fcp)",
+    BackgroundComponent: FCPBackground,
     href: "https://web.dev/articles/fcp",
     cta: "Learn More",
   },
@@ -89,8 +89,8 @@ const metrics = [
       "TTFB is the time between the browser requesting a page and receiving the first byte of information from the server.",
     Icon: Server,
     className: "col-span-1 md:col-span-1 lg:col-span-1",
-    color: "#00cc88",
-    background: <TTFBBackground color="#00cc88" />,
+    color: "var(--color-metric-ttfb)",
+    BackgroundComponent: TTFBBackground,
     href: "https://web.dev/articles/ttfb",
     cta: "Learn More",
   },
@@ -156,7 +156,7 @@ export default function CoreWebVitalsSection() {
                   >
                     {/* Background */}
                     <div className="flex-1 relative min-h-[12rem] md:min-h-[14rem] lg:min-h-[16rem]">
-                      {metric.background}
+                      <metric.BackgroundComponent color={metric.color} />
                     </div>
 
                     {/* Card Info */}

@@ -9,22 +9,22 @@ export function LCPBackground({ color }: { color: string }) {
     <div
       className="absolute inset-0"
       style={{
-        background: `linear-gradient(135deg, ${color}20, ${color}40)`,
+        background: `linear-gradient(135deg, color-mix(in srgb, ${color} 20%, transparent), color-mix(in srgb, ${color} 40%, transparent))`,
       }}
     >
       <div
         className="absolute inset-0 bg-[length:20px_20px]"
         style={{
-          backgroundImage: `linear-gradient(45deg, transparent 25%, ${color}20 50%, transparent 75%)`,
+          backgroundImage: `linear-gradient(45deg, transparent 25%, color-mix(in srgb, ${color} 20%, transparent) 50%, transparent 75%)`,
         }}
       />
       <div
         className="absolute top-4 right-4 w-32 h-32 rounded-full blur-xl animate-pulse"
-        style={{ backgroundColor: `${color}40` }}
+        style={{ backgroundColor: `color-mix(in srgb, ${color} 40%, transparent)` }}
       />
       <div
         className="absolute bottom-8 left-8 w-24 h-24 rounded-full blur-lg animate-pulse"
-        style={{ backgroundColor: `${color}60`, animationDelay: "0.7s" }}
+        style={{ backgroundColor: `color-mix(in srgb, ${color} 60%, transparent)`, animationDelay: "0.7s" }}
       />
     </div>
   );
@@ -36,7 +36,7 @@ export function INPBackground({ color }: { color: string }) {
     <div
       className="absolute inset-0"
       style={{
-        background: `linear-gradient(135deg, ${color}20, ${color}40)`,
+        background: `linear-gradient(135deg, color-mix(in srgb, ${color} 20%, transparent), color-mix(in srgb, ${color} 40%, transparent))`,
       }}
     >
       <div className="absolute inset-0">
@@ -47,14 +47,14 @@ export function INPBackground({ color }: { color: string }) {
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full animate-ping"
           style={{
-            backgroundColor: `${color}80`,
+            backgroundColor: `color-mix(in srgb, ${color} 80%, transparent)`,
             animationDelay: "0.3s",
           }}
         />
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full animate-ping"
           style={{
-            backgroundColor: `${color}60`,
+            backgroundColor: `color-mix(in srgb, ${color} 60%, transparent)`,
             animationDelay: "0.7s",
           }}
         />
@@ -65,10 +65,17 @@ export function INPBackground({ color }: { color: string }) {
 
 // CLS Background - Layout shift animation with reordering boxes
 export function CLSBackground({ color }: { color: string }) {
-  const [order, setOrder] = useState(initialOrder);
+  const initialBoxes = [
+    `color-mix(in srgb, ${color} 60%, transparent)`,
+    `color-mix(in srgb, ${color} 80%, transparent)`,
+    `color-mix(in srgb, ${color} 70%, transparent)`,
+    `color-mix(in srgb, ${color} 90%, transparent)`,
+  ];
+
+  const [order, setOrder] = useState(initialBoxes);
 
   useEffect(() => {
-    const timeout = setTimeout(() => setOrder(shuffle(order)), 2000);
+    const timeout = setTimeout(() => setOrder(shuffle([...order])), 2000);
     return () => clearTimeout(timeout);
   }, [order]);
 
@@ -76,7 +83,7 @@ export function CLSBackground({ color }: { color: string }) {
     <div
       className="absolute inset-0"
       style={{
-        background: `linear-gradient(135deg, ${color}20, ${color}40)`,
+        background: `linear-gradient(135deg, color-mix(in srgb, ${color} 20%, transparent), color-mix(in srgb, ${color} 40%, transparent))`,
       }}
     >
       <div className="absolute inset-4 p-2">
@@ -105,34 +112,34 @@ export function FCPBackground({ color }: { color: string }) {
     <div
       className="absolute inset-0"
       style={{
-        background: `linear-gradient(135deg, ${color}20, ${color}40)`,
+        background: `linear-gradient(135deg, color-mix(in srgb, ${color} 20%, transparent), color-mix(in srgb, ${color} 40%, transparent))`,
       }}
     >
       <div className="absolute inset-0 overflow-hidden">
         <div
           className="absolute top-4 left-4 w-16 h-2 rounded animate-pulse"
           style={{
-            backgroundColor: `${color}80`,
+            backgroundColor: `color-mix(in srgb, ${color} 80%, transparent)`,
           }}
         />
         <div
           className="absolute top-8 left-4 w-24 h-2 rounded animate-pulse"
           style={{
-            backgroundColor: `${color}A0`,
+            backgroundColor: `color-mix(in srgb, ${color} 80%, transparent)`,
             animationDelay: "0.2s",
           }}
         />
         <div
           className="absolute top-12 left-4 w-20 h-2 rounded animate-pulse"
           style={{
-            backgroundColor: `${color}80`,
+            backgroundColor: `color-mix(in srgb, ${color} 80%, transparent)`,
             animationDelay: "0.4s",
           }}
         />
         <div
           className="absolute bottom-4 right-4 w-8 h-8 rounded-full animate-bounce"
           style={{
-            backgroundColor: `${color}60`,
+            backgroundColor: `color-mix(in srgb, ${color} 60%, transparent)`,
           }}
         />
       </div>
@@ -146,7 +153,7 @@ export function TTFBBackground({ color }: { color: string }) {
     <div
       className="absolute inset-0"
       style={{
-        background: `linear-gradient(135deg, ${color}20, ${color}40)`,
+        background: `linear-gradient(135deg, color-mix(in srgb, ${color} 20%, transparent), color-mix(in srgb, ${color} 40%, transparent))`,
       }}
     >
       <div className="absolute inset-0 flex items-center justify-center">
@@ -154,7 +161,7 @@ export function TTFBBackground({ color }: { color: string }) {
           <div
             className="w-12 h-8 rounded animate-pulse"
             style={{
-              backgroundColor: `${color}60`,
+              backgroundColor: `color-mix(in srgb, ${color} 60%, transparent)`,
             }}
           />
           <div
@@ -164,7 +171,7 @@ export function TTFBBackground({ color }: { color: string }) {
           <div
             className="absolute -bottom-1 -left-1 w-2 h-2 rounded-full animate-ping"
             style={{
-              backgroundColor: `${color}C0`,
+              backgroundColor: `color-mix(in srgb, ${color} 75%, transparent)`,
               animationDelay: "0.5s",
             }}
           />
@@ -175,12 +182,6 @@ export function TTFBBackground({ color }: { color: string }) {
 }
 
 // CLS specific constants and utilities
-const initialOrder = [
-  "#9911ff60",
-  "#9911ff80", 
-  "#9911ff70",
-  "#9911ff90",
-];
 
 function shuffle([...array]: string[]) {
   return array.sort(() => Math.random() - 0.5);
