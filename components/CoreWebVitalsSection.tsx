@@ -1,7 +1,6 @@
 "use client";
 
 import { Clock, MousePointer, Move3D, Paintbrush, Server } from "lucide-react";
-import Link from "next/link";
 import {
   CLSAnimation,
   FCPAnimation,
@@ -131,7 +130,7 @@ export default function CoreWebVitalsSection() {
             const score = getMetricScore(metricKey);
 
             return (
-              <Link
+              <a
                 key={metric.id}
                 href={metric.href}
                 className={`group ${metric.className} rounded-xl cursor-pointer overflow-hidden transition-all duration-300 shadow-sm hover:shadow-lg active:scale-[0.98] outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px] focus-visible:border-ring relative flex flex-col text-left`}
@@ -173,7 +172,7 @@ export default function CoreWebVitalsSection() {
                     {metric.cta} →
                   </div>
                 </div>
-              </Link>
+              </a>
             );
           })}
         </div>

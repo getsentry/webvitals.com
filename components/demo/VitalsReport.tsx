@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Metric } from "web-vitals";
 import { onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
@@ -65,7 +64,7 @@ function VitalItem({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Link
+          <a
             href={vital.href}
             className={`block p-3 rounded-lg border transition-colors ${
               isHighlighted
@@ -83,7 +82,7 @@ function VitalItem({
                 {formattedScore}
               </Badge>
             </div>
-          </Link>
+          </a>
         </TooltipTrigger>
         <TooltipContent className="max-w-sm text-pretty">
           {vital.tooltip}
@@ -99,6 +98,7 @@ export default function VitalsReport({
   currentMetric?: string;
 } = {}) {
   const { loading } = useLoadState();
+
   const [vitals, setVitals] = useState({
     FCP: "n/a",
     TTFB: "n/a",
@@ -115,11 +115,11 @@ export default function VitalsReport({
       }));
     };
 
-    onFCP(onMetric);
-    onLCP(onMetric);
-    onTTFB(onMetric);
-    onCLS(onMetric);
-    onINP(onMetric);
+    onFCP(onMetric, { reportAllChanges: true });
+    onLCP(onMetric, { reportAllChanges: true });
+    onTTFB(onMetric, { reportAllChanges: true });
+    onCLS(onMetric, { reportAllChanges: true });
+    onINP(onMetric, { reportAllChanges: true });
   }, []);
 
   const coreVitals: VitalData[] = [

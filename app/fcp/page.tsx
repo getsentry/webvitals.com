@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import DemoHeader from "@/components/demo/DemoHeader";
 import DemoLayout from "@/components/demo/DemoLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLoadState } from "@/lib/loadState";
+import { useLoadState } from "@/hooks/useLoadState";
 import { triggerVisibilityChange } from "@/lib/triggerVisibilityChange";
 import { SENTRY_THRESHOLDS } from "@/types/real-world-performance";
 
@@ -16,11 +16,8 @@ export default function FCPPage() {
   const { setLoading, loading } = useLoadState();
 
   useEffect(() => {
-    // Reset loading to true when page mounts
-
     setTimeout(() => {
       setLoading(false);
-
       // Need to wait 100ms or vitals calculations won't be ready
       setTimeout(() => {
         triggerVisibilityChange(document, true);

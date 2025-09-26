@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
   ],
   // Configure external packages that need server-side handling
   transpilePackages: ["streamdown"],
+  experimental: {
+    webVitalsAttribution: ["CLS", "LCP", "INP", "TTFB", "FCP"],
+  },
 };
 
 export default withSentryConfig(nextConfig, {

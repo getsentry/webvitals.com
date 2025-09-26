@@ -1,5 +1,4 @@
 import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import Heading from "@/components/ui/heading";
 import BrowserIcons from "./BrowserIcons";
@@ -24,13 +23,13 @@ export default function DemoHeader({
   return (
     <section className="mb-8">
       <nav className="mb-4 text-muted-foreground">
-        <Link
+        <a
           href="/"
           className="inline-flex items-center gap-2 hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Home
-        </Link>
+        </a>
       </nav>
 
       <div className="border-b border-border pb-4 mb-6 relative">
