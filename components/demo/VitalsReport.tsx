@@ -124,14 +124,6 @@ export default function VitalsReport({
 
   const coreVitals: VitalData[] = [
     {
-      name: "First Contentful Paint",
-      href: "/fcp",
-      score: vitals.FCP,
-      thresholds: SENTRY_THRESHOLDS.mobile["first-contentful-paint"],
-      tooltip:
-        "Measures the time from when a page starts loading to when any part of the page's content is first displayed.",
-    },
-    {
       name: "Largest Contentful Paint",
       href: "/lcp",
       score: vitals.LCP,
@@ -161,6 +153,14 @@ export default function VitalsReport({
 
   const otherVitals: VitalData[] = [
     {
+      name: "First Contentful Paint",
+      href: "/fcp",
+      score: vitals.FCP,
+      thresholds: SENTRY_THRESHOLDS.mobile["first-contentful-paint"],
+      tooltip:
+        "Measures the time from when a page starts loading to when any part of the page's content is first displayed.",
+    },
+    {
       name: "Time to First Byte",
       href: "/ttfb",
       score: vitals.TTFB,
@@ -181,7 +181,7 @@ export default function VitalsReport({
             <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
               Core Web Vitals
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               {coreVitals.map((vital) => (
                 <VitalItem
                   key={vital.name}
