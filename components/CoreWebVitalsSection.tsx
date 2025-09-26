@@ -10,6 +10,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Heading from "@/components/ui/heading";
+import {
+  CLSBackground,
+  FCPBackground,
+  INPBackground,
+  LCPBackground,
+  TTFBBackground,
+} from "@/components/WebVitalBackgrounds";
 import { useWebVitalsScore } from "@/contexts/WebVitalsScoreContext";
 
 const metrics = [
@@ -17,35 +24,14 @@ const metrics = [
     id: 0,
     name: "Largest Contentful Paint",
     shortName: "LCP",
-    description: "Measures when the largest content element becomes visible",
+    description:
+      "Measures the time it takes for the largest text or image element to render on a webpage.",
     explanation:
       "LCP identifies the render time of the largest image or text block visible in the viewport. It represents when the main content has finished loading.",
     Icon: Clock,
     className: "col-span-1 md:col-span-2 lg:col-span-2",
     color: "#ff0088",
-    background: (
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(135deg, #ff008820, #ff008840)`,
-        }}
-      >
-        <div
-          className="absolute inset-0 bg-[length:20px_20px]"
-          style={{
-            backgroundImage: `linear-gradient(45deg, transparent 25%, #ff008820 50%, transparent 75%)`,
-          }}
-        />
-        <div
-          className="absolute top-4 right-4 w-32 h-32 rounded-full blur-xl animate-pulse"
-          style={{ backgroundColor: `#ff008840` }}
-        />
-        <div
-          className="absolute bottom-8 left-8 w-24 h-24 rounded-full blur-lg animate-pulse"
-          style={{ backgroundColor: `#ff008860`, animationDelay: "0.7s" }}
-        />
-      </div>
-    ),
+    background: <LCPBackground color="#ff0088" />,
     href: "https://web.dev/articles/lcp",
     cta: "Learn More",
   },
@@ -59,35 +45,7 @@ const metrics = [
     Icon: MousePointer,
     className: "col-span-1 md:col-span-1 lg:col-span-1",
     color: "#dd00ee",
-    background: (
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(135deg, #dd00ee20, #dd00ee40)`,
-        }}
-      >
-        <div className="absolute inset-0">
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full animate-ping"
-            style={{ backgroundColor: `#dd00ee` }}
-          />
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full animate-ping"
-            style={{
-              backgroundColor: `#dd00ee80`,
-              animationDelay: "0.3s",
-            }}
-          />
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full animate-ping"
-            style={{
-              backgroundColor: `#dd00ee60`,
-              animationDelay: "0.7s",
-            }}
-          />
-        </div>
-      </div>
-    ),
+    background: <INPBackground color="#dd00ee" />,
     href: "https://web.dev/articles/inp",
     cta: "Learn More",
   },
@@ -95,64 +53,14 @@ const metrics = [
     id: 2,
     name: "Cumulative Layout Shift",
     shortName: "CLS",
-    description: "Measures how much content moves around while loading",
+    description:
+      "Measures the total amount of unexpected layout shifts that occur during the entire lifespan of a webpage.",
     explanation:
       "CLS quantifies unexpected layout shifts that occur during page load. Every time a visible element changes position, it contributes to the CLS score.",
     Icon: Move3D,
     className: "col-span-1 md:col-span-1 lg:col-span-1",
     color: "#9911ff",
-    background: (
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(135deg, #9911ff20, #9911ff40)`,
-        }}
-      >
-        <div className="absolute inset-4 grid grid-cols-3 gap-2 opacity-30">
-          <div
-            className="rounded animate-pulse"
-            style={{
-              backgroundColor: `#9911ff60`,
-            }}
-          />
-          <div
-            className="rounded animate-pulse"
-            style={{
-              backgroundColor: `#9911ff80`,
-              animationDelay: "0.2s",
-            }}
-          />
-          <div
-            className="rounded animate-pulse"
-            style={{
-              backgroundColor: `#9911ff60`,
-              animationDelay: "0.4s",
-            }}
-          />
-          <div
-            className="rounded animate-pulse"
-            style={{
-              backgroundColor: `#9911ff80`,
-              animationDelay: "0.3s",
-            }}
-          />
-          <div
-            className="rounded animate-pulse"
-            style={{
-              backgroundColor: `#9911ff60`,
-              animationDelay: "0.1s",
-            }}
-          />
-          <div
-            className="rounded animate-pulse"
-            style={{
-              backgroundColor: `#9911ff80`,
-              animationDelay: "0.5s",
-            }}
-          />
-        </div>
-      </div>
-    ),
+    background: <CLSBackground color="#9911ff" />,
     href: "https://web.dev/articles/cls",
     cta: "Learn More",
   },
@@ -160,49 +68,14 @@ const metrics = [
     id: 3,
     name: "First Contentful Paint",
     shortName: "FCP",
-    description: "Measures when the first content appears on screen",
+    description:
+      "Measures the time from when a page starts loading to when any part of the page's content is first displayed.",
     explanation:
       "FCP marks the time when the browser renders the first piece of DOM content (text, images, non-white canvas elements, or SVGs).",
     Icon: Paintbrush,
     className: "col-span-1 md:col-span-1 lg:col-span-1",
     color: "#0d63f8",
-    background: (
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(135deg, #0d63f820, #0d63f840)`,
-        }}
-      >
-        <div className="absolute inset-0 overflow-hidden">
-          <div
-            className="absolute top-4 left-4 w-16 h-2 rounded animate-pulse"
-            style={{
-              backgroundColor: `#0d63f880`,
-            }}
-          />
-          <div
-            className="absolute top-8 left-4 w-24 h-2 rounded animate-pulse"
-            style={{
-              backgroundColor: `#0d63f8A0`,
-              animationDelay: "0.2s",
-            }}
-          />
-          <div
-            className="absolute top-12 left-4 w-20 h-2 rounded animate-pulse"
-            style={{
-              backgroundColor: `#0d63f880`,
-              animationDelay: "0.4s",
-            }}
-          />
-          <div
-            className="absolute bottom-4 right-4 w-8 h-8 rounded-full animate-bounce"
-            style={{
-              backgroundColor: `#0d63f860`,
-            }}
-          />
-        </div>
-      </div>
-    ),
+    background: <FCPBackground color="#0d63f8" />,
     href: "https://web.dev/articles/fcp",
     cta: "Learn More",
   },
@@ -210,42 +83,14 @@ const metrics = [
     id: 4,
     name: "Time to First Byte",
     shortName: "TTFB",
-    description: "Measures server response time",
+    description:
+      "Measures the duration from when a page starts loading to when the first byte of content is received from the server.",
     explanation:
       "TTFB is the time between the browser requesting a page and receiving the first byte of information from the server.",
     Icon: Server,
     className: "col-span-1 md:col-span-1 lg:col-span-1",
     color: "#00cc88",
-    background: (
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(135deg, #00cc8820, #00cc8840)`,
-        }}
-      >
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative">
-            <div
-              className="w-12 h-8 rounded animate-pulse"
-              style={{
-                backgroundColor: `#00cc8860`,
-              }}
-            />
-            <div
-              className="absolute -top-1 -right-1 w-3 h-3 rounded-full animate-ping"
-              style={{ backgroundColor: `#00cc88` }}
-            />
-            <div
-              className="absolute -bottom-1 -left-1 w-2 h-2 rounded-full animate-ping"
-              style={{
-                backgroundColor: `#00cc88C0`,
-                animationDelay: "0.5s",
-              }}
-            />
-          </div>
-        </div>
-      </div>
-    ),
+    background: <TTFBBackground color="#00cc88" />,
     href: "https://web.dev/articles/ttfb",
     cta: "Learn More",
   },
@@ -337,7 +182,7 @@ export default function CoreWebVitalsSection() {
                           </p>
                         </div>
                       </div>
-                      <p className="max-w-lg text-sm text-muted-foreground mb-3">
+                      <p className="text-sm text-muted-foreground mb-3">
                         {metric.description}
                       </p>
 
@@ -365,7 +210,7 @@ export default function CoreWebVitalsSection() {
                             <metric.Icon className="w-6 lg:w-8 h-6 lg:h-8 text-white" />
                           </div>
                           <div>
-                            <DialogTitle className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                            <DialogTitle className="font-bold text-foreground mb-2 lg:text-2xl">
                               {metric.name}
                               {formatMetricScore(score)}
                             </DialogTitle>
