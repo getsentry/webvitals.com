@@ -12,6 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useLoadState } from "@/hooks/useLoadState";
 import { SENTRY_THRESHOLDS } from "@/types/real-world-performance";
 
 interface VitalData {
@@ -97,6 +98,7 @@ export default function VitalsReport({
 }: {
   currentMetric?: string;
 } = {}) {
+  const { loading } = useLoadState();
   const [vitals, setVitals] = useState({
     FCP: "n/a",
     TTFB: "n/a",
@@ -168,7 +170,7 @@ export default function VitalsReport({
     },
   ];
 
-  return (
+  return loading ? null : (
     <Card className="mt-8">
       <CardHeader>
         <CardTitle>Web Vitals Report</CardTitle>

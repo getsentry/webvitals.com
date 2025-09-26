@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import DemoHeader from "@/components/demo/DemoHeader";
 import DemoLayout from "@/components/demo/DemoLayout";
 import { Badge } from "@/components/ui/badge";

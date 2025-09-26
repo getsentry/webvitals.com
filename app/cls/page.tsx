@@ -1,122 +1,238 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+
 import DemoHeader from "@/components/demo/DemoHeader";
 import DemoLayout from "@/components/demo/DemoLayout";
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLoadState } from "@/hooks/useLoadState";
+import { triggerVisibilityChange } from "@/lib/triggerVisibilityChange";
+import { SENTRY_THRESHOLDS } from "@/types/real-world-performance";
+
 export const dynamic = "force-dynamic";
 
-const LAYOUT_SHIFT_DELAY = 2000; // ms
-
 export default function CLSPage() {
-  const [showShift, setShowShift] = useState(false);
-  const [shiftCount, setShiftCount] = useState(0);
+  const [blockCount, setBlockCount] = useState(0);
 
+  const { setLoading } = useLoadState();
   useEffect(() => {
-    const interval = setInterval(() => {
-      setShowShift((prev) => !prev);
-      setShiftCount((prev) => prev + 1);
-    }, LAYOUT_SHIFT_DELAY);
-
-    return () => clearInterval(interval);
+    setTimeout(() => {
+      setLoading(false);
+    }, 0);
   }, []);
 
+  useEffect(() => {
+    const addBlocks = () => {
+      if (blockCount < 5) {
+        setTimeout(() => {
+          setBlockCount(blockCount + 1);
+        }, 500);
+      } else {
+        // Trigger visibility change to force CLS reporting
+        setTimeout(() => {
+          triggerVisibilityChange(document, true);
+        }, 100);
+      }
+    };
+
+    addBlocks();
+  }, [blockCount]);
+
   return (
-    <DemoLayout>
+    <DemoLayout currentMetric="CLS">
       <DemoHeader
         vitalName="CLS"
         vitalDesc="Cumulative Layout Shift"
-        vitalColor="text-metric-cls"
+        vitalColor="oklch(0.7 0.2 340)"
         isCore={true}
+        supportedBrowsers={{ safari: false, firefox: false }}
       >
         Measures the total amount of unexpected layout shifts that occur during
         the entire lifespan of a webpage.
       </DemoHeader>
 
-      <div className="mb-8 p-8 rounded-lg border border-border bg-card">
-        <h3 className="text-lg font-semibold mb-4">Layout Shift Demo</h3>
-        <p className="text-sm text-muted-foreground mb-6">
-          Watch how content shifts unexpectedly. Each shift contributes to the
-          CLS score. Shift #{shiftCount}
-        </p>
-
-        <div className="space-y-4 min-h-[200px]">
-          <div className="h-12 bg-muted rounded flex items-center px-4 text-sm">
-            This content stays in place
-          </div>
-
-          <AnimatePresence mode="wait">
-            {showShift && (
-              <motion.div
-                key="inserted-content"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 80, opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="bg-destructive/20 border border-destructive/40 rounded flex items-center px-4 text-sm text-destructive overflow-hidden"
-              >
-                Unexpected content appears, causing layout shift!
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="h-12 bg-muted rounded flex items-center px-4 text-sm">
-            This content gets pushed down unexpectedly
-          </div>
-
-          <div className="h-12 bg-muted rounded flex items-center px-4 text-sm">
-            And this content too
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-8 p-8 rounded-lg border border-border bg-card">
-        <h3 className="text-lg font-semibold mb-4">How is CLS Calculated?</h3>
-
-        <div className="space-y-4 text-sm">
-          <p className="text-muted-foreground">
-            Cumulative Layout Shift (CLS) measures visual stability by
-            quantifying how much visible content shifts in the viewport.
-          </p>
-
-          <div className="bg-muted/50 p-4 rounded border-l-4 border-metric-cls">
-            <strong>CLS = Impact Fraction × Distance Fraction</strong>
-            <p className="text-xs text-muted-foreground mt-2">
-              Impact fraction: portion of viewport affected by the shift
-              <br />
-              Distance fraction: distance moved relative to viewport
+      {/* Layout shift blocks that appear and push everything down */}
+      {Array.from({ length: blockCount }, (_, i) => (
+        <div
+          key={i}
+          className="p-8 rounded border-4 h-40 flex items-center justify-center text-center mb-6"
+          style={{
+            backgroundColor:
+              "color-mix(in srgb, oklch(0.7 0.2 340) 20%, transparent)",
+            borderColor: "oklch(0.7 0.2 340)",
+          }}
+        >
+          <div>
+            <p className="font-bold text-foreground text-lg">
+              LAYOUT SHIFT BLOCK #{i + 1}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              This large block appeared unexpectedly, pushing all content below
+              it down!
             </p>
           </div>
-
-          <ol className="list-decimal ml-6 space-y-3">
-            <li>
-              <strong className="text-foreground">
-                Layout Shift Detection
-              </strong>
-              : The browser monitors when visible elements change their start
-              position between frames.
-            </li>
-
-            <li>
-              <strong className="text-foreground">Impact Fraction</strong>:
-              Measures what portion of the viewport is impacted by unstable
-              elements moving between two frames.
-            </li>
-
-            <li>
-              <strong className="text-foreground">Distance Fraction</strong>:
-              Measures the distance that unstable elements have moved, relative
-              to the viewport.
-            </li>
-
-            <li>
-              <strong className="text-foreground">Session Windows</strong>: CLS
-              groups layout shifts into session windows and reports the maximum
-              session window value.
-            </li>
-          </ol>
         </div>
+      ))}
+
+      <div className="grid lg:grid-cols-2 gap-8 mb-16">
+        <Card className="order-2 lg:order-1">
+          <CardHeader>
+            <CardTitle>How CLS is Calculated</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ol className="space-y-4">
+              <li className="flex gap-3">
+                <span
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-1"
+                  style={{ backgroundColor: "oklch(0.7 0.2 340)" }}
+                >
+                  1
+                </span>
+                <div>
+                  <strong className="text-foreground">
+                    Layout Shift Detection
+                  </strong>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Browser monitors when visible elements change position
+                    between frames
+                  </p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-1"
+                  style={{ backgroundColor: "oklch(0.7 0.2 340)" }}
+                >
+                  2
+                </span>
+                <div>
+                  <strong className="text-foreground">Impact Fraction</strong>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Measures portion of viewport affected by unstable elements
+                  </p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-1"
+                  style={{ backgroundColor: "oklch(0.7 0.2 340)" }}
+                >
+                  3
+                </span>
+                <div>
+                  <strong className="text-foreground">Distance Fraction</strong>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Measures distance elements moved relative to viewport
+                  </p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-1"
+                  style={{ backgroundColor: "oklch(0.7 0.2 340)" }}
+                >
+                  4
+                </span>
+                <div>
+                  <strong className="text-foreground">Session Windows</strong>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Groups shifts into sessions, reports maximum window value
+                  </p>
+                </div>
+              </li>
+            </ol>
+
+            <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                <strong>CLS Formula:</strong> Impact Fraction × Distance
+                Fraction
+              </p>
+            </div>
+
+            <div className="space-y-3 mt-6">
+              <div className="flex items-center gap-3">
+                <div className="w-4 h-4 rounded-full bg-score-good" />
+                <div>
+                  <span className="font-semibold">Good</span>
+                  <span className="text-muted-foreground ml-2">
+                    ≤ {SENTRY_THRESHOLDS.mobile["cumulative-layout-shift"].good}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-4 h-4 rounded-full bg-score-needs-improvement" />
+                <div>
+                  <span className="font-semibold">Needs Improvement</span>
+                  <span className="text-muted-foreground ml-2">
+                    {SENTRY_THRESHOLDS.mobile["cumulative-layout-shift"].good} -{" "}
+                    {
+                      SENTRY_THRESHOLDS.mobile["cumulative-layout-shift"]
+                        .needsImprovement
+                    }
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-4 h-4 rounded-full bg-score-poor" />
+                <div>
+                  <span className="font-semibold">Poor</span>
+                  <span className="text-muted-foreground ml-2">
+                    &gt;{" "}
+                    {
+                      SENTRY_THRESHOLDS.mobile["cumulative-layout-shift"]
+                        .needsImprovement
+                    }
+                  </span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="order-1 lg:order-2">
+          <CardHeader>
+            <CardTitle>Layout Shift Demo</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Watch content blocks appear and cause major page layout shifts.
+              Each block pushes the entire page content down.
+            </p>
+
+            <p className="text-sm text-muted-foreground">
+              Blocks added: {blockCount}/5
+            </p>
+
+            <p className="text-xs text-muted-foreground mt-4 p-3 bg-muted/50 rounded">
+              <strong>Note:</strong> Large content blocks are appearing above
+              this section, causing this entire page to shift down
+              significantly.
+            </p>
+
+            <div
+              className="p-4 rounded-lg mt-4"
+              style={{
+                backgroundColor:
+                  "color-mix(in srgb, oklch(0.7 0.2 340) 10%, transparent)",
+                borderLeft: "4px solid oklch(0.7 0.2 340)",
+              }}
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: "oklch(0.7 0.2 340)" }}
+                />
+                <strong className="text-foreground">Real-world impact</strong>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Unexpected layout shifts frustrate users and can cause
+                accidental clicks. Good visual stability is crucial for user
+                experience.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </DemoLayout>
   );
