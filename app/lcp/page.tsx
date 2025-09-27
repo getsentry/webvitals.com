@@ -4,7 +4,13 @@ export const metadata: Metadata = {
   title: "LCP Demo - Largest Contentful Paint",
   description:
     "Learn about Largest Contentful Paint (LCP) with an interactive demo. Understand how LCP measures the time it takes for the largest content element to render and impacts user experience.",
-  keywords: ["LCP", "Largest Contentful Paint", "Core Web Vitals", "performance", "page load speed"],
+  keywords: [
+    "LCP",
+    "Largest Contentful Paint",
+    "Core Web Vitals",
+    "performance",
+    "page load speed",
+  ],
   openGraph: {
     title: "LCP Demo - Largest Contentful Paint | WebVitals",
     description:
@@ -19,7 +25,7 @@ export const metadata: Metadata = {
   },
 };
 
-"use client";
+("use client");
 
 import { useEffect, useState } from "react";
 import DemoHeader from "@/components/demo/DemoHeader";

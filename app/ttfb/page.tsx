@@ -8,7 +8,13 @@ export const metadata: Metadata = {
   title: "TTFB Demo - Time to First Byte",
   description:
     "Understand Time to First Byte (TTFB) with an interactive demo. Learn how TTFB measures server response time and impacts overall page performance.",
-  keywords: ["TTFB", "Time to First Byte", "Core Web Vitals", "server response", "network latency"],
+  keywords: [
+    "TTFB",
+    "Time to First Byte",
+    "Core Web Vitals",
+    "server response",
+    "network latency",
+  ],
   openGraph: {
     title: "TTFB Demo - Time to First Byte | WebVitals",
     description:

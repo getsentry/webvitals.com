@@ -4,7 +4,13 @@ export const metadata: Metadata = {
   title: "INP Demo - Interaction to Next Paint",
   description:
     "Test Interaction to Next Paint (INP) with an interactive demo. Learn how INP measures responsiveness and the time between user interactions and visual updates.",
-  keywords: ["INP", "Interaction to Next Paint", "Core Web Vitals", "responsiveness", "user interaction"],
+  keywords: [
+    "INP",
+    "Interaction to Next Paint",
+    "Core Web Vitals",
+    "responsiveness",
+    "user interaction",
+  ],
   openGraph: {
     title: "INP Demo - Interaction to Next Paint | WebVitals",
     description:
@@ -19,7 +25,7 @@ export const metadata: Metadata = {
   },
 };
 
-"use client";
+("use client");
 
 import { useEffect, useState } from "react";
 import DemoHeader from "@/components/demo/DemoHeader";

@@ -4,7 +4,13 @@ export const metadata: Metadata = {
   title: "CLS Demo - Cumulative Layout Shift",
   description:
     "Experience Cumulative Layout Shift (CLS) with an interactive demo. Learn how unexpected layout shifts affect user experience and Core Web Vitals scores.",
-  keywords: ["CLS", "Cumulative Layout Shift", "Core Web Vitals", "layout stability", "visual stability"],
+  keywords: [
+    "CLS",
+    "Cumulative Layout Shift",
+    "Core Web Vitals",
+    "layout stability",
+    "visual stability",
+  ],
   openGraph: {
     title: "CLS Demo - Cumulative Layout Shift | WebVitals",
     description:
@@ -19,7 +25,7 @@ export const metadata: Metadata = {
   },
 };
 
-"use client";
+("use client");
 
 import { useEffect, useState } from "react";
 

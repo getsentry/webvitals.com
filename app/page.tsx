@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
 import { Provider } from "@ai-sdk-tools/store";
+import type { Metadata } from "next";
 import CoreWebVitalsSection from "@/components/CoreWebVitalsSection";
 import FAQSection from "@/components/FAQSection";
 import Footer from "@/components/Footer";

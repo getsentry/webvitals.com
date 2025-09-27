@@ -4,7 +4,13 @@ export const metadata: Metadata = {
   title: "FCP Demo - First Contentful Paint",
   description:
     "Explore First Contentful Paint (FCP) with an interactive demo. Learn how FCP measures the time until users see the first content appear on your webpage.",
-  keywords: ["FCP", "First Contentful Paint", "Core Web Vitals", "page load speed", "initial render"],
+  keywords: [
+    "FCP",
+    "First Contentful Paint",
+    "Core Web Vitals",
+    "page load speed",
+    "initial render",
+  ],
   openGraph: {
     title: "FCP Demo - First Contentful Paint | WebVitals",
     description:
@@ -19,7 +25,7 @@ export const metadata: Metadata = {
   },
 };
 
-"use client";
+("use client");
 
 import { useEffect } from "react";
 import DemoHeader from "@/components/demo/DemoHeader";
