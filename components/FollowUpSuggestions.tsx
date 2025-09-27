@@ -242,12 +242,12 @@ export default function FollowUpSuggestions() {
               Sentry to track real user metrics:
             </p>
             <a
-              href="https://docs.sentry.io/product/sentry-basics/performance-monitoring/"
+              href="https://docs.sentry.io/product/insights/frontend/web-vitals/"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
             >
-              Sentry Performance Monitoring Guide
+              Sentry Web Vitals Monitoring Guide
               <svg
                 className="w-3 h-3"
                 fill="none"

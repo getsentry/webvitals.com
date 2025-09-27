@@ -22,6 +22,7 @@ export default async function TTFBPage() {
         vitalDesc="Time to First Byte"
         vitalColor="oklch(0.72 0.15 200)"
         isCore={false}
+        sentryLink="https://docs.sentry.io/product/insights/frontend/web-vitals/web-vitals-concepts/#time-to-first-byte-ttfb"
       >
         Measures the duration from when a page starts loading to when the first
         byte of content is received from the server.

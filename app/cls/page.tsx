@@ -47,6 +47,7 @@ export default function CLSPage() {
         vitalColor="oklch(0.7 0.2 340)"
         isCore={true}
         supportedBrowsers={{ safari: false, firefox: false }}
+        sentryLink="https://docs.sentry.io/product/insights/frontend/web-vitals/web-vitals-concepts/#cumulative-layout-shift-cls"
       >
         Measures the total amount of unexpected layout shifts that occur during
         the entire lifespan of a webpage.

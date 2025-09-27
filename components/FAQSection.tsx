@@ -30,8 +30,23 @@ const faqs = [
   },
   {
     question: "Can I analyze password-protected or internal sites?",
-    answer:
-      "Currently, our tool can only analyze publicly accessible websites since we rely on Chrome User Experience Report data. For internal or password-protected sites, we recommend using Sentry's performance monitoring, which can track Web Vitals and other performance metrics from within your application.",
+    answer: (
+      <>
+        Currently, our tool can only analyze publicly accessible websites since
+        we rely on Chrome User Experience Report data. For internal or
+        password-protected sites, we recommend using{" "}
+        <a
+          href="https://docs.sentry.io/product/insights/frontend/web-vitals/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary underline-offset-4 hover:underline"
+        >
+          Sentry's Web Vitals monitoring
+        </a>
+        , which can track Web Vitals and other performance metrics from within
+        your application.
+      </>
+    ),
   },
   {
     question: "How often should I check my Web Vitals?",
@@ -42,6 +57,33 @@ const faqs = [
     question: "What's the difference between lab and field data?",
     answer:
       "Lab data comes from controlled testing environments using tools like Lighthouse, while field data comes from real users visiting your site through the Chrome User Experience Report. Our tool uses field data to show you real-world performance, which is more representative of your users' actual experiences.",
+  },
+  {
+    question:
+      "How do Web Vitals work with Progressive Web Apps (PWAs) and Single Page Applications (SPAs)?",
+    answer: (
+      <>
+        Current Core Web Vitals metrics only capture initial page loads, not SPA
+        route transitions. This means client-side navigation performance isn't
+        reflected in CrUX data or traditional Web Vitals measurements. Chrome is
+        experimenting with a Soft Navigations API that defines navigation by
+        three heuristics: user action, URL change, and DOM change. This
+        experimental feature (available in Chrome 139+ via origin trial) aims to
+        measure LCP, CLS, and INP for individual route changes. Until this
+        becomes standard, the best approach for PWAs is implementing real user
+        monitoring with tools like{" "}
+        <a
+          href="https://docs.sentry.io/product/insights/frontend/web-vitals/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary underline-offset-4 hover:underline"
+        >
+          Sentry's Web Vitals monitoring
+        </a>
+        , which can track performance across all navigation types and provide
+        comprehensive insights into your app's actual user experience.
+      </>
+    ),
   },
   {
     question: "What's on the roadmap for WebVitals?",

@@ -56,6 +56,7 @@ export default function LCPPage() {
         vitalColor="oklch(0.73 0.17 60)"
         isCore={true}
         supportedBrowsers={{ safari: false }}
+        sentryLink="https://docs.sentry.io/product/insights/frontend/web-vitals/web-vitals-concepts/#largest-contentful-paint-lcp"
       >
         Measures the time it takes for the largest text or image element to
         render on a webpage.

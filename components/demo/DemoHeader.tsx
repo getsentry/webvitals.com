@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Heading from "@/components/ui/heading";
 import BrowserIcons from "./BrowserIcons";
@@ -10,6 +10,7 @@ interface DemoHeaderProps {
   vitalColor: string;
   isCore?: boolean;
   supportedBrowsers?: Record<string, boolean>;
+  sentryLink?: string;
 }
 
 export default function DemoHeader({
@@ -19,6 +20,7 @@ export default function DemoHeader({
   vitalColor,
   isCore = false,
   supportedBrowsers,
+  sentryLink,
 }: DemoHeaderProps) {
   return (
     <section className="mb-8">
@@ -41,9 +43,21 @@ export default function DemoHeader({
         >
           {vitalName}
         </Heading>
-        <Heading level={2} size="base" className="text-muted-foreground mb-2">
-          {vitalDesc}
-        </Heading>
+        <div className="flex items-center gap-3 mb-2">
+          <Heading level={2} size="base" className="text-muted-foreground">
+            {vitalDesc}
+          </Heading>
+          {sentryLink && (
+            <a
+              href={sentryLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+            >
+              Learn more <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
+        </div>
 
         <div className="absolute top-0 right-0">
           <BrowserIcons

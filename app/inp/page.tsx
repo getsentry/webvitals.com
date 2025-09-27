@@ -57,6 +57,7 @@ export default function INPPage() {
         vitalDesc="Interaction to Next Paint"
         vitalColor="oklch(0.68 0.18 300)"
         isCore={true}
+        sentryLink="https://docs.sentry.io/product/insights/frontend/web-vitals/web-vitals-concepts/#interaction-to-next-paint-inp"
       >
         Measures the time from when a user interacts with a page to when the
         browser renders the visual response to that interaction.

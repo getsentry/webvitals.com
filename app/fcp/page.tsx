@@ -32,6 +32,7 @@ export default function FCPPage() {
         vitalDesc="First Contentful Paint"
         vitalColor="oklch(0.75 0.13 162)"
         isCore={true}
+        sentryLink="https://docs.sentry.io/product/insights/frontend/web-vitals/web-vitals-concepts/#first-contentful-paint-fcp"
       >
         Measures the time from when a page starts loading to when any part of
         the page's content is first displayed.
