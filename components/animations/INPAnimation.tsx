@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 
 export function INPAnimation({
@@ -14,10 +14,12 @@ export function INPAnimation({
     cursorPosition: { x: number; y: number };
     isClicked: boolean;
     isOpen: boolean;
+    timerMs: number;
   }>({
     cursorPosition: { x: -20, y: -20 },
     isClicked: false,
     isOpen: false,
+    timerMs: 0,
   });
 
   useEffect(() => {
@@ -26,36 +28,48 @@ export function INPAnimation({
         cursorPosition: { x: -20, y: -20 },
         isClicked: false,
         isOpen: false,
+        timerMs: 0,
       });
       return;
     }
+
+    const timeouts: NodeJS.Timeout[] = [];
+    let timerInterval: NodeJS.Timeout;
 
     const simulateInteraction = () => {
       setInteractionState({
         cursorPosition: { x: 20, y: 5 },
         isClicked: false,
         isOpen: false,
+        timerMs: 0,
       });
 
-      setTimeout(() => {
-        setInteractionState((prev) => ({ ...prev, isClicked: true }));
-      }, 1000);
+      timeouts.push(setTimeout(() => {
+        setInteractionState((prev) => ({ ...prev, isClicked: true, timerMs: 0 }));
+        
+        // Start timer countdown
+        timerInterval = setInterval(() => {
+          setInteractionState((prev) => ({ ...prev, timerMs: prev.timerMs + 10 }));
+        }, 10);
+      }, 1000));
 
-      setTimeout(() => {
+      timeouts.push(setTimeout(() => {
         setInteractionState((prev) => ({ ...prev, isClicked: false }));
-      }, 1100);
+      }, 1100));
 
-      setTimeout(() => {
+      timeouts.push(setTimeout(() => {
         setInteractionState((prev) => ({ ...prev, isOpen: true }));
-      }, 1800);
+        if (timerInterval) clearInterval(timerInterval);
+      }, 1500));
 
-      setTimeout(() => {
+      timeouts.push(setTimeout(() => {
         setInteractionState({
           cursorPosition: { x: -20, y: -20 },
           isClicked: false,
           isOpen: false,
+          timerMs: 0,
         });
-      }, 3000);
+      }, 3000));
     };
 
     const timeout = setTimeout(simulateInteraction, 500);
@@ -64,6 +78,8 @@ export function INPAnimation({
     return () => {
       clearTimeout(timeout);
       clearInterval(interval);
+      if (timerInterval) clearInterval(timerInterval);
+      timeouts.forEach(clearTimeout);
     };
   }, [paused]);
 
@@ -78,19 +94,20 @@ export function INPAnimation({
         className="absolute inset-4 flex flex-col items-start"
         style={{ top: "15%", left: "10%" }}
       >
-        {/* Dropdown Button */}
-        <motion.div
-          className="relative"
-          animate={{
-            scale:
-              interactionState.isClicked && !interactionState.isOpen ? 0.98 : 1,
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 400,
-            damping: 25,
-          }}
-        >
+        <div className="flex items-center gap-4">
+          {/* Dropdown Button */}
+          <motion.div
+            className="relative"
+            animate={{
+              scale:
+                interactionState.isClicked && !interactionState.isOpen ? 0.98 : 1,
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 25,
+            }}
+          >
           <motion.div
             className="px-4 py-2 rounded-lg border-2 text-sm font-medium flex items-center justify-between min-w-[140px] relative"
             style={{
@@ -171,6 +188,29 @@ export function INPAnimation({
             ))}
           </motion.div>
         </motion.div>
+
+        {/* Timer Display */}
+        <AnimatePresence>
+          {interactionState.cursorPosition.x > 0 && interactionState.timerMs > 0 && (
+            <motion.div
+              className="absolute px-3 py-2 rounded-lg border-2 text-sm font-mono"
+              style={{
+                backgroundColor: `color-mix(in srgb, ${color} 20%, transparent)`,
+                borderColor: `color-mix(in srgb, ${color} 60%, transparent)`,
+                color: color,
+                left: "160px",
+                top: "0px",
+              }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+            >
+              {interactionState.timerMs}ms
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
         {/* Animated Cursor */}
         <motion.div

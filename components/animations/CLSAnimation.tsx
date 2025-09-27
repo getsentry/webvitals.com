@@ -24,12 +24,17 @@ export function CLSAnimation({
       setOrder(initialBoxes);
       return;
     }
-    setOrder((prevOrder) => shuffle([...prevOrder])); // Initial shuffle
+    const initialInterval = setTimeout(() => {
+      setOrder((prevOrder) => shuffle([...prevOrder]));
+    }, 300);
     const interval = setInterval(() => {
       setOrder((prevOrder) => shuffle([...prevOrder]));
     }, 1200);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initialInterval);
+      clearInterval(interval);
+    };
   }, [paused]);
 
   return (
