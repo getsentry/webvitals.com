@@ -73,13 +73,15 @@ export function LCPAnimation({
             loadedElements: 4,
           }));
 
-          timeouts.push(setTimeout(() => {
-            setState((prev) => ({
-              ...prev,
-              showTimer: false,
-              loadedElements: 0,
-            }));
-          }, 1500));
+          timeouts.push(
+            setTimeout(() => {
+              setState((prev) => ({
+                ...prev,
+                showTimer: false,
+                loadedElements: 0,
+              }));
+            }, 1500),
+          );
         }
       };
 
@@ -87,7 +89,7 @@ export function LCPAnimation({
     };
 
     let interval: NodeJS.Timeout;
-    
+
     const timeout = setTimeout(() => {
       runAnimation();
       interval = setInterval(runAnimation, 2500);
