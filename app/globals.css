@@ -41,13 +41,10 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   --color-metric-lcp: var(--metric-lcp);
-  --color-metric-fid: var(--metric-fid);
   --color-metric-cls: var(--metric-cls);
   --color-metric-fcp: var(--metric-fcp);
   --color-metric-ttfb: var(--metric-ttfb);
   --color-metric-inp: var(--metric-inp);
-  --color-metric-si: var(--metric-si);
-  --color-metric-tbt: var(--metric-tbt);
 
   --color-score-good: var(--score-good);
   --color-score-needs-improvement: var(--score-needs-improvement);
