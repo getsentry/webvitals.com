@@ -11,7 +11,12 @@ Sentry.init({
   integrations: [
     Sentry.replayIntegration(),
     Sentry.spotlightBrowserIntegration(),
-    Sentry.browserTracingIntegration(),
+    Sentry.browserTracingIntegration({
+      _experiments: {
+        enableStandaloneLcpSpans: true,
+        enableStandaloneClsSpans: true,
+      },
+    }),
   ],
 
   // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
