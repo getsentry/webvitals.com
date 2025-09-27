@@ -9,8 +9,8 @@ import type { PerformanceConfig } from "@/types/performance-config";
 import Background from "./Background";
 import ChatInterface from "./ChatInterface";
 import FeatureHighlights from "./FeatureHighlights";
-import PageSpeedPromptInput from "./PageSpeedPromptInput";
 
+import PageSpeedPromptInputWrapper from "./PageSpeedPromptInputWrapper";
 import Heading from "./ui/heading";
 
 export default function HeroSection() {
@@ -118,7 +118,7 @@ export default function HeroSection() {
                   </p>
 
                   <div className="max-w-2xl mx-auto">
-                    <PageSpeedPromptInput
+                    <PageSpeedPromptInputWrapper
                       onSubmit={handlePerformanceSubmit}
                       disabled={status !== "ready"}
                       className="max-w-2xl"
