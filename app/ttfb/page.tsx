@@ -1,7 +1,27 @@
+import type { Metadata } from "next";
 import DemoHeader from "@/components/demo/DemoHeader";
 import DemoLayout from "@/components/demo/DemoLayout";
 
 import TTFBClient from "./TTFBClient";
+
+export const metadata: Metadata = {
+  title: "TTFB Demo - Time to First Byte",
+  description:
+    "Understand Time to First Byte (TTFB) with an interactive demo. Learn how TTFB measures server response time and impacts overall page performance.",
+  keywords: ["TTFB", "Time to First Byte", "Core Web Vitals", "server response", "network latency"],
+  openGraph: {
+    title: "TTFB Demo - Time to First Byte | WebVitals",
+    description:
+      "Understand Time to First Byte (TTFB) with an interactive demo. Learn how server response time affects page performance.",
+    images: ["/ttfb/opengraph-image"],
+  },
+  twitter: {
+    title: "TTFB Demo - Time to First Byte | WebVitals",
+    description:
+      "Understand Time to First Byte (TTFB) with an interactive demo. Learn how server response time affects page performance.",
+    images: ["/ttfb/opengraph-image"],
+  },
+};
 
 export const dynamic = "force-dynamic";
 
