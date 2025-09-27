@@ -34,6 +34,9 @@ export function LCPAnimation({
       return;
     }
 
+    const timeouts: NodeJS.Timeout[] = [];
+    let animationFrameId: number;
+
     const runAnimation = () => {
       setState((prev) => ({
         showTimer: true,
@@ -62,7 +65,7 @@ export function LCPAnimation({
         }));
 
         if (progress < 1) {
-          requestAnimationFrame(animate);
+          animationFrameId = requestAnimationFrame(animate);
         } else {
           setState((prev) => ({
             ...prev,
@@ -70,25 +73,31 @@ export function LCPAnimation({
             loadedElements: 4,
           }));
 
-          setTimeout(() => {
+          timeouts.push(setTimeout(() => {
             setState((prev) => ({
               ...prev,
               showTimer: false,
               loadedElements: 0,
             }));
-          }, 1500);
+          }, 1500));
         }
       };
 
       animate();
     };
 
-    const timeout = setTimeout(runAnimation, 500);
-    const interval = setInterval(runAnimation, 2500);
+    let interval: NodeJS.Timeout;
+    
+    const timeout = setTimeout(() => {
+      runAnimation();
+      interval = setInterval(runAnimation, 2500);
+    }, 500);
 
     return () => {
       clearTimeout(timeout);
-      clearInterval(interval);
+      if (interval) clearInterval(interval);
+      timeouts.forEach(clearTimeout);
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
   }, [paused]);
 

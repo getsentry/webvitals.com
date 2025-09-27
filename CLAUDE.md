@@ -10,6 +10,23 @@ Avoid sycophantic language like "You're absolutely right!" or "Perfect!" in resp
 
 Avoid misleading yourself or the user that the changes are always correct. Don't just think about all the ways in which the changes have succeeded. Express the ways in which it might not have worked.
 
+## 🎯 Cursor Rules
+
+Follow the guidelines in `@.cursor/rules` which include:
+- **Web Interface Guidelines**: `@.cursor/rules/web-interface-guidelines.mdc` - Comprehensive rules for building accessible, fast, delightful UIs with keyboard support, touch interactions, animations, layout, performance, and design standards
+
+## 📚 Complete Documentation
+
+For comprehensive project documentation, see `@docs/`:
+- **Project Overview**: `@docs/overview.md` - Mission, features, and competitive advantages
+- **Development Guide**: `@docs/development/quick-start.md` - Getting started
+- **Technical Architecture**: `@docs/development/architecture.md` - Detailed system design
+- **API Documentation**: `@docs/api/overview.md` - API specifications
+- **AI Integration**: `@docs/ai/overview.md` - AI system details  
+- **Deployment Guide**: `@docs/deployment/guide.md` - Production deployment
+- **Contributing**: `@docs/contributing/guide.md` - Development workflow
+- **FAQ**: `@docs/faq.md` - Common questions and troubleshooting
+
 ## Project Overview
 
 This is a Next.js-based website with TailwindCSS and React integration, deployed on Vercel with Sentry monitoring. The project uses modern web development tools and follows component-based architecture with App Router.

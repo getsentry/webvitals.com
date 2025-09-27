@@ -17,12 +17,14 @@ export function TTFBAnimation({
     showTimer: boolean;
     currentTime: number; // Current elapsed time in ms
     animationKey: number; // For AnimatePresence
+    showPacket: boolean; // Controls packet visibility for fade out
   }>({
     packetPosition: 0,
     showComplete: false,
     showTimer: false,
     currentTime: 0,
     animationKey: 0,
+    showPacket: false,
   });
 
   useEffect(() => {
@@ -33,6 +35,7 @@ export function TTFBAnimation({
         showTimer: false,
         currentTime: 0,
         animationKey: 0,
+        showPacket: false,
       });
       return;
     }
@@ -44,6 +47,7 @@ export function TTFBAnimation({
         showTimer: true,
         currentTime: 0,
         animationKey: prev.animationKey + 1,
+        showPacket: true,
       }));
 
       const startTime = Date.now();
@@ -73,6 +77,7 @@ export function TTFBAnimation({
               ...prev,
               showComplete: false,
               showTimer: false,
+              showPacket: false,
             }));
           }, 1000);
         }
@@ -148,7 +153,7 @@ export function TTFBAnimation({
 
           {/* Traveling packet */}
           <AnimatePresence>
-            {state.packetPosition > 0 && (
+            {state.showPacket && (
               <motion.div
                 key={`packet-${state.animationKey}`}
                 className="absolute -top-[6px] w-3 h-3 rounded-full shadow-sm"

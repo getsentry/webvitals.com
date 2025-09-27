@@ -27,7 +27,7 @@ export function CLSAnimation({
     setOrder((prevOrder) => shuffle([...prevOrder])); // Initial shuffle
     const interval = setInterval(() => {
       setOrder((prevOrder) => shuffle([...prevOrder]));
-    }, 2000);
+    }, 1200);
 
     return () => clearInterval(interval);
   }, [paused]);

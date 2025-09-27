@@ -30,6 +30,8 @@ export function FCPAnimation({
       return;
     }
 
+    const timeouts: NodeJS.Timeout[] = [];
+    
     const runAnimation = () => {
       setState((prev) => ({
         fcpReached: false,
@@ -37,29 +39,34 @@ export function FCPAnimation({
         animationKey: prev.animationKey + 1,
       }));
 
-      setTimeout(() => {
+      timeouts.push(setTimeout(() => {
         setState((prev) => ({ ...prev, fcpReached: true }));
-      }, 75);
+      }, 75));
 
-      setTimeout(() => {
+      timeouts.push(setTimeout(() => {
         setState((prev) => ({ ...prev, allLoaded: true }));
-      }, 800);
+      }, 800));
 
-      setTimeout(() => {
+      timeouts.push(setTimeout(() => {
         setState((prev) => ({
+          ...prev,
           fcpReached: false,
           allLoaded: false,
-          animationKey: prev.animationKey,
         }));
-      }, 2300);
+      }, 2300));
     };
 
-    const timeout = setTimeout(runAnimation, 500);
-    const interval = setInterval(runAnimation, 2800);
+    let interval: NodeJS.Timeout;
+    
+    const timeout = setTimeout(() => {
+      runAnimation();
+      interval = setInterval(runAnimation, 2800);
+    }, 500);
 
     return () => {
       clearTimeout(timeout);
-      clearInterval(interval);
+      if (interval) clearInterval(interval);
+      timeouts.forEach(clearTimeout);
     };
   }, [paused]);
 
