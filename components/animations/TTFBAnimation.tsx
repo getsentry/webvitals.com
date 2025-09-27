@@ -4,7 +4,13 @@ import { Check, Server, Smartphone } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 
-export function TTFBAnimation({ color }: { color: string }) {
+export function TTFBAnimation({
+  color,
+  paused = true,
+}: {
+  color: string;
+  paused?: boolean;
+}) {
   const [state, setState] = useState<{
     packetPosition: number; // 0-100
     showComplete: boolean;
@@ -20,8 +26,18 @@ export function TTFBAnimation({ color }: { color: string }) {
   });
 
   useEffect(() => {
+    if (paused) {
+      setState({
+        packetPosition: 0,
+        showComplete: false,
+        showTimer: false,
+        currentTime: 0,
+        animationKey: 0,
+      });
+      return;
+    }
+
     const runAnimation = () => {
-      // Reset state with new animation key
       setState((prev) => ({
         packetPosition: 0,
         showComplete: false,
@@ -30,7 +46,6 @@ export function TTFBAnimation({ color }: { color: string }) {
         animationKey: prev.animationKey + 1,
       }));
 
-      // Animate packet from 0 to 100 in exactly 350ms
       const startTime = Date.now();
       const duration = 350;
 
@@ -47,14 +62,12 @@ export function TTFBAnimation({ color }: { color: string }) {
         if (progress < 1) {
           requestAnimationFrame(animate);
         } else {
-          // Animation complete - show checkmark and final time
           setState((prev) => ({
             ...prev,
             showComplete: true,
             currentTime: 350,
           }));
 
-          // Wait 1 second then reset (triggering exit animations)
           setTimeout(() => {
             setState((prev) => ({
               ...prev,
@@ -68,14 +81,14 @@ export function TTFBAnimation({ color }: { color: string }) {
       animate();
     };
 
-    // Start first animation after initial delay
-    setTimeout(() => {
-      runAnimation();
-      // Repeat every 2.5 seconds (350ms animation + 1000ms pause + 600ms exit + 550ms buffer)
-      const interval = setInterval(runAnimation, 2500);
-      return () => clearInterval(interval);
-    }, 500);
-  }, []);
+    const timeout = setTimeout(runAnimation, 500);
+    const interval = setInterval(runAnimation, 2500);
+
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
+  }, [paused]);
 
   return (
     <div

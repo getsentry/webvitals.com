@@ -3,7 +3,13 @@
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 
-export function INPAnimation({ color }: { color: string }) {
+export function INPAnimation({
+  color,
+  paused = true,
+}: {
+  color: string;
+  paused?: boolean;
+}) {
   const [interactionState, setInteractionState] = useState<{
     cursorPosition: { x: number; y: number };
     isClicked: boolean;
@@ -15,39 +21,34 @@ export function INPAnimation({ color }: { color: string }) {
   });
 
   useEffect(() => {
+    if (paused) {
+      setInteractionState({
+        cursorPosition: { x: -20, y: -20 },
+        isClicked: false,
+        isOpen: false,
+      });
+      return;
+    }
+
     const simulateInteraction = () => {
-      // Step 1: Cursor moves to dropdown button
       setInteractionState({
         cursorPosition: { x: 20, y: 5 },
         isClicked: false,
         isOpen: false,
       });
 
-      // Step 2: Cursor clicks instantly after arriving (button press in)
       setTimeout(() => {
-        setInteractionState((prev) => ({
-          ...prev,
-          isClicked: true,
-        }));
+        setInteractionState((prev) => ({ ...prev, isClicked: true }));
       }, 1000);
 
-      // Step 3: Button releases immediately after click
       setTimeout(() => {
-        setInteractionState((prev) => ({
-          ...prev,
-          isClicked: false,
-        }));
+        setInteractionState((prev) => ({ ...prev, isClicked: false }));
       }, 1100);
 
-      // Step 4: Dropdown opens after INP delay (simulating processing time)
       setTimeout(() => {
-        setInteractionState((prev) => ({
-          ...prev,
-          isOpen: true,
-        }));
-      }, 1800); // Longer delay to show the INP processing time
+        setInteractionState((prev) => ({ ...prev, isOpen: true }));
+      }, 1800);
 
-      // Step 5: Reset and hide cursor
       setTimeout(() => {
         setInteractionState({
           cursorPosition: { x: -20, y: -20 },
@@ -57,13 +58,14 @@ export function INPAnimation({ color }: { color: string }) {
       }, 3000);
     };
 
-    // Initial delay before starting
-    setTimeout(() => {
-      simulateInteraction();
-      const interval = setInterval(simulateInteraction, 4500);
-      return () => clearInterval(interval);
-    }, 500);
-  }, []);
+    const timeout = setTimeout(simulateInteraction, 500);
+    const interval = setInterval(simulateInteraction, 4500);
+
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
+  }, [paused]);
 
   return (
     <div

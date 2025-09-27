@@ -3,7 +3,13 @@
 import { motion, type Transition } from "motion/react";
 import { useEffect, useState } from "react";
 
-export function CLSAnimation({ color }: { color: string }) {
+export function CLSAnimation({
+  color,
+  paused = true,
+}: {
+  color: string;
+  paused?: boolean;
+}) {
   const initialBoxes = [
     `color-mix(in srgb, ${color} 60%, transparent)`,
     `color-mix(in srgb, ${color} 80%, transparent)`,
@@ -14,9 +20,17 @@ export function CLSAnimation({ color }: { color: string }) {
   const [order, setOrder] = useState(initialBoxes);
 
   useEffect(() => {
-    const timeout = setTimeout(() => setOrder(shuffle([...order])), 2000);
-    return () => clearTimeout(timeout);
-  }, [order]);
+    if (paused) {
+      setOrder(initialBoxes);
+      return;
+    }
+    setOrder((prevOrder) => shuffle([...prevOrder])); // Initial shuffle
+    const interval = setInterval(() => {
+      setOrder((prevOrder) => shuffle([...prevOrder]));
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [paused]);
 
   return (
     <div

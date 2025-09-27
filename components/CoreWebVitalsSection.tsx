@@ -1,6 +1,7 @@
 "use client";
 
 import { Clock, MousePointer, Move3D, Paintbrush, Server } from "lucide-react";
+import { useState } from "react";
 import {
   CLSAnimation,
   FCPAnimation,
@@ -8,8 +9,10 @@ import {
   LCPAnimation,
   TTFBAnimation,
 } from "@/components/animations";
+
 import Heading from "@/components/ui/heading";
 import { useWebVitalsScore } from "@/contexts/WebVitalsScoreContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const metrics = [
   {
@@ -80,6 +83,9 @@ const metrics = [
 
 export default function CoreWebVitalsSection() {
   const { scores, hasScores } = useWebVitalsScore();
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  const [focusedCard, setFocusedCard] = useState<number | null>(null);
+  const isMobile = useIsMobile();
 
   const getMetricScore = (metricKey: string) => {
     if (!hasScores) return null;
@@ -134,10 +140,21 @@ export default function CoreWebVitalsSection() {
                 key={metric.id}
                 href={metric.href}
                 className={`group ${metric.className} rounded-xl cursor-pointer overflow-hidden transition-all duration-300 shadow-sm hover:shadow-lg active:scale-[0.98] outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px] focus-visible:border-ring relative flex flex-col text-left`}
+                onMouseEnter={() => setHoveredCard(metric.id)}
+                onMouseLeave={() => setHoveredCard(null)}
+                onFocus={() => setFocusedCard(metric.id)}
+                onBlur={() => setFocusedCard(null)}
               >
                 {/* Background */}
                 <div className="flex-1 relative min-h-[12rem] md:min-h-[14rem] lg:min-h-[16rem]">
-                  <metric.BackgroundComponent color={metric.color} />
+                  <metric.BackgroundComponent
+                    color={metric.color}
+                    paused={
+                      isMobile
+                        ? false
+                        : hoveredCard !== metric.id && focusedCard !== metric.id
+                    }
+                  />
                 </div>
 
                 {/* Card Info */}

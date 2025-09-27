@@ -4,7 +4,13 @@ import { Image } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 
-export function LCPAnimation({ color }: { color: string }) {
+export function LCPAnimation({
+  color,
+  paused = true,
+}: {
+  color: string;
+  paused?: boolean;
+}) {
   const [state, setState] = useState<{
     showTimer: boolean;
     currentTime: number;
@@ -18,8 +24,17 @@ export function LCPAnimation({ color }: { color: string }) {
   });
 
   useEffect(() => {
+    if (paused) {
+      setState({
+        showTimer: false,
+        currentTime: 0,
+        loadedElements: 0,
+        animationKey: 0,
+      });
+      return;
+    }
+
     const runAnimation = () => {
-      // Reset
       setState((prev) => ({
         showTimer: true,
         currentTime: 0,
@@ -27,7 +42,6 @@ export function LCPAnimation({ color }: { color: string }) {
         animationKey: prev.animationKey + 1,
       }));
 
-      // Timer and progressive loading
       const startTime = Date.now();
       const duration = 568;
 
@@ -35,12 +49,11 @@ export function LCPAnimation({ color }: { color: string }) {
         const elapsed = Date.now() - startTime;
         const progress = elapsed / duration;
 
-        // Determine how many elements should be loaded based on time
         let elementsToLoad = 0;
-        if (elapsed >= 150) elementsToLoad = 1; // First text
-        if (elapsed >= 250) elementsToLoad = 2; // Second text
-        if (elapsed >= 350) elementsToLoad = 3; // Third text
-        if (elapsed >= 568) elementsToLoad = 4; // Image (LCP)
+        if (elapsed >= 150) elementsToLoad = 1;
+        if (elapsed >= 250) elementsToLoad = 2;
+        if (elapsed >= 350) elementsToLoad = 3;
+        if (elapsed >= 568) elementsToLoad = 4;
 
         setState((prev) => ({
           ...prev,
@@ -51,14 +64,12 @@ export function LCPAnimation({ color }: { color: string }) {
         if (progress < 1) {
           requestAnimationFrame(animate);
         } else {
-          // Complete
           setState((prev) => ({
             ...prev,
             currentTime: 568,
             loadedElements: 4,
           }));
 
-          // Reset after pause
           setTimeout(() => {
             setState((prev) => ({
               ...prev,
@@ -72,12 +83,14 @@ export function LCPAnimation({ color }: { color: string }) {
       animate();
     };
 
-    setTimeout(() => {
-      runAnimation();
-      const interval = setInterval(runAnimation, 2500);
-      return () => clearInterval(interval);
-    }, 500);
-  }, []);
+    const timeout = setTimeout(runAnimation, 500);
+    const interval = setInterval(runAnimation, 2500);
+
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
+  }, [paused]);
 
   const elements = [
     { id: 1, type: "text", width: "100%", height: "12px" },
@@ -133,27 +146,7 @@ export function LCPAnimation({ color }: { color: string }) {
                     : `color-mix(in srgb, ${color} 30%, transparent)`,
                 }}
                 transition={{ duration: 0.3 }}
-              >
-                {/* Shimmer */}
-                {!isLoaded && (
-                  <motion.div
-                    className="absolute inset-0 rounded"
-                    style={{
-                      background: `linear-gradient(90deg, 
-                        transparent 0%, 
-                        color-mix(in srgb, ${color} 40%, transparent) 50%, 
-                        transparent 100%
-                      )`,
-                    }}
-                    animate={{ x: ["-100%", "100%"] }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                  />
-                )}
-              </motion.div>
+              ></motion.div>
             );
           })}
         </div>
@@ -176,26 +169,6 @@ export function LCPAnimation({ color }: { color: string }) {
           }}
           transition={{ duration: 0.3 }}
         >
-          {/* Shimmer */}
-          {state.loadedElements < 4 && (
-            <motion.div
-              className="absolute inset-0 rounded"
-              style={{
-                background: `linear-gradient(90deg, 
-                  transparent 0%, 
-                  color-mix(in srgb, ${color} 25%, transparent) 50%, 
-                  transparent 100%
-                )`,
-              }}
-              animate={{ x: ["-100%", "100%"] }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            />
-          )}
-
           <Image
             className="w-6 h-6"
             style={{

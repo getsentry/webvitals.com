@@ -3,7 +3,13 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 
-export function FCPAnimation({ color }: { color: string }) {
+export function FCPAnimation({
+  color,
+  paused = true,
+}: {
+  color: string;
+  paused?: boolean;
+}) {
   const [state, setState] = useState<{
     fcpReached: boolean; // First content painted at 75ms
     allLoaded: boolean; // All content loaded later
@@ -15,25 +21,30 @@ export function FCPAnimation({ color }: { color: string }) {
   });
 
   useEffect(() => {
+    if (paused) {
+      setState({
+        fcpReached: false,
+        allLoaded: false,
+        animationKey: 0,
+      });
+      return;
+    }
+
     const runAnimation = () => {
-      // Reset
       setState((prev) => ({
         fcpReached: false,
         allLoaded: false,
         animationKey: prev.animationKey + 1,
       }));
 
-      // FCP at 75ms
       setTimeout(() => {
         setState((prev) => ({ ...prev, fcpReached: true }));
       }, 75);
 
-      // All content at 800ms
       setTimeout(() => {
         setState((prev) => ({ ...prev, allLoaded: true }));
       }, 800);
 
-      // Reset after pause
       setTimeout(() => {
         setState((prev) => ({
           fcpReached: false,
@@ -43,12 +54,14 @@ export function FCPAnimation({ color }: { color: string }) {
       }, 2300);
     };
 
-    setTimeout(() => {
-      runAnimation();
-      const interval = setInterval(runAnimation, 2800);
-      return () => clearInterval(interval);
-    }, 500);
-  }, []);
+    const timeout = setTimeout(runAnimation, 500);
+    const interval = setInterval(runAnimation, 2800);
+
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
+  }, [paused]);
 
   const contentElements = [
     { id: 1, width: "70%", isFCP: true },
