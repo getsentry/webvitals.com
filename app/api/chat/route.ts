@@ -9,7 +9,11 @@ import {
   type UIMessage,
 } from "ai";
 import { webAnalysisSystemPrompt } from "@/ai";
-import { realWorldPerformanceTool, techDetectionTool } from "@/ai/tools";
+import {
+  analysisBreakdownTool,
+  realWorldPerformanceTool,
+  techDetectionTool,
+} from "@/ai/tools";
 
 export async function POST(request: Request) {
   try {
@@ -37,6 +41,7 @@ export async function POST(request: Request) {
           tools: {
             getRealWorldPerformance: realWorldPerformanceTool,
             detectTechnologies: techDetectionTool,
+            generateAnalysisBreakdown: analysisBreakdownTool,
           },
           experimental_telemetry: {
             isEnabled: true,

@@ -86,6 +86,7 @@ export default function PageSpeedPromptInput({
     try {
       await onSubmit(domain.trim(), config);
     } finally {
+      setDomain("");
       setStatus("ready");
     }
   };

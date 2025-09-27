@@ -5,6 +5,8 @@ import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
 import { WebVitalsScoreProvider } from "@/contexts/WebVitalsScoreContext";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <Provider>

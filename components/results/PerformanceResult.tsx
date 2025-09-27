@@ -210,7 +210,7 @@ export default function PerformanceResult({
                         href="https://docs.sentry.io/product/insights/frontend/web-vitals/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary underline-offset-4 hover:underline"
+                        className="underline-offset-4 hover:underline"
                       >
                         Sentry Web Vitals Monitoring
                       </a>{" "}

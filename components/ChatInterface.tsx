@@ -8,7 +8,7 @@ import {
 } from "@ai-sdk-tools/store";
 import { RotateCcwIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import {
   Conversation,
@@ -28,7 +28,6 @@ export default function ChatInterface() {
   const status = useChatStatus();
   const error = useChatError();
   const { setMessages } = useChatStore();
-  const router = useRouter();
 
   const domain = searchParams.get("domain");
 
@@ -49,11 +48,12 @@ export default function ChatInterface() {
     // Clear chat messages
     setMessages([]);
     // Remove URL parameter
-    router.push("/");
-  };
+    history.replaceState(null, "", "/");
 
-  console.log(messages);
-  console.log(status);
+    if (status === "submitted" || status === "streaming") {
+      window.location.reload();
+    }
+  };
 
   return (
     <motion.div className={`h-full flex flex-col items-center`}>

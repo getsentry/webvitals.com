@@ -3,18 +3,17 @@
 import { useChat } from "@ai-sdk-tools/store";
 import * as Sentry from "@sentry/nextjs";
 import { AnimatePresence, motion } from "motion/react";
-import { useRouter } from "next/navigation";
 import useMeasure from "react-use-measure";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { PerformanceConfig } from "@/types/performance-config";
 import Background from "./Background";
 import ChatInterface from "./ChatInterface";
 import FeatureHighlights from "./FeatureHighlights";
-import PageSpeedPromptInputWrapper from "./PageSpeedPromptInputWrapper";
+import PageSpeedPromptInput from "./PageSpeedPromptInput";
+
 import Heading from "./ui/heading";
 
 export default function HeroSection() {
-  const router = useRouter();
   const [ref, bounds] = useMeasure();
   const isMobile = useIsMobile();
 
@@ -58,7 +57,10 @@ export default function HeroSection() {
       timestamp: new Date().toISOString(),
     });
 
-    router.push(`/?domain=${domain}`);
+    // Set domain in URL using History API
+    const url = new URL(window.location.href);
+    url.searchParams.set("domain", domain);
+    window.history.replaceState(null, "", url.toString());
 
     sendMessage(
       {
@@ -116,7 +118,7 @@ export default function HeroSection() {
                   </p>
 
                   <div className="max-w-2xl mx-auto">
-                    <PageSpeedPromptInputWrapper
+                    <PageSpeedPromptInput
                       onSubmit={handlePerformanceSubmit}
                       disabled={status !== "ready"}
                       className="max-w-2xl"

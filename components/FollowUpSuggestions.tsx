@@ -4,7 +4,6 @@ import { useChatMessages, useChatStore } from "@ai-sdk-tools/store";
 import type { UIMessage } from "ai";
 import { RotateCcwIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   Suggestion,
@@ -75,7 +74,6 @@ function SuggestionSkeleton({ index }: { index: number }) {
 export default function FollowUpSuggestions() {
   const messages = useChatMessages();
   const { sendMessage, status, setMessages } = useChatStore();
-  const router = useRouter();
   const [followUpData, setFollowUpData] =
     useState<FollowUpSuggestionsData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -219,7 +217,11 @@ export default function FollowUpSuggestions() {
     // Clear chat messages
     setMessages([]);
     // Remove URL parameter
-    router.push("/");
+    window.location.replace("/");
+
+    if (isStreaming) {
+      window.location.reload();
+    }
   };
 
   return (

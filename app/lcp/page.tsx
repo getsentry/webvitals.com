@@ -36,8 +36,6 @@ export default function LCPPage() {
     const showContentTimeout = setTimeout(() => {
       setVisible(true);
       setTimeout(() => {
-        console.log("triggering visibility change");
-
         triggerVisibilityChange(document, true);
       }, 100);
     }, LCP_DELAY);

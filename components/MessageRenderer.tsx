@@ -3,11 +3,7 @@
 import { useChatMessages } from "@ai-sdk-tools/store";
 import type { TextUIPart, ToolUIPart, UIMessage } from "ai";
 import { memo, useCallback, useEffect, useMemo } from "react";
-import {
-  Reasoning,
-  ReasoningContent,
-  ReasoningTrigger,
-} from "@/components/ui/ai-elements/reasoning";
+
 import {
   Tool,
   ToolContent,
@@ -18,11 +14,13 @@ import {
 
 import { useWebVitalsScore } from "@/contexts/WebVitalsScoreContext";
 import { calculateLighthouseScore } from "@/lib/web-vitals";
+import type { AnalysisBreakdown } from "@/types/analysis-breakdown";
 import type {
   LighthouseScoreData,
   RealWorldPerformanceOutput,
 } from "@/types/real-world-performance";
 import type { TechnologyDetectionOutput } from "@/types/web-vitals";
+import AnalysisBreakdownDisplay from "./analysis/AnalysisBreakdown";
 import TextMessage from "./message/TextMessage";
 import PerformanceResult from "./results/PerformanceResult";
 
@@ -40,6 +38,13 @@ type TechnologyToolUIPart = ToolUIPart<{
   };
 }>;
 
+type AnalysisBreakdownToolUIPart = ToolUIPart<{
+  generateAnalysisBreakdown: {
+    input: { performanceData: any; technologyData: any };
+    output: AnalysisBreakdown;
+  };
+}>;
+
 interface MessageRendererProps {
   message: UIMessage;
 }
@@ -50,34 +55,45 @@ const MessageRenderer = memo(function MessageRenderer({
   const { setScores } = useWebVitalsScore();
   const messages = useChatMessages();
 
-  const { toolParts, textParts, performanceParts } = useMemo(() => {
-    const tools: (PerformanceToolUIPart | TechnologyToolUIPart)[] = [];
-    const texts: TextUIPart[] = [];
-    const performance: PerformanceToolUIPart[] = [];
+  const { toolParts, textParts, performanceParts, analysisBreakdownParts } =
+    useMemo(() => {
+      const tools: (
+        | PerformanceToolUIPart
+        | TechnologyToolUIPart
+        | AnalysisBreakdownToolUIPart
+      )[] = [];
+      const texts: TextUIPart[] = [];
+      const performance: PerformanceToolUIPart[] = [];
+      const analysisBreakdown: AnalysisBreakdownToolUIPart[] = [];
 
-    // Single pass through parts for better performance
-    for (const part of message.parts) {
-      if (part.type.startsWith("tool-")) {
-        if (part.type === "tool-getRealWorldPerformance") {
-          const performancePart = part as PerformanceToolUIPart;
-          tools.push(performancePart);
-          performance.push(performancePart);
-        } else if (part.type === "tool-detectTechnologies") {
-          const technologyPart = part as TechnologyToolUIPart;
-          tools.push(technologyPart);
+      // Single pass through parts for better performance
+      for (const part of message.parts) {
+        if (part.type.startsWith("tool-")) {
+          if (part.type === "tool-getRealWorldPerformance") {
+            const performancePart = part as PerformanceToolUIPart;
+            tools.push(performancePart);
+            performance.push(performancePart);
+          } else if (part.type === "tool-detectTechnologies") {
+            const technologyPart = part as TechnologyToolUIPart;
+            tools.push(technologyPart);
+          } else if (part.type === "tool-generateAnalysisBreakdown") {
+            const breakdownPart = part as AnalysisBreakdownToolUIPart;
+            tools.push(breakdownPart);
+            analysisBreakdown.push(breakdownPart);
+          }
+        } else if (part.type === "text") {
+          const textPart = part as TextUIPart;
+          texts.push(textPart);
         }
-      } else if (part.type === "text") {
-        const textPart = part as TextUIPart;
-        texts.push(textPart);
       }
-    }
 
-    return {
-      toolParts: tools,
-      textParts: texts,
-      performanceParts: performance,
-    };
-  }, [message.parts]);
+      return {
+        toolParts: tools,
+        textParts: texts,
+        performanceParts: performance,
+        analysisBreakdownParts: analysisBreakdown,
+      };
+    }, [message.parts]);
 
   // Memoize performance score calculation
   const updateScores = useCallback(() => {
@@ -181,6 +197,28 @@ const MessageRenderer = memo(function MessageRenderer({
           );
         }
 
+        if (part.type === "tool-generateAnalysisBreakdown") {
+          const breakdownTool = part as AnalysisBreakdownToolUIPart;
+
+          return (
+            <div key={`${message.id}-breakdown-${i}`}>
+              <Tool defaultOpen={false}>
+                <ToolHeader
+                  type={"Analysis breakdown" as `tool-${string}`}
+                  state={breakdownTool.state}
+                />
+                <ToolContent>
+                  <ToolInput input={breakdownTool.input} />
+                  <ToolOutput
+                    output={breakdownTool.output}
+                    errorText={breakdownTool.errorText}
+                  />
+                </ToolContent>
+              </Tool>
+            </div>
+          );
+        }
+
         return null;
       })}
 
@@ -193,6 +231,22 @@ const MessageRenderer = memo(function MessageRenderer({
             <PerformanceResult
               key={`performance-result-${message.id}-${i}`}
               data={performanceTool.output}
+              className="mb-4"
+            />
+          );
+        }
+        return null;
+      })}
+
+      {analysisBreakdownParts.map((breakdownTool, i) => {
+        if (
+          breakdownTool.state === "output-available" &&
+          breakdownTool.output
+        ) {
+          return (
+            <AnalysisBreakdownDisplay
+              key={`analysis-breakdown-${message.id}-${i}`}
+              data={breakdownTool.output}
               className="mb-4"
             />
           );
