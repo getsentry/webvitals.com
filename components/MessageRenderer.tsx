@@ -1,7 +1,13 @@
 "use client";
 
+import { useChatMessages } from "@ai-sdk-tools/store";
 import type { TextUIPart, ToolUIPart, UIMessage } from "ai";
 import { memo, useCallback, useEffect, useMemo } from "react";
+import {
+  Reasoning,
+  ReasoningContent,
+  ReasoningTrigger,
+} from "@/components/ui/ai-elements/reasoning";
 import {
   Tool,
   ToolContent,
@@ -42,6 +48,7 @@ const MessageRenderer = memo(function MessageRenderer({
   message,
 }: MessageRendererProps) {
   const { setScores } = useWebVitalsScore();
+  const messages = useChatMessages();
 
   const { toolParts, textParts, performanceParts } = useMemo(() => {
     const tools: (PerformanceToolUIPart | TechnologyToolUIPart)[] = [];
@@ -103,6 +110,29 @@ const MessageRenderer = memo(function MessageRenderer({
   useEffect(() => {
     updateScores();
   }, [updateScores]);
+
+  // Check if this is the first user message
+  const isFirstUserMessage =
+    message.role === "user" &&
+    messages.findIndex((m) => m.role === "user") ===
+      messages.findIndex((m) => m.id === message.id);
+
+  // Extract domain from first user message
+  const getDomainFromFirstMessage = () => {
+    if (!isFirstUserMessage) return null;
+    const textPart = textParts[0];
+    if (textPart?.text?.startsWith("Please analyze ")) {
+      return textPart.text.replace("Please analyze ", "");
+    }
+    return null;
+  };
+
+  const domain = getDomainFromFirstMessage();
+
+  // If this is the first user message, show reasoning instead
+  if (isFirstUserMessage && domain) {
+    return null;
+  }
 
   return (
     <div key={message.id}>

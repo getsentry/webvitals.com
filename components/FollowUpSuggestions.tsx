@@ -2,13 +2,15 @@
 
 import { useChatMessages, useChatStore } from "@ai-sdk-tools/store";
 import type { UIMessage } from "ai";
-
+import { RotateCcwIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   Suggestion,
   Suggestions,
 } from "@/components/ui/ai-elements/suggestion";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useScrollFade } from "@/hooks/useScrollFade";
 import type { RealWorldPerformanceOutput } from "@/types/real-world-performance";
@@ -72,7 +74,8 @@ function SuggestionSkeleton({ index }: { index: number }) {
 
 export default function FollowUpSuggestions() {
   const messages = useChatMessages();
-  const { sendMessage, status } = useChatStore();
+  const { sendMessage, status, setMessages } = useChatStore();
+  const router = useRouter();
   const [followUpData, setFollowUpData] =
     useState<FollowUpSuggestionsData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -212,6 +215,13 @@ export default function FollowUpSuggestions() {
     });
   };
 
+  const handleReset = () => {
+    // Clear chat messages
+    setMessages([]);
+    // Remove URL parameter
+    router.push("/");
+  };
+
   return (
     <AnimatePresence>
       <motion.div
@@ -267,11 +277,24 @@ export default function FollowUpSuggestions() {
 
         {(shouldShowLoading || shouldShowSuggestions) && (
           <>
-            <h4 className="text-sm font-medium text-muted-foreground">
-              {shouldShowLoading
-                ? "Generating follow-up suggestions..."
-                : "Explore these follow-up questions:"}
-            </h4>
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-medium text-muted-foreground">
+                {shouldShowLoading
+                  ? "Generating follow-up suggestions..."
+                  : "Explore these follow-up questions:"}
+              </h4>
+              {shouldShowSuggestions && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReset}
+                  className="flex items-center gap-2"
+                >
+                  <RotateCcwIcon size={14} />
+                  Analyze another
+                </Button>
+              )}
+            </div>
             {shouldShowLoading ? (
               <Suggestions className="gap-2">
                 {[0, 1, 2].map((index) => (

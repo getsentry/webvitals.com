@@ -4,8 +4,11 @@ import {
   useChatError,
   useChatMessages,
   useChatStatus,
+  useChatStore,
 } from "@ai-sdk-tools/store";
+import { RotateCcwIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import {
   Conversation,
@@ -13,14 +16,21 @@ import {
   ConversationScrollButton,
 } from "@/components/ui/ai-elements/conversation";
 import { Loader } from "@/components/ui/ai-elements/loader";
+import { Button } from "@/components/ui/button";
 import FollowUpSuggestions from "./FollowUpSuggestions";
 import MessageRenderer from "./MessageRenderer";
 import WebVitalsFacts from "./WebVitalsFacts";
 
 export default function ChatInterface() {
+  const searchParams = useSearchParams();
   const messages = useChatMessages();
+
   const status = useChatStatus();
   const error = useChatError();
+  const { setMessages } = useChatStore();
+  const router = useRouter();
+
+  const domain = searchParams.get("domain");
 
   const hasAIText = useMemo(
     () =>
@@ -35,9 +45,37 @@ export default function ChatInterface() {
     [messages],
   );
 
+  const handleReset = () => {
+    // Clear chat messages
+    setMessages([]);
+    // Remove URL parameter
+    router.push("/");
+  };
+
+  console.log(messages);
+  console.log(status);
+
   return (
     <motion.div className={`h-full flex flex-col items-center`}>
       <motion.div className="max-w-4xl w-full border rounded-lg bg-background">
+        <div className="flex items-center justify-between p-4 border-b">
+          <p className="text-sm text-muted-foreground">
+            {status === "submitted" || status === "streaming"
+              ? `Analyzing ${domain}`
+              : status === "ready" && messages.length >= 1
+                ? `Analysis result for ${domain}`
+                : null}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleReset}
+            className="flex items-center gap-2"
+          >
+            <RotateCcwIcon size={14} />
+            Analyze another
+          </Button>
+        </div>
         <div className="flex-1 min-h-0">
           <Conversation>
             <ConversationContent>
