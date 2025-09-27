@@ -85,12 +85,20 @@
   --metric-cls: oklch(0.7 0.2 340);
   --metric-ttfb: oklch(0.6 0.15 200);
   --metric-inp: oklch(0.68 0.18 300);
-  --metric-si: oklch(0.55 0.25 269);
-  --metric-tbt: oklch(0.65 0.18 225);
+
+  --metric-lcp-hex: #f38906;
+  --metric-fcp-hex: #52c794;
+  --metric-cls-hex: #eb63c5;
+  --metric-ttfb-hex: #0099a3;
+  --metric-inp-hex: #ab79f5;
 
   --score-good: oklch(0.68 0.15 138);
   --score-needs-improvement: oklch(0.72 0.19 42);
   --score-poor: oklch(0.58 0.22 18);
+
+  --score-good-hex: #67ad4c;
+  --score-needs-improvement-hex: #ff7333;
+  --score-poor-hex: #de1c46;
 
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);

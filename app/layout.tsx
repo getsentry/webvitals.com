@@ -8,7 +8,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 export const metadata: Metadata = {
   title: "WebVitals - Analyze Your Site's Performance",
   description:
-    "Unlock your website's potential with instant Web Vitals analysis powered by Lighthouse",
+    "Unlock your website's potential with instant Web Vitals analysis powered by real user data. Understand your site's performance and get actionable insights. Made by Sentry",
 };
 
 export default function RootLayout({
