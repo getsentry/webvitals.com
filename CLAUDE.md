@@ -57,34 +57,58 @@ pnpm lint          # Check for linting issues
 ## Architecture and Structure
 
 ### Framework Stack
-- **Next.js 15.5.2**: React meta-framework with App Router and Turbopack
-- **React 19**: Component library for interactive elements
-- **TailwindCSS 4.x**: Utility-first CSS framework with PostCSS integration
-- **TypeScript**: Type safety with strict configuration
-- **Biome**: Code formatting and linting (replaces ESLint/Prettier)
+- **Next.js 15.5.4**: React meta-framework with App Router and Turbopack
+- **React 19.1.0**: Component library with concurrent features
+- **TailwindCSS 4.1.3**: Utility-first CSS framework with PostCSS integration
+- **TypeScript 5**: Type safety with strict configuration
+- **Biome 2.2.2**: Code formatting and linting (replaces ESLint/Prettier)
 
 ### Key Integrations
 - **Vercel**: Deployment platform (native Next.js support)
 - **Sentry**: Error monitoring and performance tracking (`@sentry/nextjs`)
 - **shadcn/ui**: Component system with Radix UI primitives
-- **AI SDK**: OpenAI integration for intelligent web analysis
+- **AI SDK**: OpenAI integration with streaming analysis and tool orchestration
+- **Motion**: Modern animation library for smooth UI interactions
+- **Magic UI**: Additional component library for advanced UI patterns
+- **Kibo UI**: Theme switcher and additional UI components
 
 ### Directory Structure
 ```
 app/                   # Next.js App Router
-├── api/chat/         # API routes (App Router format)
+├── api/              # API routes (App Router format)
+│   ├── chat/         # Main AI analysis endpoint
+│   ├── follow-up-suggestions/ # Follow-up artifact endpoint
+│   └── slow-response/         # Slow response simulation
+├── [metric]/         # Individual Core Web Vitals pages
+│   ├── lcp/          # Largest Contentful Paint
+│   ├── fcp/          # First Contentful Paint
+│   ├── inp/          # Interaction to Next Paint
+│   ├── cls/          # Cumulative Layout Shift
+│   └── ttfb/         # Time to First Byte
 ├── layout.tsx        # Root layout
 ├── page.tsx          # Homepage
 └── globals.css       # Global styles
 
-components/           # Reusable React components
-├── ui/              # shadcn/ui components
-└── *.tsx            # Interactive components
+ai/                   # AI system implementation
+├── tools/            # AI analysis tools
+├── system-prompts.ts # AI prompts and instructions
+└── index.ts          # AI configuration
 
-lib/                 # Utility functions
-tools/               # Analysis tools (PageSpeed, Cloudflare)
+components/           # Reusable React components
+├── ui/              # Design system components
+│   ├── ai-elements/ # AI-specific UI components
+│   ├── kibo-ui/     # Kibo UI integrations
+│   └── *.tsx        # shadcn/ui base components
+├── animations/      # Core Web Vitals animations
+├── performance/     # Performance visualization components
+├── demo/            # Demo and simulation components
+└── *.tsx            # Main UI components
+
+lib/                 # Utility functions and configurations
+contexts/            # React context providers
+hooks/               # Custom React hooks
 types/               # TypeScript type definitions
-hooks/               # React hooks
+stores/              # State management (Zustand)
 ```
 
 ### Component Architecture
@@ -136,6 +160,30 @@ hooks/               # React hooks
 - Export named functions: `GET`, `POST`, `PUT`, `DELETE`
 - Return `Response` objects or use Next.js response helpers
 - Handle errors with proper HTTP status codes
+
+**Current API Endpoints:**
+- `/api/chat`: Main AI analysis endpoint with streaming responses
+- `/api/follow-up-suggestions`: Follow-up artifact streaming
+- `/api/slow-response`: Slow response simulation for testing
+
+### Core Features
+
+**Individual Metric Pages:**
+- Dedicated pages for each Core Web Vital (LCP, FCP, INP, CLS, TTFB)
+- Educational content with interactive animations
+- Metric-specific optimization guidance
+- Visual demonstrations of performance concepts
+
+**AI Analysis Tools:**
+- Real World Performance Tool: Chrome User Experience Report data collection
+- Technology Detection Tool: Cloudflare-powered tech stack identification
+- Analysis Breakdown Tool: Detailed performance analysis breakdown
+
+**Animation System:**
+- Motion-based animations for each Core Web Vital
+- Educational visualizations of performance concepts
+- Smooth transitions and micro-interactions
+- Accessibility-aware animations with reduced motion support
 
 ## Animations Guidelines
  

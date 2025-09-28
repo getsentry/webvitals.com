@@ -3,19 +3,25 @@
 import { useChat } from "@ai-sdk-tools/store";
 import * as Sentry from "@sentry/nextjs";
 import { AnimatePresence, motion } from "motion/react";
+import { useEffect } from "react";
 import useMeasure from "react-use-measure";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useLoadState } from "@/hooks/useLoadState";
 import type { PerformanceConfig } from "@/types/performance-config";
 import Background from "./Background";
 import ChatInterface from "./ChatInterface";
 import FeatureHighlights from "./FeatureHighlights";
-
 import PageSpeedPromptInputWrapper from "./PageSpeedPromptInputWrapper";
 import Heading from "./ui/heading";
 
 export default function HeroSection() {
+  const { setLoading } = useLoadState();
   const [ref, bounds] = useMeasure();
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    setLoading(false);
+  }, []);
 
   const { messages, sendMessage, status } = useChat({
     onFinish: (message) => {
