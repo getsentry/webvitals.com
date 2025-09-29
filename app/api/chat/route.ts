@@ -37,7 +37,7 @@ export async function POST(request: Request) {
         const result = streamText({
           model: openai("gpt-4o"),
           messages: convertToModelMessages(messages),
-          stopWhen: [stepCountIs(10)], // Safety limit
+          stopWhen: [stepCountIs(2)], // analysis breakdown tool is called after the initial tools and needs another step to complete.
           tools: {
             getRealWorldPerformance: realWorldPerformanceTool,
             detectTechnologies: techDetectionTool,
@@ -46,6 +46,8 @@ export async function POST(request: Request) {
           experimental_telemetry: {
             isEnabled: true,
             functionId: "pagespeed-analysis-chat",
+            recordInputs: true,
+            recordOutputs: true,
           },
           onStepFinish: (step) => {
             Sentry.logger.debug("AI step finished", {

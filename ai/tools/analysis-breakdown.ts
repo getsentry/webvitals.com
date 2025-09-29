@@ -53,6 +53,12 @@ Guidelines:
 - Consider mobile vs desktop differences when significant
 - Focus on performance-relevant technologies (React, CDNs, tag managers)
 - Suggest specific, actionable improvements`,
+        experimental_telemetry: {
+          isEnabled: true,
+          recordInputs: true,
+          recordOutputs: true,
+          functionId: "analysis-breakdown-tool",
+        },
       });
 
       Sentry.logger.debug("Analysis breakdown generated", {
