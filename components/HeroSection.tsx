@@ -107,7 +107,7 @@ export default function HeroSection() {
                 size="4xl"
                 className="bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent text-center mb-8"
               >
-                Analyze. Optimize. Ship.
+                Core Web Vitals Analysis Tool
               </Heading>
             </motion.div>
             {!hasMessages ? (
