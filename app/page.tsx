@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
 import LiveWebVitals from "@/components/LiveWebVitals";
 import { WebVitalsScoreProvider } from "@/contexts/WebVitalsScoreContext";
+import { faqs, getFaqSchemaText } from "@/lib/faqs";
 
 export const metadata: Metadata = {
   title: "WebVitals - Free Core Web Vitals Analysis Tool",
@@ -40,9 +41,29 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: getFaqSchemaText(faq),
+      },
+    })),
+  };
+
   return (
     <Provider>
       <WebVitalsScoreProvider>
+        <script
+          type="application/ld+json"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: it's a valid use case
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c"),
+          }}
+        />
         <main>
           <HeroSection />
           <LiveWebVitals />
