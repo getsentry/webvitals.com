@@ -47,7 +47,7 @@ export default function INPClient() {
   };
 
   const handleResetButton = () => {
-    setClickCount(0);
+    window.location.reload();
   };
 
   return (

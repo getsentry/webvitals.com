@@ -43,6 +43,34 @@ export async function POST(request: Request) {
             detectTechnologies: techDetectionTool,
             generateAnalysisBreakdown: analysisBreakdownTool,
           },
+          prepareStep: ({ steps }) => {
+            // For step 2, check if we have meaningful performance data
+            if (steps.length === 1) {
+              const performanceResult = steps[0].toolResults?.find(
+                (result, index) => {
+                  const toolName = steps[0].toolCalls?.[index]?.toolName;
+                  return toolName === "getRealWorldPerformance";
+                },
+              );
+
+              // If no performance data available, disable the analysis breakdown tool
+              if (
+                performanceResult &&
+                typeof performanceResult === "object" &&
+                "hasData" in performanceResult &&
+                !performanceResult.hasData
+              ) {
+                return {
+                  activeTools: [
+                    "getRealWorldPerformance",
+                    "detectTechnologies",
+                  ], // exclude generateAnalysisBreakdown
+                };
+              }
+            }
+
+            return {}; // Use default settings
+          },
           experimental_telemetry: {
             isEnabled: true,
             functionId: "pagespeed-analysis-chat",

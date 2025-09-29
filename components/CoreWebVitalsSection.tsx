@@ -11,7 +11,6 @@ import {
 } from "@/components/animations";
 
 import Heading from "@/components/ui/heading";
-import { useWebVitalsScore } from "@/contexts/WebVitalsScoreContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const metrics = [
@@ -82,26 +81,9 @@ const metrics = [
 ];
 
 export default function CoreWebVitalsSection() {
-  const { scores, hasScores } = useWebVitalsScore();
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [focusedCard, setFocusedCard] = useState<number | null>(null);
   const isMobile = useIsMobile();
-
-  const getMetricScore = (metricKey: string) => {
-    if (!hasScores) return null;
-
-    // Try mobile first, then desktop
-    const deviceScores = scores.mobile || scores.desktop;
-    if (!deviceScores) return null;
-
-    const metric = deviceScores.metrics.find((m) => m.key === metricKey);
-    return metric?.score || null;
-  };
-
-  const formatMetricScore = (score: number | null) => {
-    if (score === null) return "";
-    return ` (${score})`;
-  };
 
   return (
     <section className="py-24 pb-0 px-4 bg-background">
@@ -109,32 +91,15 @@ export default function CoreWebVitalsSection() {
         <div className="text-center mb-16">
           <Heading level={2} className="mb-4">
             Understanding Core Web Vitals
-            {hasScores && (
-              <span className="text-muted-foreground text-lg font-normal ml-2">
-                - Current Analysis Results
-              </span>
-            )}
           </Heading>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Google's Core Web Vitals are essential metrics that measure
             real-world user experience on your website
-            {hasScores && " - scores from your recent analysis are shown below"}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:auto-rows-[26rem] lg:auto-rows-[24rem]">
           {metrics.map((metric) => {
-            const metricMappings: Record<string, string> = {
-              "Largest Contentful Paint": "largest-contentful-paint",
-              "Interaction to Next Paint": "interaction-to-next-paint",
-              "Cumulative Layout Shift": "cumulative-layout-shift",
-              "First Contentful Paint": "first-contentful-paint",
-              "Time to First Byte": "experimental-time-to-first-byte",
-            };
-
-            const metricKey = metricMappings[metric.name];
-            const score = getMetricScore(metricKey);
-
             return (
               <a
                 key={metric.id}
@@ -174,7 +139,6 @@ export default function CoreWebVitalsSection() {
                     <div className="flex flex-col gap-1">
                       <Heading level={3} size="xl" weight="semibold">
                         {metric.name}
-                        {formatMetricScore(score)}
                       </Heading>
                       <p className="text-sm font-medium text-muted-foreground">
                         {metric.shortName}

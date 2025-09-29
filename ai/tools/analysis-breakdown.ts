@@ -60,7 +60,9 @@ CRITICAL REQUIREMENTS:
 
 Guidelines:
 - Focus on user experience impact, not just technical metrics
-- Categorize performance as "fast", "average", or "slow"
+- Categorize timing metrics (LCP, FCP, INP, TTFB) as "fast", "average", or "slow"
+- For CLS (Cumulative Layout Shift): describe as "stable", "needs improvement", or "poor" (NOT slow/fast)
+- CLS measures layout stability (0-1 scale), not speed - never use time units for CLS
 - Connect issues to user frustrations and business impact
 - Consider mobile vs desktop differences when significant
 - Suggest specific, actionable improvements`,
