@@ -37,21 +37,32 @@ ${JSON.stringify(performanceData, null, 2)}
 Technology Data:
 ${JSON.stringify(technologyData, null, 2)}
 
-Create a structured analysis with:
-- Brief overall assessment (1-2 sentences)
-- 2-5 main points, each MUST have: title, summary, details, and severity
-- Severity levels: "critical" for major user impact, "warning" for moderate issues, "info" for optimizations
-- Focus on user experience impact, not just technical metrics
-- One clear next step recommendation
+You must return a JSON object with this exact structure:
+{
+  "overview": "Brief overall assessment (1-2 sentences)",
+  "points": [
+    {
+      "title": "Main point title (5-8 words)",
+      "summary": "Brief summary (1-2 sentences)", 
+      "details": "Supporting details (2-3 sentences)",
+      "severity": "critical" | "warning" | "info"
+    }
+  ],
+  "nextStep": "Key next step or recommendation (1 sentence)"
+}
 
-IMPORTANT: Every point must have a severity field set to exactly "critical", "warning", or "info".
+CRITICAL REQUIREMENTS:
+- Include exactly 2-5 points (no more, no less)
+- Every point MUST have all 4 fields: title, summary, details, severity
+- Severity MUST be exactly one of: "critical", "warning", "info"
+- All fields must be non-empty strings
+- Use "critical" for major user impact, "warning" for moderate issues, "info" for optimizations
 
 Guidelines:
-- Don't repeat raw numbers - focus on what they mean for users
-- Categorize performance as "fast", "average", or "slow" 
+- Focus on user experience impact, not just technical metrics
+- Categorize performance as "fast", "average", or "slow"
 - Connect issues to user frustrations and business impact
 - Consider mobile vs desktop differences when significant
-- Focus on performance-relevant technologies (React, CDNs, tag managers)
 - Suggest specific, actionable improvements`,
         experimental_telemetry: {
           isEnabled: true,
@@ -60,6 +71,18 @@ Guidelines:
           functionId: "analysis-breakdown-tool",
         },
       });
+
+      // Validate the result explicitly to catch schema issues
+      const validationResult = AnalysisBreakdownSchema.safeParse(result.object);
+      if (!validationResult.success) {
+        Sentry.logger.error("Schema validation failed", {
+          error: validationResult.error,
+          rawObject: result.object,
+        });
+        throw new Error(
+          `Schema validation failed: ${JSON.stringify(validationResult.error.issues)}`,
+        );
+      }
 
       Sentry.logger.debug("Analysis breakdown generated", {
         hasPerformanceData: !!performanceData?.hasData,

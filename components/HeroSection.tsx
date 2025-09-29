@@ -84,7 +84,7 @@ export default function HeroSection() {
   const hasMessages = messages.length > 0;
 
   return (
-    <section className="relative min-h-[70vh] flex flex-col">
+    <section className="relative min-h-[60vh] flex flex-col">
       <Background />
       <AnimatePresence mode="wait" initial={false}>
         <motion.div

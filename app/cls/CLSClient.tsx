@@ -1,5 +1,7 @@
 "use client";
 
+import { ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import DemoHeader from "@/components/demo/DemoHeader";
 import DemoLayout from "@/components/demo/DemoLayout";
@@ -42,10 +44,17 @@ export default function CLSClient() {
         vitalColor="oklch(0.7 0.2 340)"
         isCore={true}
         supportedBrowsers={{ safari: false, firefox: false }}
-        sentryLink="https://docs.sentry.io/product/insights/frontend/web-vitals/web-vitals-concepts/#cumulative-layout-shift-cls"
       >
         Measures the total amount of unexpected layout shifts that occur during
         the entire lifespan of a webpage.
+        <Link
+          href="https://docs.sentry.io/product/insights/frontend/web-vitals/web-vitals-concepts/#cumulative-layout-shift-cls?ref=webvitals.com"
+          className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Learn more <ExternalLink className="size-3 " />
+        </Link>
       </DemoHeader>
 
       {Array.from({ length: blockCount }, (_, i) => (

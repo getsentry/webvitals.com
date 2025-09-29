@@ -1,5 +1,7 @@
 "use client";
 
+import { ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import DemoHeader from "@/components/demo/DemoHeader";
 import DemoLayout from "@/components/demo/DemoLayout";
@@ -54,10 +56,17 @@ export default function LCPClient() {
         vitalColor="oklch(0.73 0.17 60)"
         isCore={true}
         supportedBrowsers={{ safari: false }}
-        sentryLink="https://docs.sentry.io/product/insights/frontend/web-vitals/web-vitals-concepts/#largest-contentful-paint-lcp"
       >
         Measures the time it takes for the largest text or image element to
-        render on a webpage.
+        render on a webpage.{" "}
+        <Link
+          href="https://docs.sentry.io/product/insights/frontend/web-vitals/web-vitals-concepts/#largest-contentful-paint-lcp?ref=webvitals.com"
+          className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Learn more <ExternalLink className="size-3 " />
+        </Link>
       </DemoHeader>
 
       <div className="grid lg:grid-cols-2 gap-8 mb-16">

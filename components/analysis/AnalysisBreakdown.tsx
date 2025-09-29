@@ -70,7 +70,7 @@ export default function AnalysisBreakdownDisplay({
                       <h4 className="font-medium text-foreground">
                         {point.title}
                       </h4>
-                      <p className="text-sm text-muted-foreground mt-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                      <p className="text-sm text-muted-foreground mt-1 overflow-hidden text-wrap">
                         {point.summary}
                       </p>
                     </div>

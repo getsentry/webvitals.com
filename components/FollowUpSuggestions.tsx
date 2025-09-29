@@ -250,16 +250,16 @@ export default function FollowUpSuggestions() {
         {shouldShowSentryLink && (
           <div className="rounded-lg border border-border bg-muted/50 p-4">
             <p className="text-sm text-muted-foreground mb-3">
-              To learn more about performance monitoring and how you can use
-              Sentry to track real user metrics:
+              To get the most out of your analysis, you can set up Sentry to
+              track real user metrics:
             </p>
             <a
-              href="https://docs.sentry.io/product/insights/frontend/web-vitals/"
+              href="https://sentry.io/signup"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
             >
-              Sentry Web Vitals Monitoring Guide
+              Get started with Sentry
               <svg
                 className="w-3 h-3"
                 fill="none"

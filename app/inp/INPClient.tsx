@@ -1,5 +1,7 @@
 "use client";
 
+import { ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import DemoHeader from "@/components/demo/DemoHeader";
 import DemoLayout from "@/components/demo/DemoLayout";
@@ -55,10 +57,17 @@ export default function INPClient() {
         vitalDesc="Interaction to Next Paint"
         vitalColor="oklch(0.68 0.18 300)"
         isCore={true}
-        sentryLink="https://docs.sentry.io/product/insights/frontend/web-vitals/web-vitals-concepts/#interaction-to-next-paint-inp"
       >
         Measures the time from when a user interacts with a page to when the
         browser renders the visual response to that interaction.
+        <Link
+          href="https://docs.sentry.io/product/insights/frontend/web-vitals/web-vitals-concepts/#interaction-to-next-paint-inp?ref=webvitals.com"
+          className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Learn more <ExternalLink className="size-3 " />
+        </Link>
       </DemoHeader>
 
       <div className="grid lg:grid-cols-2 gap-8 mb-16">

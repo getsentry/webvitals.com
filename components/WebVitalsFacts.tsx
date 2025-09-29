@@ -61,19 +61,36 @@ interface WebVitalsFactsProps {
 
 export default function WebVitalsFacts({ className }: WebVitalsFactsProps) {
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
+    if (isHovered) return;
+
     const interval = setInterval(() => {
       setCurrentFactIndex((prev) => (prev + 1) % WEB_VITALS_FACTS.length);
-    }, 3000); // Change fact every 3 seconds
+    }, 4000); // Change fact every 4 seconds (25% slower)
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isHovered]);
 
   const currentFact = WEB_VITALS_FACTS[currentFactIndex];
 
+  const goToNext = () => {
+    setCurrentFactIndex((prev) => (prev + 1) % WEB_VITALS_FACTS.length);
+  };
+
+  const goToPrevious = () => {
+    setCurrentFactIndex(
+      (prev) => (prev - 1 + WEB_VITALS_FACTS.length) % WEB_VITALS_FACTS.length,
+    );
+  };
+
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    <div
+      className={`flex items-center gap-3 group ${className}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {/* AI Elements Loader */}
       <div className="flex-shrink-0">
         <Loader size={16} />
@@ -111,6 +128,53 @@ export default function WebVitalsFacts({ className }: WebVitalsFactsProps) {
             </p>
           </motion.div>
         </AnimatePresence>
+      </div>
+
+      {/* Navigation buttons */}
+      <div className="flex gap-1">
+        <button
+          onClick={goToPrevious}
+          className="flex-shrink-0 p-1 rounded-full bg-background/50 hover:bg-background/80 transition-all duration-300 ease-out opacity-0 group-hover:opacity-100"
+          aria-label="Previous fact"
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            className="fill-current"
+          >
+            <path
+              d="M7.5 2.25L4.5 6l3 3.75"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+          </svg>
+        </button>
+
+        <button
+          onClick={goToNext}
+          className="flex-shrink-0 p-1 rounded-full bg-background/50 hover:bg-background/80 transition-all duration-300 ease-out opacity-0 group-hover:opacity-100"
+          aria-label="Next fact"
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            className="fill-current"
+          >
+            <path
+              d="M4.5 2.25L7.5 6l-3 3.75"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+          </svg>
+        </button>
       </div>
     </div>
   );

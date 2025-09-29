@@ -1,7 +1,8 @@
+import { ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import DemoHeader from "@/components/demo/DemoHeader";
 import DemoLayout from "@/components/demo/DemoLayout";
-
 import TTFBClient from "./TTFBClient";
 
 export const metadata: Metadata = {
@@ -48,10 +49,17 @@ export default async function TTFBPage() {
         vitalDesc="Time to First Byte"
         vitalColor="oklch(0.72 0.15 200)"
         isCore={false}
-        sentryLink="https://docs.sentry.io/product/insights/frontend/web-vitals/web-vitals-concepts/#time-to-first-byte-ttfb"
       >
         Measures the duration from when a page starts loading to when the first
         byte of content is received from the server.
+        <Link
+          href="https://docs.sentry.io/product/insights/frontend/web-vitals/web-vitals-concepts/#time-to-first-byte-ttfb?ref=webvitals.com"
+          className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Learn more <ExternalLink className="size-3 " />
+        </Link>
       </DemoHeader>
 
       <TTFBClient />

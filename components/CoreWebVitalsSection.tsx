@@ -138,6 +138,7 @@ export default function CoreWebVitalsSection() {
             return (
               <a
                 key={metric.id}
+                id={`metric-${metric.shortName.toLowerCase()}`}
                 href={metric.href}
                 className={`group ${metric.className} rounded-xl cursor-pointer overflow-hidden transition-all duration-300 shadow-sm hover:shadow-lg active:scale-[0.98] outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px] focus-visible:border-ring relative flex flex-col text-left`}
                 onMouseEnter={() => setHoveredCard(metric.id)}

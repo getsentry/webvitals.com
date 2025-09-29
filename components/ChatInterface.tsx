@@ -31,14 +31,15 @@ export default function ChatInterface() {
 
   const domain = searchParams.get("domain");
 
-  const hasAIText = useMemo(
+  const hasInitialAnalysis = useMemo(
     () =>
       messages.some(
         (msg) =>
           msg.role === "assistant" &&
           msg.parts?.some(
             (part) =>
-              part.type === "text" && part.text?.length && part.text.length > 0,
+              part.type === "tool-analysisBreakdown" &&
+              part.state === "output-available",
           ),
       ),
     [messages],
@@ -84,7 +85,7 @@ export default function ChatInterface() {
               ))}
 
               <AnimatePresence>
-                {status === "streaming" && !hasAIText && (
+                {status === "streaming" && !hasInitialAnalysis && (
                   <motion.div
                     key="streaming-facts"
                     initial={{ opacity: 0, y: -10 }}
@@ -109,7 +110,7 @@ export default function ChatInterface() {
                     <WebVitalsFacts />
                   </motion.div>
                 )}
-                {status === "submitted" && hasAIText && (
+                {status === "submitted" && hasInitialAnalysis && (
                   <motion.div
                     key="streaming-loader"
                     initial={{ opacity: 0, y: -10 }}

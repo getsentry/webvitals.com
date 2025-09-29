@@ -1,5 +1,7 @@
 "use client";
 
+import { ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { useEffect } from "react";
 import DemoHeader from "@/components/demo/DemoHeader";
 import DemoLayout from "@/components/demo/DemoLayout";
@@ -30,10 +32,17 @@ export default function FCPClient() {
         vitalDesc="First Contentful Paint"
         vitalColor="oklch(0.75 0.13 162)"
         isCore={true}
-        sentryLink="https://docs.sentry.io/product/insights/frontend/web-vitals/web-vitals-concepts/#first-contentful-paint-fcp"
       >
         Measures the time from when a page starts loading to when any part of
         the page's content is first displayed.
+        <Link
+          href="https://docs.sentry.io/product/insights/frontend/web-vitals/web-vitals-concepts/#first-contentful-paint-fcp?ref=webvitals.com"
+          className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Learn more <ExternalLink className="size-3 " />
+        </Link>
       </DemoHeader>
 
       <Card className="mb-16">

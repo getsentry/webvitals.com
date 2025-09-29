@@ -4,6 +4,7 @@ import CoreWebVitalsSection from "@/components/CoreWebVitalsSection";
 import FAQSection from "@/components/FAQSection";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
+import LiveWebVitals from "@/components/LiveWebVitals";
 import { WebVitalsScoreProvider } from "@/contexts/WebVitalsScoreContext";
 
 export const metadata: Metadata = {
@@ -44,6 +45,7 @@ export default function Home() {
       <WebVitalsScoreProvider>
         <main>
           <HeroSection />
+          <LiveWebVitals />
           <CoreWebVitalsSection />
           <FAQSection />
         </main>
