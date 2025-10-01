@@ -215,6 +215,16 @@ async function getRealWorldPerformance(
     const requestedOnlyDesktop =
       !devices.includes("mobile") && devices.includes("desktop");
 
+    console.log("Error check:", {
+      hasMobileData,
+      hasDesktopData,
+      requestedBothDevices,
+      requestedOnlyMobile,
+      requestedOnlyDesktop,
+      mobileDataNull: mobileData === null,
+      desktopDataNull: desktopData === null,
+    });
+
     // Only throw if we completely failed to get any requested data
     if (
       (requestedBothDevices && !hasMobileData && !hasDesktopData) ||
@@ -248,12 +258,7 @@ async function getRealWorldPerformance(
       extra: { url: normalizedUrl },
     });
 
-    return {
-      url: normalizedUrl,
-      hasData: false,
-      mobile: {},
-      desktop: {},
-    };
+    throw error;
   }
 }
 

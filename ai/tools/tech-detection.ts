@@ -33,6 +33,9 @@ class CloudflareTechDetector {
     endpoint: string,
     options: RequestInit = {},
   ): Promise<T> {
+    // TEMPORARY: Simulate error for testing UX
+    throw new Error("Simulated Cloudflare API error for testing");
+
     const url = `${this.baseUrl}${endpoint}`;
     const headers = {
       Authorization: `Bearer ${this.apiToken}`,

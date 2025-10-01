@@ -118,7 +118,10 @@ export default function PerformanceResult({
                       className="text-muted-foreground cursor-help hover:text-foreground transition-colors"
                     />
                   </TooltipTrigger>
-                  <TooltipContent side="bottom" className="max-w-sm">
+                  <TooltipContent
+                    side="bottom"
+                    className="max-w-sm text-pretty"
+                  >
                     <div className="space-y-2">
                       <p className="font-medium">
                         Chrome User Experience Report (CrUX) Data
@@ -194,7 +197,7 @@ export default function PerformanceResult({
                     className="text-muted-foreground cursor-help hover:text-foreground transition-colors"
                   />
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-sm">
+                <TooltipContent side="bottom" className="max-w-sm text-pretty">
                   <div className="space-y-2">
                     <p className="font-medium">
                       Chrome User Experience Report (CrUX) Data

@@ -1,13 +1,13 @@
 import { openai } from "@ai-sdk/openai";
 import * as Sentry from "@sentry/nextjs";
 import {
-  type StopCondition,
-  type ToolSet,
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
+  type StopCondition,
   stepCountIs,
   streamText,
+  type ToolSet,
   type UIMessage,
 } from "ai";
 import { webAnalysisSystemPrompt } from "@/ai";
@@ -46,9 +46,9 @@ export async function POST(request: Request) {
         const performanceIndex = steps[0].toolCalls?.findIndex(
           (call) => call.toolName === "getRealWorldPerformance",
         );
-        const performanceResult = steps[0].toolResults?.[performanceIndex ?? -1] as
-          | { output?: { hasData?: boolean } }
-          | undefined;
+        const performanceResult = steps[0].toolResults?.[
+          performanceIndex ?? -1
+        ] as { output?: { hasData?: boolean } } | undefined;
         return performanceResult?.output?.hasData !== true;
       }
       return false;
@@ -62,8 +62,6 @@ export async function POST(request: Request) {
           stopWhen: [stepCountIs(2), stopWhenNoData],
           tools,
           prepareStep: ({ steps }) => {
-            // console.log("steps", JSON.stringify(steps, null, 2));
-
             // Step 1: Only allow data collection tools
             if (steps.length === 0) {
               return {
@@ -76,9 +74,9 @@ export async function POST(request: Request) {
               const performanceIndex = steps[0].toolCalls?.findIndex(
                 (call) => call.toolName === "getRealWorldPerformance",
               );
-              const performanceResult = steps[0].toolResults?.[performanceIndex ?? -1] as
-                | { output?: { hasData?: boolean } }
-                | undefined;
+              const performanceResult = steps[0].toolResults?.[
+                performanceIndex ?? -1
+              ] as { output?: { hasData?: boolean } } | undefined;
               const hasData = performanceResult?.output?.hasData === true;
 
               if (!hasData) {
@@ -86,11 +84,13 @@ export async function POST(request: Request) {
                 return { activeTools: [] };
               }
 
-              console.log("Performance data available, allowing analysis breakdown");
+              console.log(
+                "Performance data available, allowing analysis breakdown",
+              );
               return { activeTools: ["generateAnalysisBreakdown"] };
             }
 
-            return {}; // Use default settings for any other steps
+            return {};
           },
           experimental_telemetry: {
             isEnabled: true,

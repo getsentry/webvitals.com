@@ -23,6 +23,7 @@ import type { TechnologyDetectionOutput } from "@/types/web-vitals";
 import AnalysisBreakdownDisplay from "./analysis/AnalysisBreakdown";
 import TextMessage from "./message/TextMessage";
 import PerformanceResult from "./results/PerformanceResult";
+import SentryCTA from "./SentryCTA";
 
 type PerformanceToolUIPart = ToolUIPart<{
   getRealWorldPerformance: {
@@ -253,6 +254,8 @@ const MessageRenderer = memo(function MessageRenderer({
         }
         return null;
       })}
+
+      <SentryCTA />
 
       {textParts.map((part, i) => {
         // Check if this message has performance data with meaningful metrics
