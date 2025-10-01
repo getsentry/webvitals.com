@@ -4,6 +4,17 @@
 
 import * as Sentry from "@sentry/nextjs";
 
+import { initBotId } from "botid/client/core";
+
+initBotId({
+  protect: [
+    {
+      path: "/api/chat",
+      method: "POST",
+    },
+  ],
+});
+
 Sentry.init({
   dsn: "https://8639dbee918dc5a6b6a70cd17297ef06@o4505994951065600.ingest.us.sentry.io/4509957293801472",
   spotlight: true,

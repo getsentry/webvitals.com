@@ -1,4 +1,5 @@
 import { withSentryConfig } from "@sentry/nextjs";
+import { withBotId } from "botid/next/config";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -12,7 +13,7 @@ const nextConfig: NextConfig = {
   transpilePackages: ["streamdown"],
 };
 
-export default withSentryConfig(nextConfig, {
+export default withSentryConfig(withBotId(nextConfig), {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
