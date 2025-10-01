@@ -33,9 +33,6 @@ class CloudflareTechDetector {
     endpoint: string,
     options: RequestInit = {},
   ): Promise<T> {
-    // TEMPORARY: Simulate error for testing UX
-    throw new Error("Simulated Cloudflare API error for testing");
-
     const url = `${this.baseUrl}${endpoint}`;
     const headers = {
       Authorization: `Bearer ${this.apiToken}`,
@@ -47,7 +44,7 @@ class CloudflareTechDetector {
       ...options,
       headers,
       next: {
-        revalidate: 3600, // 1 hour cache
+        revalidate: 3600,
         tags: [`cloudflare:${endpoint}`],
       },
     });
@@ -90,7 +87,7 @@ class CloudflareTechDetector {
       body: JSON.stringify({
         url,
         visibility: "Unlisted",
-        screenshotsResolutions: [], // No screenshots needed
+        screenshotsResolutions: [],
       }),
     });
   }
@@ -117,7 +114,7 @@ class CloudflareTechDetector {
         }
       } catch (error) {
         if (error instanceof Error && error.message === "Scan not ready") {
-          // Continue polling
+          continue;
         } else {
           throw error;
         }
@@ -241,9 +238,7 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
       extra: { url: normalizedUrl },
     });
 
-    return {
-      technologies: [],
-    };
+    throw error;
   }
 }
 

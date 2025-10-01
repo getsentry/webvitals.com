@@ -25,9 +25,9 @@ async function fetchPerformanceData(
   )}&strategy=${strategy}&fields=loadingExperience&key=${apiKey}`;
 
   const response = await fetch(apiUrl, {
-    signal: AbortSignal.timeout(90000), // 1.5 minute timeout
+    signal: AbortSignal.timeout(90000),
     next: {
-      revalidate: 3600, // 1 hour cache
+      revalidate: 3600,
       tags: [`crux:${strategy}:${url}`],
     },
   });
@@ -104,7 +104,6 @@ async function getRealWorldPerformance(
 
     const results = await Promise.allSettled(promises);
 
-    // Extract mobile data
     const mobileData = deviceOrder.includes("mobile")
       ? (() => {
           const mobileResult = results[deviceOrder.indexOf("mobile")];
@@ -136,7 +135,6 @@ async function getRealWorldPerformance(
         })()
       : null;
 
-    // Extract desktop data
     const desktopData = deviceOrder.includes("desktop")
       ? (() => {
           const desktopResult = results[deviceOrder.indexOf("desktop")];
@@ -184,7 +182,6 @@ async function getRealWorldPerformance(
         overallCategory: mobileData.loadingExperience.overall_category,
         metrics,
       };
-      // Only set hasData to true if we actually have meaningful metrics
       if (Object.keys(metrics).length > 0) {
         result.hasData = true;
       }
@@ -199,13 +196,11 @@ async function getRealWorldPerformance(
         overallCategory: desktopData.loadingExperience.overall_category,
         metrics,
       };
-      // Only set hasData to true if we actually have meaningful metrics
       if (Object.keys(metrics).length > 0) {
         result.hasData = true;
       }
     }
 
-    // Check if we got any data at all
     const hasMobileData = !!result.mobile?.fieldData;
     const hasDesktopData = !!result.desktop?.fieldData;
     const requestedBothDevices =
@@ -214,16 +209,6 @@ async function getRealWorldPerformance(
       devices.includes("mobile") && !devices.includes("desktop");
     const requestedOnlyDesktop =
       !devices.includes("mobile") && devices.includes("desktop");
-
-    console.log("Error check:", {
-      hasMobileData,
-      hasDesktopData,
-      requestedBothDevices,
-      requestedOnlyMobile,
-      requestedOnlyDesktop,
-      mobileDataNull: mobileData === null,
-      desktopDataNull: desktopData === null,
-    });
 
     // Only throw if we completely failed to get any requested data
     if (

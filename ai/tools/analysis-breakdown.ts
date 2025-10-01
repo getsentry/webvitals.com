@@ -74,7 +74,6 @@ Guidelines:
         },
       });
 
-      // Validate the result explicitly to catch schema issues
       const validationResult = AnalysisBreakdownSchema.safeParse(result.object);
       if (!validationResult.success) {
         Sentry.logger.error("Schema validation failed", {
@@ -109,22 +108,7 @@ Guidelines:
         },
       });
 
-      // Return a fallback structure
-      return {
-        overview:
-          "Unable to generate detailed analysis due to processing error.",
-        points: [
-          {
-            title: "Analysis Error",
-            summary: "There was an issue generating the performance breakdown.",
-            details:
-              "Please try again or contact support if the issue persists.",
-            severity: "warning" as const,
-          },
-        ],
-        nextStep:
-          "Retry the analysis or use monitoring tools like Sentry for detailed insights.",
-      };
+      throw error;
     }
   },
 });

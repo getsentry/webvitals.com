@@ -38,7 +38,7 @@ export default function ChatInterface() {
           msg.role === "assistant" &&
           msg.parts?.some(
             (part) =>
-              part.type === "tool-analysisBreakdown" &&
+              part.type === "tool-generateAnalysisBreakdown" &&
               part.state === "output-available",
           ),
       ),

@@ -110,24 +110,15 @@ export default function LiveWebVitals() {
                 <div className="text-xs font-medium text-muted-foreground mb-1">
                   {name}
                 </div>
-                <div
+                <NumberFlow
+                  value={Number(vitals[name as keyof typeof vitals])}
+                  suffix={name === "CLS" ? "" : "ms"}
+                  format={{
+                    minimumFractionDigits: name === "CLS" ? 3 : 0,
+                    maximumFractionDigits: name === "CLS" ? 3 : 0,
+                  }}
                   className={`text-lg font-semibold ${getScoreColor(name, vitals[name as keyof typeof vitals])}`}
-                >
-                  <NumberFlow
-                    value={Number(vitals[name as keyof typeof vitals])}
-                    suffix={name === "CLS" ? "" : "ms"}
-                    format={{
-                      minimumFractionDigits: name === "CLS" ? 3 : 0,
-                      maximumFractionDigits: name === "CLS" ? 3 : 0,
-                    }}
-                    style={
-                      {
-                        "--color": "currentColor",
-                        "--suffix-color": "currentColor",
-                      } as React.CSSProperties
-                    }
-                  />
-                </div>
+                />
               </div>
             ))}
           </div>
@@ -143,24 +134,15 @@ export default function LiveWebVitals() {
                 <div className="text-xs font-medium text-muted-foreground mb-1">
                   {name}
                 </div>
-                <div
+                <NumberFlow
+                  value={Number(vitals[name as keyof typeof vitals])}
+                  suffix="ms"
+                  format={{
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  }}
                   className={`text-lg font-semibold ${getScoreColor(name, vitals[name as keyof typeof vitals])}`}
-                >
-                  <NumberFlow
-                    value={Number(vitals[name as keyof typeof vitals])}
-                    suffix="ms"
-                    format={{
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    }}
-                    style={
-                      {
-                        "--color": "currentColor",
-                        "--suffix-color": "currentColor",
-                      } as React.CSSProperties
-                    }
-                  />
-                </div>
+                />
               </div>
             ))}
           </div>
@@ -176,24 +158,15 @@ export default function LiveWebVitals() {
                 <div className="text-xs font-medium text-muted-foreground mb-1">
                   {name}
                 </div>
-                <div
+                <NumberFlow
+                  value={Number(value)}
+                  suffix={name === "CLS" ? "" : "ms"}
+                  format={{
+                    minimumFractionDigits: name === "CLS" ? 3 : 0,
+                    maximumFractionDigits: name === "CLS" ? 3 : 0,
+                  }}
                   className={`text-lg font-semibold ${getScoreColor(name, value)}`}
-                >
-                  <NumberFlow
-                    value={Number(value)}
-                    suffix={name === "CLS" ? "" : "ms"}
-                    format={{
-                      minimumFractionDigits: name === "CLS" ? 3 : 0,
-                      maximumFractionDigits: name === "CLS" ? 3 : 0,
-                    }}
-                    style={
-                      {
-                        "--color": "currentColor",
-                        "--suffix-color": "currentColor",
-                      } as React.CSSProperties
-                    }
-                  />
-                </div>
+                />
               </div>
             ))}
           </div>

@@ -56,14 +56,6 @@ export default function SentryCTA() {
           real user metrics
         </p>
         <div className="flex items-center gap-3 shrink-0">
-          <a
-            href="https://docs.sentry.io/product/insights/frontend/web-vitals/?ref=webvitals.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
-          >
-            Learn more
-          </a>
           <HoverCard openDelay={100} closeDelay={0}>
             <HoverCardTrigger asChild>
               <Button size="sm" asChild>

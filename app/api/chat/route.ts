@@ -1,5 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import * as Sentry from "@sentry/nextjs";
+import type { StepResult } from "ai";
 import {
   convertToModelMessages,
   createUIMessageStream,
@@ -40,16 +41,33 @@ export async function POST(request: Request) {
       generateAnalysisBreakdown: analysisBreakdownTool,
     } satisfies ToolSet;
 
+    // Check if performance data is valid (not errored and has data)
+    const hasValidPerformanceData = (step: StepResult<typeof tools>) => {
+      const performanceCall = step.toolCalls?.find(
+        (call) => call.toolName === "getRealWorldPerformance",
+      );
+      if (!performanceCall) return false;
+
+      const performanceResult = step.toolResults?.find(
+        (result) => result.toolCallId === performanceCall.toolCallId,
+      );
+      if (!performanceResult) return false;
+
+      // Check if tool errored
+      if ("error" in performanceResult) return false;
+
+      // Check if has performance data
+      const output = performanceResult.output as
+        | { hasData?: boolean }
+        | undefined;
+      return output?.hasData === true;
+    };
+
     const stopWhenNoData: StopCondition<typeof tools> = ({ steps }) => {
-      // Stop after step 1 if there's no performance data
-      if (steps.length === 1) {
-        const performanceIndex = steps[0].toolCalls?.findIndex(
-          (call) => call.toolName === "getRealWorldPerformance",
-        );
-        const performanceResult = steps[0].toolResults?.[
-          performanceIndex ?? -1
-        ] as { output?: { hasData?: boolean } } | undefined;
-        return performanceResult?.output?.hasData !== true;
+      // Stop after step 0 completes if performance tool errored or has no data
+      const firstStep = steps[0];
+      if (firstStep) {
+        return !hasValidPerformanceData(firstStep);
       }
       return false;
     };
@@ -61,32 +79,19 @@ export async function POST(request: Request) {
           messages: convertToModelMessages(messages),
           stopWhen: [stepCountIs(2), stopWhenNoData],
           tools,
-          prepareStep: ({ steps }) => {
-            // Step 1: Only allow data collection tools
-            if (steps.length === 0) {
+          prepareStep: ({ stepNumber, steps }) => {
+            // Step 0: Only allow data collection tools
+            if (stepNumber === 0) {
               return {
                 activeTools: ["getRealWorldPerformance", "detectTechnologies"],
               };
             }
 
-            // Step 2: Only allow analysis breakdown if we have performance data
-            if (steps.length === 1) {
-              const performanceIndex = steps[0].toolCalls?.findIndex(
-                (call) => call.toolName === "getRealWorldPerformance",
-              );
-              const performanceResult = steps[0].toolResults?.[
-                performanceIndex ?? -1
-              ] as { output?: { hasData?: boolean } } | undefined;
-              const hasData = performanceResult?.output?.hasData === true;
-
-              if (!hasData) {
-                console.log("No performance data, skipping step 2");
+            // Step 1: Only allow analysis breakdown if we have performance data (tech detection is optional)
+            if (stepNumber === 1 && steps[0]) {
+              if (!hasValidPerformanceData(steps[0])) {
                 return { activeTools: [] };
               }
-
-              console.log(
-                "Performance data available, allowing analysis breakdown",
-              );
               return { activeTools: ["generateAnalysisBreakdown"] };
             }
 
