@@ -11,6 +11,7 @@ import {
   type ToolSet,
   type UIMessage,
 } from "ai";
+import { checkBotId } from "botid/server";
 import { webAnalysisSystemPrompt } from "@/ai";
 import {
   analysisBreakdownTool,
@@ -19,6 +20,12 @@ import {
 } from "@/ai/tools";
 
 export async function POST(request: Request) {
+  const { isBot } = await checkBotId();
+
+  if (isBot) {
+    return new Response("Access Denied", { status: 403 });
+  }
+
   try {
     const body = await request.json();
     const {

@@ -20,17 +20,14 @@ export default function SentryCTA() {
     const lastMessage = messages[messages.length - 1];
     if (!lastMessage || lastMessage.role !== "assistant") return false;
 
-    const userMessageCount = messages.filter((m) => m.role === "user").length;
+    // Check if analysis breakdown tool is complete or any tool has failed
+    const hasAnalysisBreakdown = lastMessage.parts.some(
+      (p) =>
+        p.type === "tool-generateAnalysisBreakdown" &&
+        "state" in p &&
+        (p.state === "output-available" || p.state === "output-error"),
+    );
 
-    // Show after initial analysis (userMessageCount === 1)
-    if (userMessageCount === 1) {
-      const hasToolParts = lastMessage.parts.some((p) =>
-        p.type.startsWith("tool-"),
-      );
-      if (hasToolParts) return true;
-    }
-
-    // Show if any tool has an error
     const hasToolError = lastMessage.parts.some(
       (p) =>
         p.type.startsWith("tool-") &&
@@ -38,7 +35,20 @@ export default function SentryCTA() {
         p.state === "output-error",
     );
 
-    return hasToolError;
+    // Check if performance tool completed but has no data
+    const hasNoPerformanceData = lastMessage.parts.some(
+      (p) =>
+        p.type === "tool-getRealWorldPerformance" &&
+        "state" in p &&
+        p.state === "output-available" &&
+        "output" in p &&
+        typeof p.output === "object" &&
+        p.output !== null &&
+        "hasData" in p.output &&
+        p.output.hasData === false,
+    );
+
+    return hasAnalysisBreakdown || hasToolError || hasNoPerformanceData;
   }, [messages]);
 
   if (!shouldShow) return null;

@@ -216,9 +216,9 @@ export default function FollowUpSuggestions() {
     // Clear chat messages
     setMessages([]);
     // Remove URL parameter
-    window.location.replace("/");
+    history.replaceState(null, "", "/");
 
-    if (isStreaming) {
+    if (status === "submitted" || status === "streaming") {
       window.location.reload();
     }
   };
