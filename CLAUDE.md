@@ -185,6 +185,31 @@ stores/              # State management (Zustand)
 - Smooth transitions and micro-interactions
 - Accessibility-aware animations with reduced motion support
 
+### AI SDK Architecture
+
+The AI analysis system uses Vercel AI SDK's tool orchestration with step-based execution:
+
+**Tool Execution Flow (app/api/chat/route.ts):**
+1. **Step 1**: Parallel execution of `getRealWorldPerformance` and `detectTechnologies`
+2. **Step 2**: Conditional execution of `generateAnalysisBreakdown` (only if performance data exists)
+3. Stream stops after 2 steps via `stopWhen: [stepCountIs(2)]`
+
+**Conditional Tool Activation:**
+- `prepareStep` hook checks if `getRealWorldPerformance` returned `hasData: false`
+- If no performance data: `generateAnalysisBreakdown` is excluded from `activeTools`
+- This prevents the AI from attempting analysis when data is unavailable
+
+**Frontend States:**
+- **Performance data available**: Show full analysis with breakdown
+- **No performance data** (`hasData: false`): Show fallback message, skip analysis breakdown
+- Frontend must check tool results for `hasData` flag to determine which UI to render
+- Never call or render analysis breakdown UI when `hasData: false`
+
+**Monitoring:**
+- AI SDK telemetry enabled with `functionId: "pagespeed-analysis-chat"`
+- Sentry integration tracks tool execution errors via `onStepFinish`
+- Failed tool results are captured with context (model, tool name, error details)
+
 ## Animations Guidelines
  
 ### Keep your animations fast

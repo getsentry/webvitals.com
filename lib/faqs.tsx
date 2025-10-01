@@ -27,7 +27,7 @@ export const faqs = [
         we rely on Chrome User Experience Report data. For internal or
         password-protected sites, we recommend using{" "}
         <a
-          href="https://docs.sentry.io/product/insights/frontend/web-vitals/"
+          href="https://docs.sentry.io/product/insights/frontend/web-vitals/?ref=webvitals.com"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary underline-offset-4 hover:underline"
@@ -59,7 +59,7 @@ export const faqs = [
         becomes standard, the best approach for PWAs is implementing real user
         monitoring with tools like{" "}
         <a
-          href="https://docs.sentry.io/product/insights/frontend/web-vitals/"
+          href="https://docs.sentry.io/product/insights/frontend/web-vitals/?ref=webvitals.com"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary underline-offset-4 hover:underline"
@@ -81,7 +81,7 @@ export const faqs = [
         representative of actual user experience and what matters for SEO
         rankings. Learn more about{" "}
         <a
-          href="https://blog.sentry.io/how-to-hack-your-google-lighthouse-scores-in-2024/"
+          href="https://blog.sentry.io/how-to-hack-your-google-lighthouse-scores-in-2024/?ref=webvitals.com"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary underline-offset-4 hover:underline"
@@ -102,7 +102,7 @@ export const faqs = [
         monitoring tools to trace performance issues through your entire stack.
         Read more about{" "}
         <a
-          href="https://blog.sentry.io/your-bad-lcp-score-might-be-a-backend-issue/"
+          href="https://blog.sentry.io/your-bad-lcp-score-might-be-a-backend-issue/?ref=webvitals.com"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary underline-offset-4 hover:underline"
@@ -111,7 +111,7 @@ export const faqs = [
         </a>{" "}
         and{" "}
         <a
-          href="https://blog.sentry.io/how-i-fixed-my-brutal-ttfb/"
+          href="https://blog.sentry.io/how-i-fixed-my-brutal-ttfb/?ref=webvitals.com"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary underline-offset-4 hover:underline"
@@ -131,7 +131,7 @@ export const faqs = [
         can contribute to layout shift. Use modern formats (WebP/AVIF), proper
         sizing, and lazy loading for below-the-fold content. Learn about{" "}
         <a
-          href="https://blog.sentry.io/from-lcp-to-cls-improve-your-core-web-vitals-with-image-loading-best/"
+          href="https://blog.sentry.io/from-lcp-to-cls-improve-your-core-web-vitals-with-image-loading-best/?ref=webvitals.com"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary underline-offset-4 hover:underline"
@@ -140,7 +140,7 @@ export const faqs = [
         </a>
         ,{" "}
         <a
-          href="https://blog.sentry.io/your-background-images-might-be-causing-cls/"
+          href="https://blog.sentry.io/your-background-images-might-be-causing-cls/?ref=webvitals.com"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary underline-offset-4 hover:underline"
@@ -149,7 +149,7 @@ export const faqs = [
         </a>
         , and{" "}
         <a
-          href="https://blog.sentry.io/low-effort-image-optimization-tips/"
+          href="https://blog.sentry.io/low-effort-image-optimization-tips/?ref=webvitals.com"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary underline-offset-4 hover:underline"

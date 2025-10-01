@@ -254,7 +254,7 @@ export default function FollowUpSuggestions() {
               track real user metrics:
             </p>
             <a
-              href="https://sentry.io/signup"
+              href="https://sentry.io/signup?ref=webvitals.com"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"

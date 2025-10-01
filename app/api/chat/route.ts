@@ -1,6 +1,8 @@
 import { openai } from "@ai-sdk/openai";
 import * as Sentry from "@sentry/nextjs";
 import {
+  type StopCondition,
+  type ToolSet,
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
@@ -32,44 +34,63 @@ export async function POST(request: Request) {
       hasPerformanceConfig: !!performanceConfig,
     });
 
+    const tools = {
+      getRealWorldPerformance: realWorldPerformanceTool,
+      detectTechnologies: techDetectionTool,
+      generateAnalysisBreakdown: analysisBreakdownTool,
+    } satisfies ToolSet;
+
+    const stopWhenNoData: StopCondition<typeof tools> = ({ steps }) => {
+      // Stop after step 1 if there's no performance data
+      if (steps.length === 1) {
+        const performanceIndex = steps[0].toolCalls?.findIndex(
+          (call) => call.toolName === "getRealWorldPerformance",
+        );
+        const performanceResult = steps[0].toolResults?.[performanceIndex ?? -1] as
+          | { output?: { hasData?: boolean } }
+          | undefined;
+        return performanceResult?.output?.hasData !== true;
+      }
+      return false;
+    };
+
     const stream = createUIMessageStream({
       execute: ({ writer }) => {
         const result = streamText({
           model: openai("gpt-4o"),
           messages: convertToModelMessages(messages),
-          stopWhen: [stepCountIs(2)], // analysis breakdown tool is called after the initial tools and needs another step to complete.
-          tools: {
-            getRealWorldPerformance: realWorldPerformanceTool,
-            detectTechnologies: techDetectionTool,
-            generateAnalysisBreakdown: analysisBreakdownTool,
-          },
+          stopWhen: [stepCountIs(2), stopWhenNoData],
+          tools,
           prepareStep: ({ steps }) => {
-            // For step 2, check if we have meaningful performance data
-            if (steps.length === 1) {
-              const performanceResult = steps[0].toolResults?.find(
-                (result, index) => {
-                  const toolName = steps[0].toolCalls?.[index]?.toolName;
-                  return toolName === "getRealWorldPerformance";
-                },
-              );
+            // console.log("steps", JSON.stringify(steps, null, 2));
 
-              // If no performance data available, disable the analysis breakdown tool
-              if (
-                performanceResult &&
-                typeof performanceResult === "object" &&
-                "hasData" in performanceResult &&
-                !performanceResult.hasData
-              ) {
-                return {
-                  activeTools: [
-                    "getRealWorldPerformance",
-                    "detectTechnologies",
-                  ], // exclude generateAnalysisBreakdown
-                };
-              }
+            // Step 1: Only allow data collection tools
+            if (steps.length === 0) {
+              return {
+                activeTools: ["getRealWorldPerformance", "detectTechnologies"],
+              };
             }
 
-            return {}; // Use default settings
+            // Step 2: Only allow analysis breakdown if we have performance data
+            if (steps.length === 1) {
+              const performanceIndex = steps[0].toolCalls?.findIndex(
+                (call) => call.toolName === "getRealWorldPerformance",
+              );
+              const performanceResult = steps[0].toolResults?.[performanceIndex ?? -1] as
+                | { output?: { hasData?: boolean } }
+                | undefined;
+              const hasData = performanceResult?.output?.hasData === true;
+
+              if (!hasData) {
+                console.log("No performance data, skipping step 2");
+                return { activeTools: [] };
+              }
+
+              console.log("Performance data available, allowing analysis breakdown");
+              return { activeTools: ["generateAnalysisBreakdown"] };
+            }
+
+            return {}; // Use default settings for any other steps
           },
           experimental_telemetry: {
             isEnabled: true,

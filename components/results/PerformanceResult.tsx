@@ -149,7 +149,7 @@ export default function PerformanceResult({
                 user performance is with monitoring tools:
               </p>
               <Link
-                href="https://docs.sentry.io/product/insights/frontend/web-vitals/"
+                href="https://docs.sentry.io/product/insights/frontend/web-vitals/?ref=webvitals.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
@@ -207,7 +207,7 @@ export default function PerformanceResult({
                     <p className="text-sm">
                       For RUM (Real User Metrics), consider implementing{" "}
                       <a
-                        href="https://docs.sentry.io/product/insights/frontend/web-vitals/"
+                        href="https://docs.sentry.io/product/insights/frontend/web-vitals/?ref=webvitals.com"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="underline-offset-4 hover:underline"

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AIDevtools } from "@ai-sdk-tools/devtools";
+import PlausibleProvider from "next-plausible";
 
 import ThemeProvider from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -81,16 +82,24 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
-        <ThemeProvider>
-          <div className="absolute top-4 right-4 z-50">
-            <ThemeToggle />
-          </div>
-          {children}
-        </ThemeProvider>
-        {/* Only in development */}
-        {process.env.NODE_ENV === "development" && <AIDevtools />}
-      </body>
+      <PlausibleProvider
+        domain="webvitals.com"
+        customDomain="https://webvitals.com"
+        scriptProps={{
+          defer: true,
+          async: true,
+        }}
+      >
+        <body>
+          <ThemeProvider>
+            <div className="absolute top-4 right-4 z-50">
+              <ThemeToggle />
+            </div>
+            {children}
+          </ThemeProvider>
+          {process.env.NODE_ENV === "development" && <AIDevtools />}
+        </body>
+      </PlausibleProvider>
     </html>
   );
 }
