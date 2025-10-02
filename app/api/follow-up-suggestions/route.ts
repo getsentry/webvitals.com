@@ -1,6 +1,7 @@
 import { openai } from "@ai-sdk/openai";
 import * as Sentry from "@sentry/nextjs";
 import { generateObject } from "ai";
+import { checkBotId } from "botid/server";
 import { z } from "zod";
 
 const followUpSuggestionsSchema = z.object({
@@ -23,6 +24,12 @@ const followUpSuggestionsSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const { isBot } = await checkBotId();
+
+  if (isBot) {
+    return new Response("Access Denied", { status: 403 });
+  }
+
   let requestData: {
     performanceData?: any;
     technologyData?: any;
@@ -45,35 +52,27 @@ export async function POST(request: Request) {
       url,
     });
 
-    const result = await generateObject({
-      model: openai("gpt-4o-mini"),
-      schema: followUpSuggestionsSchema,
-      prompt: `You are analyzing web performance data and generating contextual follow-up questions. 
+    // Sanitize conversation history to prevent prompt injection
+    const sanitizedHistory = conversationHistory?.map((msg) => ({
+      role: msg.role,
+      // Remove control characters, limit length, trim whitespace
+      content: msg.content
+        // biome-ignore lint/suspicious/noControlCharactersInRegex: Intentionally removing control characters for security
+        .replace(/[\x00-\x1F\x7F-\x9F]/g, "")
+        .slice(0, 2000)
+        .trim(),
+    }));
 
-PERFORMANCE DATA:
-${JSON.stringify(performanceData, null, 2)}
+    // Build structured messages for better prompt isolation
+    const systemPrompt = `You are analyzing web performance data and generating contextual follow-up questions.
 
-TECHNOLOGY DATA:
-${JSON.stringify(technologyData, null, 2)}
-
-${
-  conversationHistory
-    ? `CONVERSATION HISTORY:
-${conversationHistory
-  .map((msg) => `${msg.role.toUpperCase()}: ${msg.content}`)
-  .join("\n\n")}
-
-IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that have already been discussed or questions that have been answered. Generate new, relevant follow-up questions that build on what hasn't been covered yet.`
-    : ""
-}
-
-Based on this data and conversation context, generate 3-6 SHORT, actionable follow-up questions that would be most valuable for the user to explore next. 
+Based on the provided performance data, technology stack, and conversation history, generate 3-6 SHORT, actionable follow-up questions that would be most valuable for the user to explore next.
 
 Guidelines:
 - Keep titles under 8-12 words maximum
 - Be specific to actual performance issues found
 - Consider the detected technology stack
-- Avoid repeating covered topics
+- Avoid repeating covered topics from the conversation history
 - Include one Sentry/RUM suggestion if not discussed
 - Use simple, direct language
 
@@ -84,7 +83,30 @@ Examples of CONCISE follow-ups:
 - "Optimize React performance?"
 - "Implement performance budgets?"
 - "Track business impact?"
-- "Compare RUM vs CrUX data?"`,
+- "Compare RUM vs CrUX data?"`;
+
+    const userPrompt = `PERFORMANCE DATA:
+${JSON.stringify(performanceData, null, 2)}
+
+TECHNOLOGY DATA:
+${JSON.stringify(technologyData, null, 2)}
+
+${
+  sanitizedHistory && sanitizedHistory.length > 0
+    ? `CONVERSATION HISTORY:
+${sanitizedHistory
+  .map((msg) => `${msg.role.toUpperCase()}: ${msg.content}`)
+  .join("\n\n")}
+
+IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that have already been discussed or questions that have been answered. Generate new, relevant follow-up questions that build on what hasn't been covered yet.`
+    : ""
+}`;
+
+    const result = await generateObject({
+      model: openai("gpt-4o-mini"),
+      schema: followUpSuggestionsSchema,
+      system: systemPrompt,
+      prompt: userPrompt,
       experimental_telemetry: {
         isEnabled: true,
         recordInputs: true,

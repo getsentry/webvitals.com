@@ -37,8 +37,29 @@ export async function POST(request: Request) {
       return Response.json({ error: "No messages provided" }, { status: 400 });
     }
 
+    // Sanitize messages to prevent prompt injection
+    const sanitizedMessages = messages.map((msg) => ({
+      ...msg,
+      parts: msg.parts?.map((part) => {
+        if (part.type === "text" && "text" in part) {
+          return {
+            ...part,
+            text:
+              typeof part.text === "string"
+                ? part.text
+                    // biome-ignore lint/suspicious/noControlCharactersInRegex: Intentionally removing control characters for security
+                    .replace(/[\x00-\x1F\x7F-\x9F]/g, "") // Remove control characters
+                    .slice(0, 5000) // Limit to reasonable length
+                    .trim()
+                : part.text,
+          };
+        }
+        return part;
+      }),
+    }));
+
     Sentry.logger.info("Chat request received", {
-      messageCount: messages.length,
+      messageCount: sanitizedMessages.length,
       hasPerformanceConfig: !!performanceConfig,
     });
 
@@ -83,7 +104,7 @@ export async function POST(request: Request) {
       execute: ({ writer }) => {
         const result = streamText({
           model: openai("gpt-4o"),
-          messages: convertToModelMessages(messages),
+          messages: convertToModelMessages(sanitizedMessages),
           stopWhen: [stepCountIs(2), stopWhenNoData],
           tools,
           prepareStep: ({ stepNumber, steps }) => {

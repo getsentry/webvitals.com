@@ -12,6 +12,10 @@ initBotId({
       path: "/api/chat",
       method: "POST",
     },
+    {
+      path: "/api/follow-up-suggestions",
+      method: "POST",
+    },
   ],
 });
 

@@ -228,12 +228,15 @@ const MessageRenderer = memo(function MessageRenderer({
           performanceTool.state === "output-available" &&
           performanceTool.output
         ) {
+          const hasNoData = performanceTool.output.hasData === false;
           return (
-            <PerformanceResult
-              key={`performance-result-${message.id}-${i}`}
-              data={performanceTool.output}
-              className="mb-4"
-            />
+            <div key={`performance-result-${message.id}-${i}`}>
+              <PerformanceResult
+                data={performanceTool.output}
+                className="mb-4"
+              />
+              {hasNoData && <SentryCTA />}
+            </div>
           );
         }
         return null;
@@ -245,17 +248,17 @@ const MessageRenderer = memo(function MessageRenderer({
           breakdownTool.output
         ) {
           return (
-            <AnalysisBreakdownDisplay
-              key={`analysis-breakdown-${message.id}-${i}`}
-              data={breakdownTool.output}
-              className="mb-4"
-            />
+            <div key={`analysis-breakdown-${message.id}-${i}`}>
+              <AnalysisBreakdownDisplay
+                data={breakdownTool.output}
+                className="mb-4"
+              />
+              <SentryCTA />
+            </div>
           );
         }
         return null;
       })}
-
-      <SentryCTA />
 
       {textParts.map((part, i) => {
         // Check if this message has performance data with meaningful metrics
