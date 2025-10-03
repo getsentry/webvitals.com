@@ -164,7 +164,6 @@ stores/              # State management (Zustand)
 **Current API Endpoints:**
 - `/api/chat`: Main AI analysis endpoint with streaming responses
 - `/api/follow-up-suggestions`: Follow-up artifact streaming
-- `/api/slow-response`: Slow response simulation for testing
 
 ### Core Features
 
