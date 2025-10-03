@@ -82,14 +82,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <PlausibleProvider
-        domain="webvitals.com"
-        customDomain="https://webvitals.com"
-        scriptProps={{
-          defer: true,
-          async: true,
-        }}
-      >
+      <PlausibleProvider domain="webvitals.com">
         <body>
           <ThemeProvider>
             <div className="absolute top-4 right-4 z-50">

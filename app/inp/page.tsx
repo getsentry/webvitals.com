@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     "responsiveness",
     "user interaction",
   ],
+  alternates: {
+    canonical: "/inp",
+  },
   openGraph: {
     title: "INP Demo - Interaction to Next Paint | WebVitals",
     description:

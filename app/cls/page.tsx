@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     "layout stability",
     "visual stability",
   ],
+  alternates: {
+    canonical: "/cls",
+  },
   openGraph: {
     title: "CLS Demo - Cumulative Layout Shift | WebVitals",
     description:

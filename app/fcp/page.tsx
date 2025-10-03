@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     "page load speed",
     "initial render",
   ],
+  alternates: {
+    canonical: "/fcp",
+  },
   openGraph: {
     title: "FCP Demo - First Contentful Paint | WebVitals",
     description:

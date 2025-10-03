@@ -16,6 +16,9 @@ export const metadata: Metadata = {
     "server response",
     "network latency",
   ],
+  alternates: {
+    canonical: "/ttfb",
+  },
   openGraph: {
     title: "TTFB Demo - Time to First Byte | WebVitals",
     description:

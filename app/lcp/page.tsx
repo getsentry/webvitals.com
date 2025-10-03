@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     "performance",
     "page load speed",
   ],
+  alternates: {
+    canonical: "/lcp",
+  },
   openGraph: {
     title: "LCP Demo - Largest Contentful Paint | WebVitals",
     description:
