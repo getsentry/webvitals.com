@@ -2,6 +2,8 @@ import { withSentryConfig } from "@sentry/nextjs";
 import { withBotId } from "botid/next/config";
 import type { NextConfig } from "next";
 
+const { withPlausibleProxy } = require("next-plausible");
+
 const nextConfig: NextConfig = {
   // Configure external packages that should not be bundled by Next.js
   serverExternalPackages: [
@@ -13,7 +15,7 @@ const nextConfig: NextConfig = {
   transpilePackages: ["streamdown"],
 };
 
-export default withSentryConfig(withBotId(nextConfig), {
+export default withSentryConfig(withBotId(withPlausibleProxy(nextConfig)), {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
