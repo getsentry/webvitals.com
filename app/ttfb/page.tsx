@@ -37,7 +37,7 @@ export const dynamic = "force-dynamic";
 
 export default async function TTFBPage() {
   // Fetch from slow API to demonstrate TTFB
-  await fetch(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"}/api/slow-response?delay=2000`);
+  await fetch(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"}/api/slow-response`);
 
   return (
     <DemoLayout currentMetric="TTFB">
