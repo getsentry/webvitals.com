@@ -21,7 +21,7 @@ export default function HeroSection() {
 
   useEffect(() => {
     setLoading(false);
-  }, []);
+  }, [setLoading]);
 
   const { messages, sendMessage, status } = useChat({
     onFinish: (message) => {

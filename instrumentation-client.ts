@@ -20,8 +20,8 @@ initBotId({
 });
 
 Sentry.init({
-  dsn: "https://8639dbee918dc5a6b6a70cd17297ef06@o4505994951065600.ingest.us.sentry.io/4509957293801472",
-  spotlight: true,
+  dsn: "https://c9b45f3b545d425abc75ab5810fcecff@o1.ingest.us.sentry.io/4510116324179968",
+  spotlight: process.env.NODE_ENV !== "production",
   // Add optional integrations for additional features
   integrations: [
     Sentry.replayIntegration(),
