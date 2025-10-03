@@ -43,8 +43,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TTFBPage() {
-  // Note: Delay is now in generateMetadata to properly affect TTFB
-  // (streaming metadata would bypass this delay if it were only here)
+  // Create actual server delay for real TTFB measurement
+  await new Promise((resolve) => setTimeout(resolve, TTFB_DELAY))
 
   return (
     <DemoLayout currentMetric="TTFB">
