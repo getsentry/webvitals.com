@@ -6,6 +6,7 @@ import DemoLayout from "@/components/demo/DemoLayout";
 import TTFBClient from "./TTFBClient";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const TTFB_DELAY = 2000; // ms - real server delay
 
