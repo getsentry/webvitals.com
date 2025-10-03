@@ -1,45 +1,95 @@
-# Web Vitals Playground
+# WebVitals.com
 
-This is a Next.js web app that hosts several live demos of slow website behaviors that affect Web Vitals scores.
+**From Score to Solution** - The most actionable web performance analysis tool.
 
-For example, the TTFB demo actually uses a server that delays sending a single byte.
+## What is WebVitals.com?
 
-The idea is that actually observing ("feeling") the different web page behavior better illustrates what the vitals are recording.
+WebVitals.com transforms confusing performance metrics into clear, implementable action items. Unlike traditional tools that just give you a score, we provide:
 
-## Web Vitals Demos
+- **Real-world performance data** from Chrome User Experience Report (CrUX)
+- **AI-powered insights** with contextual analysis of your site
+- **Technology detection** to identify your framework and hosting setup
+- **Sentry-style scoring** for actionable performance metrics
 
-Implemented:
+## Key Features
 
-1. First Contentful Paint (FCP)
-1. Largest Contentful Paint (LCP)
-1. Interaction to Next Paint (INP)
-1. Cumulative Layout Shift (LCP)
-1. Time to First Byte (TTFB)
+🎯 **Real User Data** - Chrome UX Report data from actual visitors  
+🤖 **AI-Powered Analysis** - Intelligent insights tailored to your site  
+📊 **Sentry-Style Scoring** - Performance metrics with actionable thresholds  
+🔧 **Technology Detection** - Automatic framework and platform identification  
+⚡ **Streamlined Experience** - Focus on what matters most for your site
 
-Not implemented:
+## Tech Stack
 
-1. First Input Delay (FID)
+- **Next.js 15** - React meta-framework with App Router and Turbopack
+- **React 19** - Interactive dashboard components with Server Components
+- **TailwindCSS 4** - Utility-first styling with PostCSS integration
+- **TypeScript** - Type-safe development with strict configuration
+- **Vercel** - Deployment platform with native Next.js support
+- **Sentry** - Error monitoring, performance tracking, and AI agent monitoring
+- **AI SDK** - OpenAI integration for intelligent web performance analysis
 
-## How it Works
-
-Uses Google's [web-vitals](https://github.com/GoogleChrome/web-vitals) project to determine metrics.
-
-## Getting Started
-
-Install depenencies:
-
-```bash
-npm install
-```
-
-Then, run the development server:
+## Development
 
 ```bash
-npm run dev
+# Install dependencies
+pnpm install
+
+# Start development server with Turbopack
+pnpm dev
+
+# Build for production with Turbopack
+pnpm build
+
+# Start production server
+pnpm start
+
+# Type checking
+pnpm check-types
+
+# Format code
+pnpm format:fix
+
+# Lint code
+pnpm lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to explore.
+## Project Structure
 
-## Deployment
+```
+app/                     # Next.js App Router
+├── api/chat/           # API routes for AI analysis
+├── layout.tsx          # Root layout with theme provider
+├── page.tsx            # Homepage
+└── globals.css         # Global styles
 
-This project is currently auto-deployed to `https://webvitals-com.sentry.dev/` via Vercel. This project is available via Sentry's Vercel organization.
+components/              # Reusable UI components
+├── ui/                 # shadcn/ui component library
+├── HeroSection.tsx     # Main hero with analysis interface
+├── ChatInterface.tsx   # AI conversation interface
+├── MessageRenderer.tsx # AI tool output rendering
+└── ThemeProvider.tsx   # Next.js theme management
+
+lib/                     # Utilities and services
+├── utils.ts            # Shared utility functions
+└── system-prompts.ts   # AI system prompts
+
+tools/                   # Analysis tools (simplified to 2 core tools)
+├── real-world-performance-tool.ts # Chrome UX Report data with Sentry scoring
+└── tech-detection-tool.ts # Cloudflare-based technology detection
+
+types/                   # TypeScript definitions
+├── real-world-performance.ts # CrUX data and Sentry scoring types
+└── cloudflare-tech.ts  # Technology detection types
+
+hooks/                   # React hooks
+├── use-mobile.ts       # Mobile detection hook
+└── useScrollFade.ts    # Scroll animation hook
+
+PRODUCT_SPEC.md          # Detailed product specification
+CLAUDE.md               # Development guidelines for Next.js
+```
+
+---
+
+_Building the future of actionable web performance analysis._

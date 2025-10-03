@@ -6,10 +6,15 @@
 import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
-  dsn: "https://8d7a7d6126cd2728ab8269dafec612bc@o4507449246220288.ingest.de.sentry.io/4507449254608976",
-
-  // Adjust this value in production, or use tracesSampler for greater control
+  dsn: "https://8639dbee918dc5a6b6a70cd17297ef06@o4505994951065600.ingest.us.sentry.io/4509957293801472",
+  spotlight: true,
+  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
   tracesSampleRate: 1,
+
+  // Enable logs to be sent to Sentry
+  enableLogs: true,
+
+  integrations: [Sentry.vercelAIIntegration()],
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
