@@ -19,24 +19,19 @@ initBotId({
   ],
 });
 
-const integrations = [
-  process.env.NODE_ENV !== "production"
-    ? Sentry.spotlightBrowserIntegration()
-    : null,
-  Sentry.replayIntegration(),
-  Sentry.browserTracingIntegration({
-    _experiments: {
-      enableStandaloneLcpSpans: true,
-      enableStandaloneClsSpans: true,
-    },
-  }),
-];
-
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   spotlight: process.env.NODE_ENV !== "production",
   // Add optional integrations for additional features
-  integrations: [...integrations.filter((integration) => integration !== null)],
+  integrations: [
+    Sentry.replayIntegration(),
+    Sentry.browserTracingIntegration({
+      _experiments: {
+        enableStandaloneLcpSpans: true,
+        enableStandaloneClsSpans: true,
+      },
+    }),
+  ],
 
   // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
   tracesSampleRate: 1,
