@@ -129,7 +129,7 @@ class CloudflareTechDetector {
 
   async waitForScanCompletion(
     scanId: string,
-    maxWaitTime = 60000,
+    maxWaitTime = 120000,
     pollInterval = 5000,
   ): Promise<CloudflareScanResult> {
     const startTime = Date.now();
