@@ -25,6 +25,7 @@ Sentry.init({
   integrations: [
     Sentry.replayIntegration(),
     Sentry.browserTracingIntegration({
+      idleTimeout: 3000,
       _experiments: {
         enableStandaloneLcpSpans: true,
         enableStandaloneClsSpans: true,

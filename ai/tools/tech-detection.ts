@@ -32,6 +32,8 @@ class CloudflareTechDetector {
   private async makeRequest<T>(
     endpoint: string,
     options: RequestInit = {},
+    maxRetries = 5,
+    maxRetryTime = 120000,
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers = {
@@ -40,34 +42,63 @@ class CloudflareTechDetector {
       ...options.headers,
     };
 
-    const response = await fetch(url, {
-      ...options,
-      headers,
-      next: {
-        revalidate: 3600,
-        tags: [`cloudflare:${endpoint}`],
-      },
-    });
+    const startTime = Date.now();
+    let attempt = 0;
 
-    if (!response.ok) {
-      const errorData = await response.json();
+    while (attempt < maxRetries) {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+        next: {
+          revalidate: 3600,
+          tags: [`cloudflare:${endpoint}`],
+        },
+      });
 
-      if (response.status === 409 && errorData.result?.tasks) {
-        return errorData as T;
+      if (!response.ok) {
+        const errorData = await response.json();
+
+        if (response.status === 409 && errorData.result?.tasks) {
+          return errorData as T;
+        }
+
+        if (response.status === 404) {
+          throw new Error("Scan not ready");
+        }
+
+        if (response.status === 429) {
+          attempt++;
+          const elapsedTime = Date.now() - startTime;
+
+          if (attempt >= maxRetries || elapsedTime >= maxRetryTime) {
+            throw new Error(
+              `Cloudflare API error ${response.status}: ${
+                errorData.message || response.statusText
+              }`,
+            );
+          }
+
+          const delay = Math.min(1000 * 2 ** attempt, 30000);
+          Sentry.logger.warn("Rate limited by Cloudflare, retrying", {
+            attempt,
+            delay,
+            elapsedTime,
+          });
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue;
+        }
+
+        throw new Error(
+          `Cloudflare API error ${response.status}: ${
+            errorData.message || response.statusText
+          }`,
+        );
       }
 
-      if (response.status === 404) {
-        throw new Error("Scan not ready");
-      }
-
-      throw new Error(
-        `Cloudflare API error ${response.status}: ${
-          errorData.message || response.statusText
-        }`,
-      );
+      return response.json();
     }
 
-    return response.json();
+    throw new Error("Max retries exceeded");
   }
 
   async searchScans(query: string): Promise<CloudflareSearchResponse> {

@@ -25,7 +25,7 @@ async function fetchPerformanceData(
   )}&strategy=${strategy}&fields=loadingExperience&key=${apiKey}`;
 
   const response = await fetch(apiUrl, {
-    signal: AbortSignal.timeout(90000),
+    signal: AbortSignal.timeout(120000),
     next: {
       revalidate: 3600,
       tags: [`crux:${strategy}:${url}`],
