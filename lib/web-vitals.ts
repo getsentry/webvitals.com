@@ -114,12 +114,18 @@ export function calculateMetricScore(metricKey: string, value: number): number {
   const threshold = LIGHTHOUSE_THRESHOLDS[metricKey];
   if (!threshold) return 50; // fallback
 
-  if (value <= threshold.good) return 100;
-  if (value >= threshold.poor) return 0;
+  // CLS values from CrUX are scaled by 100, need to convert back
+  const actualValue =
+    metricKey === "cumulative_layout_shift" ? value / 100 : value;
+
+  if (actualValue <= threshold.good) return 100;
+  if (actualValue >= threshold.poor) return 0;
 
   // Linear interpolation between good and poor
   return Math.round(
-    100 - ((value - threshold.good) / (threshold.poor - threshold.good)) * 100,
+    100 -
+      ((actualValue - threshold.good) / (threshold.poor - threshold.good)) *
+        100,
   );
 }
 

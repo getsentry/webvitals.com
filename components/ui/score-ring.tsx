@@ -406,7 +406,7 @@ export default function ScoreRing({
                     <span className="text-xs text-foreground/60">Value:</span>
                     <span className="font-medium text-xs">
                       {segment.metric.key === "cumulative-layout-shift"
-                        ? segment.metric.value.toFixed(3)
+                        ? (segment.metric.value / 100).toFixed(3)
                         : segment.metric.key === "first-contentful-paint" ||
                             segment.metric.key === "largest-contentful-paint" ||
                             segment.metric.key ===

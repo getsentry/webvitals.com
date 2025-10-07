@@ -33,6 +33,11 @@ async function fetchPerformanceData(
   });
 
   if (!response.ok) {
+    if (response.status === 400) {
+      throw new Error(
+        `CrUX API failed for ${strategy} (${response.status}): URL may be invalid, not in CrUX dataset, or contains query parameters. URL: ${url}`,
+      );
+    }
     throw new Error(
       `CrUX API failed for ${strategy}: ${response.status} ${response.statusText}`,
     );

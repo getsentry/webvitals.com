@@ -29,19 +29,24 @@ export default function DistributionBar({
     needsImprovement: 0,
   };
 
+  // CLS values from CrUX are scaled by 100, need to convert back
+  const actualPercentile =
+    metricKey === "cumulative_layout_shift" ? percentile / 100 : percentile;
+
   // Calculate marker position based on actual thresholds and percentile
   let markerPosition = 0;
 
-  if (percentile <= thresholds.good) {
+  if (actualPercentile <= thresholds.good) {
     // Position within good range (green section)
-    const progress = thresholds.good > 0 ? percentile / thresholds.good : 0;
+    const progress =
+      thresholds.good > 0 ? actualPercentile / thresholds.good : 0;
     markerPosition = progress * distributions[0].proportion * 100;
-  } else if (percentile <= thresholds.needsImprovement) {
+  } else if (actualPercentile <= thresholds.needsImprovement) {
     // Position within needs improvement range (yellow section)
     const greenWidth = distributions[0].proportion * 100;
     const yellowWidth = distributions[1].proportion * 100;
     const progress =
-      (percentile - thresholds.good) /
+      (actualPercentile - thresholds.good) /
       (thresholds.needsImprovement - thresholds.good);
     markerPosition = greenWidth + progress * yellowWidth;
   } else {

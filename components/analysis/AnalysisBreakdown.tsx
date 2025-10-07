@@ -42,6 +42,11 @@ export default function AnalysisBreakdownDisplay({
   data,
   className,
 }: AnalysisBreakdownProps) {
+  const severityOrder = { critical: 0, warning: 1, info: 2 };
+  const sortedPoints = [...data.points].sort(
+    (a, b) => severityOrder[a.severity] - severityOrder[b.severity],
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -57,7 +62,7 @@ export default function AnalysisBreakdownDisplay({
         </CardHeader>
         <CardContent>
           <Accordion type="multiple" className="space-y-2">
-            {data.points.map((point, index) => (
+            {sortedPoints.map((point, index) => (
               <AccordionItem
                 key={index}
                 value={`point-${index}`}
