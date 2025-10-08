@@ -56,9 +56,33 @@ class CloudflareTechDetector {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: any;
+        let errorMessage = response.statusText;
 
-        if (response.status === 409 && errorData.result?.tasks) {
+        try {
+          const contentType = response.headers.get("content-type");
+          if (contentType?.includes("application/json")) {
+            errorData = await response.json();
+            errorMessage = errorData.message || response.statusText;
+          } else {
+            const textResponse = await response.text();
+            Sentry.logger.warn("Non-JSON error response from Cloudflare", {
+              status: response.status,
+              contentType,
+              responsePreview: textResponse.substring(0, 200),
+            });
+            errorMessage = `${response.statusText} (non-JSON response)`;
+          }
+        } catch (parseError) {
+          Sentry.logger.warn("Failed to parse error response", {
+            status: response.status,
+            error:
+              parseError instanceof Error ? parseError.message : "Unknown error",
+          });
+          errorMessage = response.statusText;
+        }
+
+        if (response.status === 409 && errorData?.result?.tasks) {
           return errorData as T;
         }
 
@@ -71,11 +95,7 @@ class CloudflareTechDetector {
           const elapsedTime = Date.now() - startTime;
 
           if (attempt >= maxRetries || elapsedTime >= maxRetryTime) {
-            throw new Error(
-              `Cloudflare API error ${response.status}: ${
-                errorData.message || response.statusText
-              }`,
-            );
+            throw new Error(`Cloudflare API error ${response.status}: ${errorMessage}`);
           }
 
           const delay = Math.min(1000 * 2 ** attempt, 30000);
@@ -88,11 +108,7 @@ class CloudflareTechDetector {
           continue;
         }
 
-        throw new Error(
-          `Cloudflare API error ${response.status}: ${
-            errorData.message || response.statusText
-          }`,
-        );
+        throw new Error(`Cloudflare API error ${response.status}: ${errorMessage}`);
       }
 
       return response.json();
@@ -129,23 +145,46 @@ class CloudflareTechDetector {
 
   async waitForScanCompletion(
     scanId: string,
-    maxWaitTime = 120000,
-    pollInterval = 5000,
+    maxWaitTime = 180000, // 3 minutes
+    pollInterval = 10000, // 10 seconds (per docs recommendation)
   ): Promise<CloudflareScanResult> {
     const startTime = Date.now();
+    let attempt = 0;
 
     while (Date.now() - startTime < maxWaitTime) {
+      attempt++;
+      const elapsedTime = Date.now() - startTime;
+
       try {
         const result = await this.getScanResult(scanId);
 
+        Sentry.logger.info("Scan status check", {
+          scanId,
+          attempt,
+          elapsedTime,
+          status: result?.task?.status,
+          success: result?.task?.success,
+        });
+
         if (result?.task?.success === true) {
+          Sentry.logger.info("Scan completed successfully", {
+            scanId,
+            totalTime: elapsedTime,
+            attempts: attempt,
+          });
           return result;
         } else if (result?.task?.success === false) {
           throw new Error("Scan failed");
         }
       } catch (error) {
         if (error instanceof Error && error.message === "Scan not ready") {
-          continue;
+          Sentry.logger.info("Scan still in progress", {
+            scanId,
+            attempt,
+            elapsedTime,
+            remainingTime: maxWaitTime - elapsedTime,
+          });
+          // Continue to wait
         } else {
           throw error;
         }
@@ -154,7 +193,7 @@ class CloudflareTechDetector {
       await new Promise((resolve) => setTimeout(resolve, pollInterval));
     }
 
-    throw new Error(`Scan did not complete within ${maxWaitTime}ms`);
+    throw new Error(`Scan did not complete within ${maxWaitTime}ms (${attempt} attempts)`);
   }
 }
 
@@ -181,14 +220,36 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
     let scanResult: CloudflareScanResult | undefined;
 
     try {
+      Sentry.logger.info("Searching for existing scans", {
+        url: normalizedUrl,
+        query: searchQuery,
+      });
+
       const searchResults = await client.searchScans(searchQuery);
+
+      Sentry.logger.info("Search results", {
+        url: normalizedUrl,
+        resultCount: searchResults.results?.length || 0,
+        hasResults: searchResults.results && searchResults.results.length > 0,
+      });
 
       if (searchResults.results?.length > 0) {
         const recentResult = searchResults.results[0];
         const scanId = recentResult.task.uuid;
 
+        Sentry.logger.info("Found existing scan", {
+          scanId,
+          scanUrl: recentResult.task.url,
+          scanStatus: recentResult.task.status,
+        });
+
         try {
           scanResult = await client.getScanResult(scanId);
+          Sentry.logger.info("Retrieved existing scan result", {
+            scanId,
+            hasWappaData: !!scanResult?.meta?.processors?.wappa?.data,
+            techCount: scanResult?.meta?.processors?.wappa?.data?.length || 0,
+          });
         } catch (fetchError) {
           Sentry.logger.warn("Failed to fetch scan result", {
             scanId,
@@ -207,6 +268,10 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
     }
 
     if (!scanResult?.meta?.processors?.wappa?.data) {
+      Sentry.logger.info("No existing scan with tech data, submitting new scan", {
+        url: normalizedUrl,
+      });
+
       const submission = await client.submitScan(normalizedUrl);
       let scanId: string;
 
@@ -218,13 +283,30 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
         throw new Error("Failed to get scan ID from submission");
       }
 
+      Sentry.logger.info("Scan submitted", {
+        scanId,
+        url: normalizedUrl,
+        visibility: submission.visibility,
+      });
+
       try {
         scanResult = await client.getScanResult(scanId);
-        if (scanResult?.task?.success !== true) {
+
+        // Check if scan is still in progress (not finished yet)
+        const isStillProcessing =
+          scanResult?.task?.status &&
+          !['finished', 'failed', 'complete'].includes(scanResult.task.status.toLowerCase());
+
+        if (scanResult?.task?.success !== true && isStillProcessing) {
+          Sentry.logger.info("Scan not complete, starting to poll", {
+            scanId,
+            status: scanResult?.task?.status,
+          });
           scanResult = await client.waitForScanCompletion(scanId);
         }
       } catch (error) {
         if (error instanceof Error && error.message === "Scan not ready") {
+          Sentry.logger.info("Scan not ready, starting to poll", { scanId });
           scanResult = await client.waitForScanCompletion(scanId);
         } else {
           throw error;
@@ -233,7 +315,51 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
     }
 
     if (!scanResult || !scanResult.task?.success) {
-      throw new Error("Failed to get valid scan results");
+      // Check if there are specific error details from Cloudflare
+      const cloudflareErrors = scanResult?.task?.errors || [];
+      const firstError = cloudflareErrors[0];
+
+      const errorContext = {
+        hasScanResult: !!scanResult,
+        taskExists: !!scanResult?.task,
+        taskSuccess: scanResult?.task?.success,
+        taskStatus: scanResult?.task?.status,
+        taskUuid: scanResult?.task?.uuid,
+        cloudflareErrors,
+      };
+
+      // Determine the specific failure reason
+      let errorMessage = "Failed to scan website for technology detection.";
+
+      if (firstError) {
+        // Use the actual Cloudflare error message
+        if (firstError.code === 1015) {
+          // Rate limit error
+          errorMessage = `Cloudflare rate limit exceeded: ${firstError.message}`;
+        } else {
+          errorMessage = `Cloudflare scan error: ${firstError.message}`;
+          if (firstError.name) {
+            errorMessage += ` (${firstError.name})`;
+          }
+        }
+      } else if (!scanResult) {
+        errorMessage += " No scan result returned.";
+      } else if (scanResult.task?.status === 'finished' && scanResult.task?.success === false) {
+        errorMessage += " Cloudflare scan completed but failed. This can happen if the website blocks automated scanning, returns errors, or is unreachable.";
+      } else if (scanResult.task?.status === 'failed') {
+        errorMessage += " Cloudflare scan failed. The website may be blocking automated requests.";
+      } else {
+        errorMessage += ` Status: ${scanResult.task?.status || "unknown"}, Success: ${scanResult.task?.success}`;
+      }
+
+      Sentry.captureException(new Error(errorMessage), {
+        tags: {
+          component: "tech-detection-tool",
+          operation: "detectTechnologies",
+        },
+        extra: { url: normalizedUrl, ...errorContext },
+      });
+      throw new Error(errorMessage);
     }
 
     const wappaData = scanResult?.meta?.processors?.wappa?.data || [];

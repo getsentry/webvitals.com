@@ -95,9 +95,9 @@ export default function PerformanceResult({
   const hasEmptyMetrics =
     data.hasData &&
     (!data.mobile?.fieldData?.metrics ||
-      Object.keys(data.mobile.fieldData.metrics).length === 0) &&
+      Object.keys(data.mobile?.fieldData?.metrics || {}).length === 0) &&
     (!data.desktop?.fieldData?.metrics ||
-      Object.keys(data.desktop.fieldData.metrics).length === 0);
+      Object.keys(data.desktop?.fieldData?.metrics || {}).length === 0);
 
   if (!data.hasData || hasEmptyMetrics) {
     return (

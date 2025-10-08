@@ -131,7 +131,7 @@ stores/              # State management (Zustand)
 - Server-side error tracking with performance monitoring
 - AI SDK integration for agent monitoring
 - Source maps uploaded during build (requires `SENTRY_AUTH_TOKEN`)
-- Project: "webvitals", Org: "sergtech"
+- Project: "webvitals", Org: "sentry"
 
 ## Development Notes
 

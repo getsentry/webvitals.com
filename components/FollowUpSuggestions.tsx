@@ -115,9 +115,11 @@ export default function FollowUpSuggestions() {
     const hasPerformanceMetrics =
       performanceData?.hasData &&
       ((performanceData?.mobile?.fieldData?.metrics &&
-        Object.keys(performanceData.mobile.fieldData.metrics).length > 0) ||
+        Object.keys(performanceData?.mobile?.fieldData?.metrics || {}).length >
+          0) ||
         (performanceData?.desktop?.fieldData?.metrics &&
-          Object.keys(performanceData.desktop.fieldData.metrics).length > 0));
+          Object.keys(performanceData?.desktop?.fieldData?.metrics || {})
+            .length > 0));
 
     if (
       userMessageCount === 1 && // Only for initial analysis
@@ -178,9 +180,11 @@ export default function FollowUpSuggestions() {
     const hasPerformanceMetrics =
       performanceData?.hasData &&
       ((performanceData?.mobile?.fieldData?.metrics &&
-        Object.keys(performanceData.mobile.fieldData.metrics).length > 0) ||
+        Object.keys(performanceData?.mobile?.fieldData?.metrics || {}).length >
+          0) ||
         (performanceData?.desktop?.fieldData?.metrics &&
-          Object.keys(performanceData.desktop.fieldData.metrics).length > 0));
+          Object.keys(performanceData?.desktop?.fieldData?.metrics || {})
+            .length > 0));
 
     if (userMessageCount === 1 && !hasPerformanceMetrics && followUpData) {
       setFollowUpData(null);
@@ -217,10 +221,7 @@ export default function FollowUpSuggestions() {
     setMessages([]);
     // Remove URL parameter
     history.replaceState(null, "", "/");
-
-    if (status === "submitted" || status === "streaming") {
-      window.location.reload();
-    }
+    window.location.reload();
   };
 
   return (

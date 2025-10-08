@@ -50,10 +50,7 @@ export default function ChatInterface() {
     setMessages([]);
     // Remove URL parameter
     history.replaceState(null, "", "/");
-
-    if (status === "submitted" || status === "streaming") {
-      window.location.reload();
-    }
+    window.location.reload();
   };
 
   return (

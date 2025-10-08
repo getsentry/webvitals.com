@@ -2,6 +2,7 @@
 
 import { useChatMessages } from "@ai-sdk-tools/store";
 import type { TextUIPart, ToolUIPart, UIMessage } from "ai";
+import { AnimatePresence, motion } from "motion/react";
 import { memo, useCallback, useEffect, useMemo } from "react";
 
 import {
@@ -151,77 +152,99 @@ const MessageRenderer = memo(function MessageRenderer({
     return null;
   }
 
+  // Check if all tools have completed successfully
+  const allToolsComplete = useMemo(() => {
+    if (toolParts.length < 3) return false; // Wait for all 3 tools before hiding
+    return toolParts.every(
+      (tool) => tool.state === "output-available" && !tool.errorText,
+    );
+  }, [toolParts]);
+
+  // Show tools during loading or if there are errors
+  const shouldShowTools = !allToolsComplete;
+
   return (
     <div key={message.id}>
-      {toolParts.map((part, i) => {
-        if (part.type === "tool-getRealWorldPerformance") {
-          const performanceTool = part as PerformanceToolUIPart;
+      <AnimatePresence mode="wait">
+        {shouldShowTools && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            {toolParts.map((part, i) => {
+              if (part.type === "tool-getRealWorldPerformance") {
+                const performanceTool = part as PerformanceToolUIPart;
 
-          return (
-            <div key={`${message.id}-perf-${i}`}>
-              <Tool defaultOpen={false}>
-                <ToolHeader
-                  type={"Analyzing performance" as `tool-${string}`}
-                  state={performanceTool.state}
-                />
-                <ToolContent>
-                  <ToolInput input={performanceTool.input} />
-                  <ToolOutput
-                    output={performanceTool.output}
-                    errorText={performanceTool.errorText}
-                  />
-                </ToolContent>
-              </Tool>
-            </div>
-          );
-        }
+                return (
+                  <div key={`${message.id}-perf-${i}`}>
+                    <Tool defaultOpen={false}>
+                      <ToolHeader
+                        type={"Analyzing performance" as `tool-${string}`}
+                        state={performanceTool.state}
+                      />
+                      <ToolContent>
+                        <ToolInput input={performanceTool.input} />
+                        <ToolOutput
+                          output={performanceTool.output}
+                          errorText={performanceTool.errorText}
+                        />
+                      </ToolContent>
+                    </Tool>
+                  </div>
+                );
+              }
 
-        if (part.type === "tool-detectTechnologies") {
-          const techTool = part as TechnologyToolUIPart;
+              if (part.type === "tool-detectTechnologies") {
+                const techTool = part as TechnologyToolUIPart;
 
-          return (
-            <div key={`${message.id}-tech-${i}`}>
-              <Tool defaultOpen={false}>
-                <ToolHeader
-                  type={"Technology detection" as `tool-${string}`}
-                  state={techTool.state}
-                />
-                <ToolContent>
-                  <ToolInput input={techTool.input} />
-                  <ToolOutput
-                    output={techTool.output}
-                    errorText={techTool.errorText}
-                  />
-                </ToolContent>
-              </Tool>
-            </div>
-          );
-        }
+                return (
+                  <div key={`${message.id}-tech-${i}`}>
+                    <Tool defaultOpen={false}>
+                      <ToolHeader
+                        type={"Technology detection" as `tool-${string}`}
+                        state={techTool.state}
+                      />
+                      <ToolContent>
+                        <ToolInput input={techTool.input} />
+                        <ToolOutput
+                          output={techTool.output}
+                          errorText={techTool.errorText}
+                        />
+                      </ToolContent>
+                    </Tool>
+                  </div>
+                );
+              }
 
-        if (part.type === "tool-generateAnalysisBreakdown") {
-          const breakdownTool = part as AnalysisBreakdownToolUIPart;
+              if (part.type === "tool-generateAnalysisBreakdown") {
+                const breakdownTool = part as AnalysisBreakdownToolUIPart;
 
-          return (
-            <div key={`${message.id}-breakdown-${i}`}>
-              <Tool defaultOpen={false}>
-                <ToolHeader
-                  type={"Analysis breakdown" as `tool-${string}`}
-                  state={breakdownTool.state}
-                />
-                <ToolContent>
-                  <ToolInput input={breakdownTool.input} />
-                  <ToolOutput
-                    output={breakdownTool.output}
-                    errorText={breakdownTool.errorText}
-                  />
-                </ToolContent>
-              </Tool>
-            </div>
-          );
-        }
+                return (
+                  <div key={`${message.id}-breakdown-${i}`}>
+                    <Tool defaultOpen={false}>
+                      <ToolHeader
+                        type={"Analysis breakdown" as `tool-${string}`}
+                        state={breakdownTool.state}
+                      />
+                      <ToolContent>
+                        <ToolInput input={breakdownTool.input} />
+                        <ToolOutput
+                          output={breakdownTool.output}
+                          errorText={breakdownTool.errorText}
+                        />
+                      </ToolContent>
+                    </Tool>
+                  </div>
+                );
+              }
 
-        return null;
-      })}
+              return null;
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {performanceParts.map((performanceTool, i) => {
         if (
@@ -267,9 +290,9 @@ const MessageRenderer = memo(function MessageRenderer({
           return (
             output?.hasData &&
             ((output.mobile?.fieldData?.metrics &&
-              Object.keys(output.mobile.fieldData.metrics).length > 0) ||
+              Object.keys(output.mobile?.fieldData?.metrics || {}).length > 0) ||
               (output.desktop?.fieldData?.metrics &&
-                Object.keys(output.desktop.fieldData.metrics).length > 0))
+                Object.keys(output.desktop?.fieldData?.metrics || {}).length > 0))
           );
         });
 

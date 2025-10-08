@@ -13,6 +13,13 @@ export interface CloudflareScanResult {
     url?: string;
     domain?: string;
     success?: boolean;
+    status?: string; // e.g., "Queued", "InProgress", "Finished"
+    errors?: Array<{
+      name: string;
+      message: string;
+      detail?: string;
+      code?: number;
+    }>;
   };
   page?: {
     url?: string;
@@ -33,6 +40,7 @@ export interface CloudflareSearchResult {
     time: string;
     url: string;
     domain: string;
+    status?: string;
   };
   result: string;
   meta?: {
@@ -50,6 +58,7 @@ export interface CloudflareSearchResponse {
 
 export interface CloudflareSubmitResponse {
   uuid?: string;
+  visibility?: string;
   result?: {
     tasks: Array<{
       uuid: string;
