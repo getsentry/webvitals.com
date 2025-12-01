@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Only delay the /ttfb page
   if (request.nextUrl.pathname === "/ttfb") {
     await new Promise((resolve) => setTimeout(resolve, 2000));
