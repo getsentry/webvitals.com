@@ -25,13 +25,6 @@ export const analysisBreakdownTool = tool({
       technologyData: TechnologyDetectionOutput;
     };
 
-<<<<<<< Updated upstream
-    try {
-      const result = await generateObject({
-        model: openai("gpt-4o-mini"),
-        schema: AnalysisBreakdownSchema,
-        prompt: `You are an expert web performance consultant. Analyze the performance and technology data to create a structured breakdown.
-=======
     const startTime = Date.now();
 
     return Sentry.startSpan(
@@ -50,7 +43,6 @@ export const analysisBreakdownTool = tool({
             model: openai("gpt-4o-mini"),
             schema: AnalysisBreakdownSchema,
             prompt: `You are an expert web performance consultant. Analyze the performance and technology data to create a structured breakdown.
->>>>>>> Stashed changes
 
 Performance Data:
 ${JSON.stringify(performanceData, null, 2)}
@@ -64,7 +56,7 @@ You must return a JSON object with this exact structure:
   "points": [
     {
       "title": "Main point title (5-8 words)",
-      "summary": "Brief summary (1-2 sentences)", 
+      "summary": "Brief summary (1-2 sentences)",
       "details": "Supporting details (2-3 sentences)",
       "severity": "critical" | "warning" | "info"
     }
@@ -87,52 +79,16 @@ Guidelines:
 - Connect issues to user frustrations and business impact
 - Consider mobile vs desktop differences when significant
 - Suggest specific, actionable improvements`,
-        experimental_telemetry: {
-          isEnabled: true,
-          recordInputs: true,
-          recordOutputs: true,
-          functionId: "analysis-breakdown-tool",
-        },
-      });
+            experimental_telemetry: {
+              isEnabled: true,
+              recordInputs: true,
+              recordOutputs: true,
+              functionId: "analysis-breakdown-tool",
+            },
+          });
 
-      const validationResult = AnalysisBreakdownSchema.safeParse(result.object);
-      if (!validationResult.success) {
-        Sentry.logger.error("Schema validation failed", {
-          error: validationResult.error,
-          rawObject: result.object,
-        });
-        throw new Error(
-          `Schema validation failed: ${JSON.stringify(validationResult.error.issues)}`,
-        );
-      }
+          const durationMs = Date.now() - startTime;
 
-<<<<<<< Updated upstream
-      Sentry.logger.debug("Analysis breakdown generated", {
-        hasPerformanceData: !!performanceData?.hasData,
-        hasTechnologyData: !!technologyData,
-        pointsGenerated: result.object.points.length,
-      });
-
-      return result.object;
-    } catch (error) {
-      Sentry.logger.error("Analysis breakdown generation failed", {
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-
-      Sentry.captureException(error, {
-        tags: {
-          component: "analysis-breakdown-tool",
-          operation: "generateObject",
-        },
-        extra: {
-          hasPerformanceData: !!performanceData?.hasData,
-          hasTechnologyData: !!technologyData,
-        },
-      });
-
-      throw error;
-    }
-=======
           const validationResult = AnalysisBreakdownSchema.safeParse(
             result.object
           );
@@ -217,6 +173,5 @@ Guidelines:
         }
       }
     );
->>>>>>> Stashed changes
   },
 });
