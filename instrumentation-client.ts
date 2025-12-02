@@ -6,24 +6,30 @@ import * as Sentry from "@sentry/nextjs";
 
 import { initBotId } from "botid/client/core";
 
-initBotId({
-  protect: [
-    {
-      path: "/api/chat",
-      method: "POST",
-    },
-    {
-      path: "/api/follow-up-suggestions",
-      method: "POST",
-    },
-  ],
-});
+// Only initialize BotId when running on Vercel (OIDC tokens are only available there)
+if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
+  initBotId({
+    protect: [
+      {
+        path: "/api/chat",
+        method: "POST",
+      },
+      {
+        path: "/api/follow-up-suggestions",
+        method: "POST",
+      },
+    ],
+  });
+}
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   spotlight: process.env.NODE_ENV !== "production",
   integrations: [
-    Sentry.replayIntegration(),
+    Sentry.replayIntegration({
+      maskAllInputs: false,
+      maskAllText: false,
+    }),
     Sentry.browserTracingIntegration({
       idleTimeout: 3000,
       _experiments: {

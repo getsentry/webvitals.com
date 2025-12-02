@@ -25,16 +25,29 @@ export default function HeroSection() {
 
   const { messages, sendMessage, status } = useChat({
     onFinish: (message) => {
+      const hasToolCalls = message.message.parts?.some((part) =>
+        part.type?.includes("tool"),
+      );
+
+      // Track frontend analysis completion
+      Sentry.metrics.count("webvitals.frontend.analysis_completed", 1, {
+        attributes: {
+          has_tool_calls: String(hasToolCalls),
+          message_count: String(messages.length + 1),
+        },
+      });
+
       Sentry.logger.info("Chat analysis completed", {
         messageCount: messages.length + 1,
-        hasToolCalls: message.message.parts?.some((part) =>
-          part.type?.includes("tool"),
-        ),
+        hasToolCalls,
         messageId: message.message.id,
         role: message.message.role,
       });
     },
     onError: (error) => {
+      // Track frontend analysis errors
+      Sentry.metrics.count("webvitals.frontend.analysis_error", 1);
+
       Sentry.captureException(error, {
         tags: {
           area: "frontend-chat",
@@ -56,6 +69,13 @@ export default function HeroSection() {
   ) => {
     Sentry.setTag("analysis.domain", domain);
     Sentry.setTag("analysis.devices", config.devices.join(","));
+
+    // Track frontend analysis initiation
+    Sentry.metrics.count("webvitals.frontend.analysis_initiated", 1, {
+      attributes: {
+        devices: config.devices.join(","),
+      },
+    });
 
     Sentry.logger.info("Performance analysis initiated", {
       domain,

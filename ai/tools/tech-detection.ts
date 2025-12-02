@@ -118,25 +118,47 @@ class CloudflareTechDetector {
   }
 
   async searchScans(query: string): Promise<CloudflareSearchResponse> {
-    const searchParams = new URLSearchParams({
-      q: query,
-      limit: "1",
-    });
+    return Sentry.startSpan(
+      {
+        name: "cloudflare.search",
+        op: "http.client",
+        attributes: {
+          "cloudflare.query": query,
+        },
+      },
+      async () => {
+        const searchParams = new URLSearchParams({
+          q: query,
+          limit: "1",
+        });
 
-    return this.makeRequest<CloudflareSearchResponse>(
-      `/search?${searchParams}`,
+        return this.makeRequest<CloudflareSearchResponse>(
+          `/search?${searchParams}`,
+        );
+      },
     );
   }
 
   async submitScan(url: string): Promise<CloudflareSubmitResponse> {
-    return this.makeRequest<CloudflareSubmitResponse>("/scan", {
-      method: "POST",
-      body: JSON.stringify({
-        url,
-        visibility: "Unlisted",
-        screenshotsResolutions: [],
-      }),
-    });
+    return Sentry.startSpan(
+      {
+        name: "cloudflare.submit",
+        op: "http.client",
+        attributes: {
+          "cloudflare.scan_url": url,
+        },
+      },
+      async () => {
+        return this.makeRequest<CloudflareSubmitResponse>("/scan", {
+          method: "POST",
+          body: JSON.stringify({
+            url,
+            visibility: "Unlisted",
+            screenshotsResolutions: [],
+          }),
+        });
+      },
+    );
   }
 
   async getScanResult(scanId: string): Promise<CloudflareScanResult> {
@@ -148,57 +170,100 @@ class CloudflareTechDetector {
     maxWaitTime = 180000, // 3 minutes
     pollInterval = 10000, // 10 seconds (per docs recommendation)
   ): Promise<CloudflareScanResult> {
-    const startTime = Date.now();
-    let attempt = 0;
+    return Sentry.startSpan(
+      {
+        name: "cloudflare.poll",
+        op: "function",
+        attributes: {
+          "cloudflare.scan_id": scanId,
+          "cloudflare.max_wait_ms": maxWaitTime,
+          "cloudflare.poll_interval_ms": pollInterval,
+        },
+      },
+      async (span) => {
+        const startTime = Date.now();
+        let attempt = 0;
 
-    while (Date.now() - startTime < maxWaitTime) {
-      attempt++;
-      const elapsedTime = Date.now() - startTime;
+        while (Date.now() - startTime < maxWaitTime) {
+          attempt++;
+          const elapsedTime = Date.now() - startTime;
 
-      try {
-        const result = await this.getScanResult(scanId);
+          try {
+            const result = await this.getScanResult(scanId);
 
-        Sentry.logger.info("Scan status check", {
-          scanId,
-          attempt,
-          elapsedTime,
-          status: result?.task?.status,
-          success: result?.task?.success,
+            Sentry.logger.info("Scan status check", {
+              scanId,
+              attempt,
+              elapsedTime,
+              status: result?.task?.status,
+              success: result?.task?.success,
+            });
+
+            if (result?.task?.success === true) {
+              span.setAttributes({
+                "cloudflare.poll_attempts": attempt,
+                "cloudflare.poll_duration_ms": elapsedTime,
+                "cloudflare.poll_success": true,
+              });
+
+              Sentry.logger.info("Scan completed successfully", {
+                scanId,
+                totalTime: elapsedTime,
+                attempts: attempt,
+              });
+
+              // Track polling metrics
+              Sentry.metrics.distribution(
+                "webvitals.cloudflare.poll_duration_ms",
+                elapsedTime,
+                {
+                  unit: "millisecond",
+                  attributes: {
+                    success: "true",
+                    attempts: String(attempt),
+                  },
+                },
+              );
+
+              return result;
+            } else if (result?.task?.success === false) {
+              throw new Error("Scan failed");
+            }
+          } catch (error) {
+            if (error instanceof Error && error.message === "Scan not ready") {
+              Sentry.logger.info("Scan still in progress", {
+                scanId,
+                attempt,
+                elapsedTime,
+                remainingTime: maxWaitTime - elapsedTime,
+              });
+              // Continue to wait
+            } else {
+              throw error;
+            }
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, pollInterval));
+        }
+
+        span.setAttributes({
+          "cloudflare.poll_attempts": attempt,
+          "cloudflare.poll_duration_ms": Date.now() - startTime,
+          "cloudflare.poll_success": false,
+          "cloudflare.poll_timeout": true,
         });
 
-        if (result?.task?.success === true) {
-          Sentry.logger.info("Scan completed successfully", {
-            scanId,
-            totalTime: elapsedTime,
-            attempts: attempt,
-          });
-          return result;
-        } else if (result?.task?.success === false) {
-          throw new Error("Scan failed");
-        }
-      } catch (error) {
-        if (error instanceof Error && error.message === "Scan not ready") {
-          Sentry.logger.info("Scan still in progress", {
-            scanId,
-            attempt,
-            elapsedTime,
-            remainingTime: maxWaitTime - elapsedTime,
-          });
-          // Continue to wait
-        } else {
-          throw error;
-        }
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, pollInterval));
-    }
-
-    throw new Error(`Scan did not complete within ${maxWaitTime}ms (${attempt} attempts)`);
+        throw new Error(
+          `Scan did not complete within ${maxWaitTime}ms (${attempt} attempts)`,
+        );
+      },
+    );
   }
 }
 
 async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
   const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
+  const startTime = Date.now();
 
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
   const apiToken = process.env.CLOUDFLARE_API_TOKEN;
@@ -211,13 +276,25 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
 
   const client = new CloudflareTechDetector(accountId, apiToken);
 
-  try {
-    Sentry.logger.info("Starting technology detection", {
-      url: normalizedUrl,
-    });
+  return Sentry.startSpan(
+    {
+      name: "cloudflare.detectTechnologies",
+      op: "function",
+      attributes: {
+        "cloudflare.url": normalizedUrl,
+      },
+    },
+    async (span) => {
+      let usedExistingScan = false;
+      let pollAttempts = 0;
 
-    const searchQuery = `task.url:"${normalizedUrl}"`;
-    let scanResult: CloudflareScanResult | undefined;
+      try {
+        Sentry.logger.info("Starting technology detection", {
+          url: normalizedUrl,
+        });
+
+        const searchQuery = `task.url:"${normalizedUrl}"`;
+        let scanResult: CloudflareScanResult | undefined;
 
     try {
       Sentry.logger.info("Searching for existing scans", {
@@ -245,6 +322,7 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
 
         try {
           scanResult = await client.getScanResult(scanId);
+          usedExistingScan = !!scanResult?.meta?.processors?.wappa?.data;
           Sentry.logger.info("Retrieved existing scan result", {
             scanId,
             hasWappaData: !!scanResult?.meta?.processors?.wappa?.data,
@@ -370,33 +448,86 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
       categories: tech.categories?.map((cat) => cat.name) || [],
     }));
 
-    const result: TechDetectionOutput = {
-      technologies: technologies.sort((a, b) => b.confidence - a.confidence),
-    };
+        const result: TechDetectionOutput = {
+          technologies: technologies.sort((a, b) => b.confidence - a.confidence),
+        };
 
-    Sentry.logger.info("Technology detection completed", {
-      url: normalizedUrl,
-      techCount: technologies.length,
-      scanId: scanResult.task?.uuid,
-    });
+        const durationMs = Date.now() - startTime;
 
-    return result;
-  } catch (error) {
-    Sentry.logger.error("Technology detection failed", {
-      url: normalizedUrl,
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
+        span.setAttributes({
+          "cloudflare.used_existing_scan": usedExistingScan,
+          "cloudflare.tech_count": technologies.length,
+          "cloudflare.duration_ms": durationMs,
+          "cloudflare.success": true,
+        });
 
-    Sentry.captureException(error, {
-      tags: {
-        component: "tech-detection-tool",
-        operation: "detectTechnologies",
-      },
-      extra: { url: normalizedUrl },
-    });
+        // Track overall duration
+        Sentry.metrics.distribution(
+          "webvitals.cloudflare.duration_ms",
+          durationMs,
+          {
+            unit: "millisecond",
+            attributes: {
+              used_cached: String(usedExistingScan),
+              success: "true",
+            },
+          },
+        );
 
-    throw error;
-  }
+        // Track tech count distribution
+        Sentry.metrics.distribution(
+          "webvitals.tech.count",
+          technologies.length,
+        );
+
+        Sentry.logger.info("Technology detection completed", {
+          url: normalizedUrl,
+          techCount: technologies.length,
+          scanId: scanResult.task?.uuid,
+          durationMs,
+          usedExistingScan,
+        });
+
+        return result;
+      } catch (error) {
+        const durationMs = Date.now() - startTime;
+
+        span.setAttributes({
+          "cloudflare.success": false,
+          "cloudflare.duration_ms": durationMs,
+          "cloudflare.error": error instanceof Error ? error.message : "Unknown",
+        });
+
+        // Track failed detection
+        Sentry.metrics.distribution(
+          "webvitals.cloudflare.duration_ms",
+          durationMs,
+          {
+            unit: "millisecond",
+            attributes: {
+              success: "false",
+            },
+          },
+        );
+
+        Sentry.logger.error("Technology detection failed", {
+          url: normalizedUrl,
+          error: error instanceof Error ? error.message : "Unknown error",
+          durationMs,
+        });
+
+        Sentry.captureException(error, {
+          tags: {
+            component: "tech-detection-tool",
+            operation: "detectTechnologies",
+          },
+          extra: { url: normalizedUrl },
+        });
+
+        throw error;
+      }
+    },
+  );
 }
 
 export const techDetectionTool = tool({

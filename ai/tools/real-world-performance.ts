@@ -20,42 +20,104 @@ async function fetchPerformanceData(
   strategy: "mobile" | "desktop",
   apiKey: string,
 ) {
-  const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(
-    url,
-  )}&strategy=${strategy}&fields=loadingExperience&key=${apiKey}`;
+  const startTime = Date.now();
 
-  const response = await fetch(apiUrl, {
-    signal: AbortSignal.timeout(120000),
-    next: {
-      revalidate: 3600,
-      tags: [`crux:${strategy}:${url}`],
+  return Sentry.startSpan(
+    {
+      name: "crux.fetch",
+      op: "http.client",
+      attributes: {
+        "crux.url": url,
+        "crux.strategy": strategy,
+        "http.url": "https://www.googleapis.com/pagespeedonline/v5/runPagespeed",
+      },
     },
-  });
+    async (span) => {
+      const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(
+        url,
+      )}&strategy=${strategy}&fields=loadingExperience&key=${apiKey}`;
 
-  if (!response.ok) {
-    if (response.status === 400) {
-      throw new Error(
-        `CrUX API failed for ${strategy} (${response.status}): URL may be invalid, not in CrUX dataset, or contains query parameters. URL: ${url}`,
-      );
-    }
-    throw new Error(
-      `CrUX API failed for ${strategy}: ${response.status} ${response.statusText}`,
-    );
-  }
+      const response = await fetch(apiUrl, {
+        signal: AbortSignal.timeout(120000),
+        next: {
+          revalidate: 3600,
+          tags: [`crux:${strategy}:${url}`],
+        },
+      });
 
-  const data = await response.json();
+      const durationMs = Date.now() - startTime;
 
-  Sentry.logger.info(`CrUX API response for ${strategy}`, {
-    url,
-    strategy,
-    hasLoadingExperience: !!data.loadingExperience,
-    metricsKeys: data.loadingExperience?.metrics
-      ? Object.keys(data.loadingExperience.metrics)
-      : [],
-    overallCategory: data.loadingExperience?.overall_category,
-  });
+      if (!response.ok) {
+        span.setAttributes({
+          "http.status_code": response.status,
+          "crux.success": false,
+        });
 
-  return data;
+        // Track failed API call
+        Sentry.metrics.distribution("webvitals.crux.duration_ms", durationMs, {
+          unit: "millisecond",
+          attributes: {
+            strategy,
+            success: "false",
+            status_code: String(response.status),
+          },
+        });
+
+        if (response.status === 400) {
+          throw new Error(
+            `CrUX API failed for ${strategy} (${response.status}): URL may be invalid, not in CrUX dataset, or contains query parameters. URL: ${url}`,
+          );
+        }
+        throw new Error(
+          `CrUX API failed for ${strategy}: ${response.status} ${response.statusText}`,
+        );
+      }
+
+      const data = await response.json();
+      const hasData = !!data.loadingExperience?.metrics;
+      const metricsKeys = data.loadingExperience?.metrics
+        ? Object.keys(data.loadingExperience.metrics)
+        : [];
+
+      span.setAttributes({
+        "http.status_code": 200,
+        "crux.success": true,
+        "crux.has_data": hasData,
+        "crux.metrics_count": metricsKeys.length,
+        "crux.overall_category": data.loadingExperience?.overall_category || "unknown",
+      });
+
+      // Track successful API call duration
+      Sentry.metrics.distribution("webvitals.crux.duration_ms", durationMs, {
+        unit: "millisecond",
+        attributes: {
+          strategy,
+          success: "true",
+          has_data: String(hasData),
+        },
+      });
+
+      // Track when there's no CrUX data for a domain
+      if (!hasData) {
+        Sentry.metrics.count("webvitals.crux.no_data", 1, {
+          attributes: {
+            strategy,
+          },
+        });
+      }
+
+      Sentry.logger.info("CrUX API response received", {
+        url,
+        strategy,
+        durationMs,
+        hasLoadingExperience: !!data.loadingExperience,
+        metricsKeys,
+        overallCategory: data.loadingExperience?.overall_category,
+      });
+
+      return data;
+    },
+  );
 }
 
 function transformMetrics(rawMetrics: Record<string, unknown>): FieldMetrics {
@@ -103,21 +165,31 @@ async function getRealWorldPerformance(
     throw new Error("Google API key is required for CrUX data");
   }
 
-  try {
-    const promises: Promise<unknown>[] = [];
-    const deviceOrder: Array<"mobile" | "desktop"> = [];
+  return Sentry.startSpan(
+    {
+      name: "crux.getRealWorldPerformance",
+      op: "function",
+      attributes: {
+        "crux.url": normalizedUrl,
+        "crux.devices": devices.join(","),
+      },
+    },
+    async (span) => {
+      try {
+        const promises: Promise<unknown>[] = [];
+        const deviceOrder: Array<"mobile" | "desktop"> = [];
 
-    if (devices.includes("mobile")) {
-      promises.push(fetchPerformanceData(normalizedUrl, "mobile", apiKey));
-      deviceOrder.push("mobile");
-    }
+        if (devices.includes("mobile")) {
+          promises.push(fetchPerformanceData(normalizedUrl, "mobile", apiKey));
+          deviceOrder.push("mobile");
+        }
 
-    if (devices.includes("desktop")) {
-      promises.push(fetchPerformanceData(normalizedUrl, "desktop", apiKey));
-      deviceOrder.push("desktop");
-    }
+        if (devices.includes("desktop")) {
+          promises.push(fetchPerformanceData(normalizedUrl, "desktop", apiKey));
+          deviceOrder.push("desktop");
+        }
 
-    const results = await Promise.allSettled(promises);
+        const results = await Promise.allSettled(promises);
 
     // Track errors for better error messages
     const errors: { device: string; error: string }[] = [];
@@ -260,30 +332,42 @@ async function getRealWorldPerformance(
         `Failed to fetch CrUX data for all requested devices. ${errorDetails}`,
       );
     }
-    Sentry.logger.info("Real-world performance data fetched", {
-      url: normalizedUrl,
-      hasMobileData,
-      hasDesktopData,
-      requestedDevices: devices,
-    });
+        span.setAttributes({
+          "crux.has_mobile_data": hasMobileData,
+          "crux.has_desktop_data": hasDesktopData,
+          "crux.has_any_data": result.hasData,
+        });
 
-    return result;
-  } catch (error) {
-    Sentry.logger.error("Real-world performance fetch failed", {
-      url: normalizedUrl,
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
+        Sentry.logger.info("Real-world performance data fetched", {
+          url: normalizedUrl,
+          hasMobileData,
+          hasDesktopData,
+          requestedDevices: devices,
+        });
 
-    Sentry.captureException(error, {
-      tags: {
-        component: "real-world-performance-tool",
-        operation: "getRealWorldPerformance",
-      },
-      extra: { url: normalizedUrl },
-    });
+        return result;
+      } catch (error) {
+        span.setAttributes({
+          "crux.error": true,
+        });
 
-    throw error;
-  }
+        Sentry.logger.error("Real-world performance fetch failed", {
+          url: normalizedUrl,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+
+        Sentry.captureException(error, {
+          tags: {
+            component: "real-world-performance-tool",
+            operation: "getRealWorldPerformance",
+          },
+          extra: { url: normalizedUrl },
+        });
+
+        throw error;
+      }
+    },
+  );
 }
 
 export const realWorldPerformanceTool = tool({

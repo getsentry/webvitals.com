@@ -1,12 +1,44 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import NumberFlow from "@number-flow/react";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Metric } from "web-vitals";
 import { onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
 import { SENTRY_THRESHOLDS } from "@/types/real-world-performance";
+
+// Helper to determine rating based on thresholds
+function getRating(
+  name: string,
+  value: number,
+): "good" | "needs-improvement" | "poor" {
+  let thresholds: { good: number; needsImprovement: number };
+  switch (name) {
+    case "LCP":
+      thresholds = SENTRY_THRESHOLDS.mobile["largest-contentful-paint"];
+      break;
+    case "INP":
+      thresholds = SENTRY_THRESHOLDS.mobile["interaction-to-next-paint"];
+      break;
+    case "CLS":
+      thresholds = SENTRY_THRESHOLDS.mobile["cumulative-layout-shift"];
+      break;
+    case "FCP":
+      thresholds = SENTRY_THRESHOLDS.mobile["first-contentful-paint"];
+      break;
+    case "TTFB":
+      thresholds = SENTRY_THRESHOLDS.mobile["time-to-first-byte"];
+      break;
+    default:
+      return "good";
+  }
+
+  if (value <= thresholds.good) return "good";
+  if (value <= thresholds.needsImprovement) return "needs-improvement";
+  return "poor";
+}
 
 export default function LiveWebVitals() {
   const [vitals, setVitals] = useState({
@@ -17,12 +49,44 @@ export default function LiveWebVitals() {
     TTFB: "0",
   });
 
+  // Track which metrics have been reported to Sentry (only report final values)
+  const reportedMetrics = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     const onMetric = (metric: Metric) => {
       setVitals((prev) => ({
         ...prev,
         [metric.name]: String(metric.value),
       }));
+
+      // Report to Sentry metrics (only on final value to avoid spam)
+      // For reportAllChanges, we report each update but track unique final values
+      const metricKey = metric.name.toLowerCase();
+      const rating = getRating(metric.name, metric.value);
+
+      // Report distribution metric
+      Sentry.metrics.distribution(
+        `webvitals.live.${metricKey}`,
+        metric.value,
+        {
+          unit: metric.name === "CLS" ? "none" : "millisecond",
+          attributes: {
+            rating,
+            navigationType: metric.navigationType || "unknown",
+          },
+        },
+      );
+
+      // Log only once per metric type per page load
+      if (!reportedMetrics.current.has(metric.name)) {
+        reportedMetrics.current.add(metric.name);
+        Sentry.logger.info("Web vital recorded", {
+          metric: metric.name,
+          value: metric.value,
+          rating,
+          navigationType: metric.navigationType,
+        });
+      }
     };
 
     onLCP(onMetric, { reportAllChanges: true });

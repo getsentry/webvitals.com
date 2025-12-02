@@ -1,8 +1,9 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DemoHeader from "@/components/demo/DemoHeader";
 import DemoLayout from "@/components/demo/DemoLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,8 +18,18 @@ export default function LCPClient() {
   const { setLoading } = useLoadState();
   const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(0);
+  const hasLoggedView = useRef(false);
 
   useEffect(() => {
+    // Log demo page view (only once)
+    if (!hasLoggedView.current) {
+      hasLoggedView.current = true;
+      Sentry.logger.info("Demo page viewed", { metric: "LCP" });
+      Sentry.metrics.count("webvitals.demo.page_view", 1, {
+        attributes: { metric: "LCP" },
+      });
+    }
+
     setTimeout(() => {
       setLoading(false);
     }, 0);
@@ -37,6 +48,12 @@ export default function LCPClient() {
 
     const showContentTimeout = setTimeout(() => {
       setVisible(true);
+
+      // Track demo completion
+      Sentry.metrics.count("webvitals.demo.completed", 1, {
+        attributes: { metric: "LCP", delay_ms: String(LCP_DELAY) },
+      });
+
       setTimeout(() => {
         triggerVisibilityChange(document, true);
       }, 100);

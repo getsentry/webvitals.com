@@ -10,7 +10,7 @@ const followUpSuggestionsSchema = z.object({
       z.object({
         id: z.string().describe("Unique identifier for the action"),
         title: z.string().describe("Clear, actionable follow-up question"),
-      }),
+      })
     )
     .min(3)
     .max(6)
@@ -24,10 +24,14 @@ const followUpSuggestionsSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const { isBot } = await checkBotId();
+  const startTime = Date.now();
 
-  if (isBot) {
-    return new Response("Access Denied", { status: 403 });
+  // Only check BotId when running on Vercel (OIDC tokens are only available there)
+  if (process.env.VERCEL) {
+    const { isBot } = await checkBotId();
+    if (isBot) {
+      return new Response("Access Denied", { status: 403 });
+    }
   }
 
   let requestData: {
@@ -40,31 +44,48 @@ export async function POST(request: Request) {
     url?: string;
   } = {};
 
-  try {
-    requestData = await request.json();
-    const { performanceData, technologyData, conversationHistory, url } =
-      requestData;
+  return Sentry.startSpan(
+    {
+      name: "ai.follow_up_suggestions",
+      op: "ai.run",
+      attributes: {
+        "ai.model": "gpt-4o-mini",
+        "http.method": "POST",
+        "http.route": "/api/follow-up-suggestions",
+      },
+    },
+    async (span) => {
+      try {
+        requestData = await request.json();
+        const { performanceData, technologyData, conversationHistory, url } =
+          requestData;
 
-    Sentry.logger.info("Follow-up suggestions request received", {
-      hasPerformanceData: !!performanceData,
-      hasTechnologyData: !!technologyData,
-      conversationLength: conversationHistory?.length || 0,
-      url,
-    });
+        span.setAttributes({
+          "ai.has_performance_data": !!performanceData,
+          "ai.has_technology_data": !!technologyData,
+          "ai.conversation_length": conversationHistory?.length || 0,
+        });
 
-    // Sanitize conversation history to prevent prompt injection
-    const sanitizedHistory = conversationHistory?.map((msg) => ({
-      role: msg.role,
-      // Remove control characters, limit length, trim whitespace
-      content: msg.content
-        // biome-ignore lint/suspicious/noControlCharactersInRegex: Intentionally removing control characters for security
-        .replace(/[\x00-\x1F\x7F-\x9F]/g, "")
-        .slice(0, 2000)
-        .trim(),
-    }));
+        Sentry.logger.info("Follow-up suggestions request received", {
+          hasPerformanceData: !!performanceData,
+          hasTechnologyData: !!technologyData,
+          conversationLength: conversationHistory?.length || 0,
+          url,
+        });
 
-    // Build structured messages for better prompt isolation
-    const systemPrompt = `You are analyzing web performance data and generating contextual follow-up questions.
+        // Sanitize conversation history to prevent prompt injection
+        const sanitizedHistory = conversationHistory?.map((msg) => ({
+          role: msg.role,
+          // Remove control characters, limit length, trim whitespace
+          content: msg.content
+            // biome-ignore lint/suspicious/noControlCharactersInRegex: Intentionally removing control characters for security
+            .replace(/[\x00-\x1F\x7F-\x9F]/g, "")
+            .slice(0, 2000)
+            .trim(),
+        }));
+
+        // Build structured messages for better prompt isolation
+        const systemPrompt = `You are analyzing web performance data and generating contextual follow-up questions.
 
 Based on the provided performance data, technology stack, and conversation history, generate 3-6 SHORT, actionable follow-up questions that would be most valuable for the user to explore next.
 
@@ -85,7 +106,7 @@ Examples of CONCISE follow-ups:
 - "Track business impact?"
 - "Compare RUM vs CrUX data?"`;
 
-    const userPrompt = `PERFORMANCE DATA:
+        const userPrompt = `PERFORMANCE DATA:
 ${JSON.stringify(performanceData, null, 2)}
 
 TECHNOLOGY DATA:
@@ -102,74 +123,120 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
     : ""
 }`;
 
-    const result = await generateObject({
-      model: openai("gpt-4o-mini"),
-      schema: followUpSuggestionsSchema,
-      system: systemPrompt,
-      prompt: userPrompt,
-      experimental_telemetry: {
-        isEnabled: true,
-        recordInputs: true,
-        recordOutputs: true,
-        functionId: "follow-up-suggestions-api",
-      },
-    });
+        const result = await generateObject({
+          model: openai("gpt-4o-mini"),
+          schema: followUpSuggestionsSchema,
+          system: systemPrompt,
+          prompt: userPrompt,
+          experimental_telemetry: {
+            isEnabled: true,
+            recordInputs: true,
+            recordOutputs: true,
+            functionId: "follow-up-suggestions-api",
+          },
+        });
 
-    Sentry.logger.info("Follow-up suggestions generated successfully", {
-      actionsCount: result.object.actions.length,
-      url: result.object.url,
-    });
+        const durationMs = Date.now() - startTime;
 
-    return Response.json({
-      success: true,
-      ...result.object,
-      generatedAt: new Date().toISOString(),
-    });
-  } catch (error) {
-    Sentry.logger.error("Follow-up suggestions generation failed", {
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-      errorType: error?.constructor?.name,
-    });
+        span.setAttributes({
+          "ai.actions_generated": result.object.actions.length,
+          "ai.duration_ms": durationMs,
+          "ai.success": true,
+        });
 
-    Sentry.captureException(error, {
-      tags: {
-        area: "follow-up-suggestions",
-        endpoint: "/api/follow-up-suggestions",
-      },
-      extra: {
-        hasPerformanceData: !!requestData.performanceData,
-        hasTechnologyData: !!requestData.technologyData,
-        errorDetails: error instanceof Error ? error.message : String(error),
-      },
-    });
+        // Track AI generation latency
+        Sentry.metrics.distribution(
+          "webvitals.ai.followup_duration_ms",
+          durationMs,
+          {
+            unit: "millisecond",
+            attributes: {
+              success: "true",
+              actions_count: String(result.object.actions.length),
+            },
+          }
+        );
 
-    // Return fallback suggestions (matching the original style)
-    return Response.json({
-      success: false,
-      actions: [
-        {
-          id: "sentry-rum-setup",
-          title:
-            "How do I set up Sentry to track Real User Metrics for Core Web Vitals?",
-        },
-        {
-          id: "performance-basics",
-          title: "What are Core Web Vitals and why do they matter?",
-        },
-        {
-          id: "optimization-tips",
-          title: "What are the most important performance optimizations?",
-        },
-        {
-          id: "business-impact",
-          title: "What's the business impact of slow performance?",
-        },
-      ],
-      url: requestData.url || "",
-      basedOnTools: ["fallback"],
-      generatedAt: new Date().toISOString(),
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
+        Sentry.logger.info("Follow-up suggestions generated successfully", {
+          actionsCount: result.object.actions.length,
+          url: result.object.url,
+          durationMs,
+        });
+
+        return Response.json({
+          success: true,
+          ...result.object,
+          generatedAt: new Date().toISOString(),
+        });
+      } catch (error) {
+        const durationMs = Date.now() - startTime;
+
+        span.setAttributes({
+          "ai.success": false,
+          "ai.duration_ms": durationMs,
+          "ai.error": error instanceof Error ? error.message : "Unknown",
+        });
+
+        // Track failed AI generation
+        Sentry.metrics.distribution(
+          "webvitals.ai.followup_duration_ms",
+          durationMs,
+          {
+            unit: "millisecond",
+            attributes: {
+              success: "false",
+            },
+          }
+        );
+
+        Sentry.logger.error("Follow-up suggestions generation failed", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          stack: error instanceof Error ? error.stack : undefined,
+          errorType: error?.constructor?.name,
+          durationMs,
+        });
+
+        Sentry.captureException(error, {
+          tags: {
+            area: "follow-up-suggestions",
+            endpoint: "/api/follow-up-suggestions",
+          },
+          extra: {
+            hasPerformanceData: !!requestData.performanceData,
+            hasTechnologyData: !!requestData.technologyData,
+            errorDetails:
+              error instanceof Error ? error.message : String(error),
+          },
+        });
+
+        // Return fallback suggestions (matching the original style)
+        return Response.json({
+          success: false,
+          actions: [
+            {
+              id: "sentry-rum-setup",
+              title:
+                "How do I set up Sentry to track Real User Metrics for Core Web Vitals?",
+            },
+            {
+              id: "performance-basics",
+              title: "What are Core Web Vitals and why do they matter?",
+            },
+            {
+              id: "optimization-tips",
+              title: "What are the most important performance optimizations?",
+            },
+            {
+              id: "business-impact",
+              title: "What's the business impact of slow performance?",
+            },
+          ],
+          url: requestData.url || "",
+          basedOnTools: ["fallback"],
+          generatedAt: new Date().toISOString(),
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    }
+  );
 }

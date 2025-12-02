@@ -1,8 +1,9 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DemoHeader from "@/components/demo/DemoHeader";
 import DemoLayout from "@/components/demo/DemoLayout";
 import { Badge } from "@/components/ui/badge";
@@ -15,15 +16,25 @@ import { SENTRY_THRESHOLDS } from "@/types/real-world-performance";
 export default function INPClient() {
   const [clickCount, setClickCount] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
+  const hasLoggedView = useRef(false);
 
   const { setLoading } = useLoadState();
 
   // Listen for INP values from web-vitals
   useEffect(() => {
+    // Log demo page view (only once)
+    if (!hasLoggedView.current) {
+      hasLoggedView.current = true;
+      Sentry.logger.info("Demo page viewed", { metric: "INP" });
+      Sentry.metrics.count("webvitals.demo.page_view", 1, {
+        attributes: { metric: "INP" },
+      });
+    }
+
     setTimeout(() => {
       setLoading(false);
     }, 0);
-  }, []);
+  }, [setLoading]);
 
   const handleProgressiveButton = () => {
     setIsProcessing(true);
@@ -31,6 +42,17 @@ export default function INPClient() {
 
     // Progressive delay: 100ms * click count (100ms, 200ms, 300ms, etc.)
     const delay = 100 * newClickCount;
+
+    // Track demo interaction
+    Sentry.metrics.count("webvitals.demo.interaction", 1, {
+      attributes: {
+        metric: "INP",
+        action: "progressive_click",
+        delay_ms: String(delay),
+        click_number: String(newClickCount),
+      },
+    });
+
     const start = performance.now();
     do {
       // Intentionally block the main thread - this is what INP measures
@@ -47,6 +69,9 @@ export default function INPClient() {
   };
 
   const handleResetButton = () => {
+    Sentry.metrics.count("webvitals.demo.interaction", 1, {
+      attributes: { metric: "INP", action: "reset" },
+    });
     window.location.reload();
   };
 

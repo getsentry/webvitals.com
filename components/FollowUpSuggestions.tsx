@@ -1,6 +1,7 @@
 "use client";
 
 import { useChatMessages, useChatStore } from "@ai-sdk-tools/store";
+import * as Sentry from "@sentry/nextjs";
 import type { UIMessage } from "ai";
 import { RotateCcwIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -210,6 +211,21 @@ export default function FollowUpSuggestions() {
   }
 
   const handleSuggestionClick = (suggestion: string) => {
+    // Find the action to get the ID
+    const action = followUpData?.actions?.find((a) => a.title === suggestion);
+
+    // Track suggestion click
+    Sentry.metrics.count("webvitals.followup.clicked", 1, {
+      attributes: {
+        suggestion_id: action?.id || "unknown",
+      },
+    });
+
+    Sentry.logger.info("Follow-up suggestion clicked", {
+      suggestionId: action?.id,
+      suggestionTitle: suggestion,
+    });
+
     sendMessage?.({
       role: "user" as const,
       parts: [{ type: "text" as const, text: suggestion }],
@@ -217,6 +233,10 @@ export default function FollowUpSuggestions() {
   };
 
   const handleReset = () => {
+    // Track reset action
+    Sentry.metrics.count("webvitals.frontend.analysis_reset", 1);
+    Sentry.logger.info("Analysis reset requested");
+
     // Clear chat messages
     setMessages([]);
     // Remove URL parameter
