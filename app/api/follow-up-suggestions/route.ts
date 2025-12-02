@@ -40,6 +40,7 @@ export async function POST(request: Request) {
     url?: string;
   } = {};
 
+<<<<<<< Updated upstream
   try {
     requestData = await request.json();
     const { performanceData, technologyData, conversationHistory, url } =
@@ -51,6 +52,29 @@ export async function POST(request: Request) {
       conversationLength: conversationHistory?.length || 0,
       url,
     });
+=======
+  return Sentry.startSpan(
+    {
+      name: "webvitals.ai.follow_up_suggestions",
+      op: "function",
+      attributes: {
+        "webvitals.ai.model": "gpt-4o-mini",
+        "http.method": "POST",
+        "http.route": "/api/follow-up-suggestions",
+      },
+    },
+    async (span) => {
+      try {
+        requestData = await request.json();
+        const { performanceData, technologyData, conversationHistory, url } =
+          requestData;
+
+        span.setAttributes({
+          "webvitals.ai.has_performance_data": !!performanceData,
+          "webvitals.ai.has_technology_data": !!technologyData,
+          "webvitals.ai.conversation_length": conversationHistory?.length || 0,
+        });
+>>>>>>> Stashed changes
 
     // Sanitize conversation history to prevent prompt injection
     const sanitizedHistory = conversationHistory?.map((msg) => ({
@@ -120,6 +144,7 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
       url: result.object.url,
     });
 
+<<<<<<< Updated upstream
     return Response.json({
       success: true,
       ...result.object,
@@ -131,6 +156,13 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
       stack: error instanceof Error ? error.stack : undefined,
       errorType: error?.constructor?.name,
     });
+=======
+        span.setAttributes({
+          "webvitals.ai.actions_generated": result.object.actions.length,
+          "webvitals.ai.duration_ms": durationMs,
+          "webvitals.ai.success": true,
+        });
+>>>>>>> Stashed changes
 
     Sentry.captureException(error, {
       tags: {
@@ -144,6 +176,7 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
       },
     });
 
+<<<<<<< Updated upstream
     // Return fallback suggestions (matching the original style)
     return Response.json({
       success: false,
@@ -172,4 +205,89 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
       error: error instanceof Error ? error.message : "Unknown error",
     });
   }
+=======
+        Sentry.logger.info("Follow-up suggestions generated successfully", {
+          actionsCount: result.object.actions.length,
+          url: result.object.url,
+          durationMs,
+        });
+
+        return Response.json({
+          success: true,
+          ...result.object,
+          generatedAt: new Date().toISOString(),
+        });
+      } catch (error) {
+        const durationMs = Date.now() - startTime;
+
+        span.setAttributes({
+          "webvitals.ai.success": false,
+          "webvitals.ai.duration_ms": durationMs,
+          "webvitals.ai.error":
+            error instanceof Error ? error.message : "Unknown",
+        });
+
+        // Track failed AI generation
+        Sentry.metrics.distribution(
+          "webvitals.ai.followup_duration_ms",
+          durationMs,
+          {
+            unit: "millisecond",
+            attributes: {
+              success: "false",
+            },
+          }
+        );
+
+        Sentry.logger.error("Follow-up suggestions generation failed", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          stack: error instanceof Error ? error.stack : undefined,
+          errorType: error?.constructor?.name,
+          durationMs,
+        });
+
+        Sentry.captureException(error, {
+          tags: {
+            area: "follow-up-suggestions",
+            endpoint: "/api/follow-up-suggestions",
+          },
+          extra: {
+            hasPerformanceData: !!requestData.performanceData,
+            hasTechnologyData: !!requestData.technologyData,
+            errorDetails:
+              error instanceof Error ? error.message : String(error),
+          },
+        });
+
+        // Return fallback suggestions (matching the original style)
+        return Response.json({
+          success: false,
+          actions: [
+            {
+              id: "sentry-rum-setup",
+              title:
+                "How do I set up Sentry to track Real User Metrics for Core Web Vitals?",
+            },
+            {
+              id: "performance-basics",
+              title: "What are Core Web Vitals and why do they matter?",
+            },
+            {
+              id: "optimization-tips",
+              title: "What are the most important performance optimizations?",
+            },
+            {
+              id: "business-impact",
+              title: "What's the business impact of slow performance?",
+            },
+          ],
+          url: requestData.url || "",
+          basedOnTools: ["fallback"],
+          generatedAt: new Date().toISOString(),
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    }
+  );
+>>>>>>> Stashed changes
 }

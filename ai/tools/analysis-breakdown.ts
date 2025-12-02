@@ -25,11 +25,32 @@ export const analysisBreakdownTool = tool({
       technologyData: TechnologyDetectionOutput;
     };
 
+<<<<<<< Updated upstream
     try {
       const result = await generateObject({
         model: openai("gpt-4o-mini"),
         schema: AnalysisBreakdownSchema,
         prompt: `You are an expert web performance consultant. Analyze the performance and technology data to create a structured breakdown.
+=======
+    const startTime = Date.now();
+
+    return Sentry.startSpan(
+      {
+        name: "webvitals.ai.generate_breakdown",
+        op: "function",
+        attributes: {
+          "webvitals.ai.model": "gpt-4o-mini",
+          "webvitals.ai.has_performance_data": !!performanceData?.hasData,
+          "webvitals.ai.has_technology_data": !!technologyData,
+        },
+      },
+      async (span) => {
+        try {
+          const result = await generateObject({
+            model: openai("gpt-4o-mini"),
+            schema: AnalysisBreakdownSchema,
+            prompt: `You are an expert web performance consultant. Analyze the performance and technology data to create a structured breakdown.
+>>>>>>> Stashed changes
 
 Performance Data:
 ${JSON.stringify(performanceData, null, 2)}
@@ -85,6 +106,7 @@ Guidelines:
         );
       }
 
+<<<<<<< Updated upstream
       Sentry.logger.debug("Analysis breakdown generated", {
         hasPerformanceData: !!performanceData?.hasData,
         hasTechnologyData: !!technologyData,
@@ -110,5 +132,91 @@ Guidelines:
 
       throw error;
     }
+=======
+          const validationResult = AnalysisBreakdownSchema.safeParse(
+            result.object
+          );
+          if (!validationResult.success) {
+            Sentry.logger.error("Schema validation failed", {
+              error: validationResult.error,
+              rawObject: result.object,
+            });
+            throw new Error(
+              `Schema validation failed: ${JSON.stringify(
+                validationResult.error.issues
+              )}`
+            );
+          }
+
+          span.setAttributes({
+            "webvitals.ai.points_generated": result.object.points.length,
+            "webvitals.ai.duration_ms": durationMs,
+            "webvitals.ai.success": true,
+          });
+
+          // Track AI generation latency
+          Sentry.metrics.distribution(
+            "webvitals.ai.breakdown_duration_ms",
+            durationMs,
+            {
+              unit: "millisecond",
+              attributes: {
+                success: "true",
+                points_count: String(result.object.points.length),
+              },
+            }
+          );
+
+          Sentry.logger.info("Analysis breakdown generated", {
+            hasPerformanceData: !!performanceData?.hasData,
+            hasTechnologyData: !!technologyData,
+            pointsGenerated: result.object.points.length,
+            durationMs,
+          });
+
+          return result.object;
+        } catch (error) {
+          const durationMs = Date.now() - startTime;
+
+          span.setAttributes({
+            "webvitals.ai.success": false,
+            "webvitals.ai.duration_ms": durationMs,
+            "webvitals.ai.error":
+              error instanceof Error ? error.message : "Unknown",
+          });
+
+          // Track failed AI generation
+          Sentry.metrics.distribution(
+            "webvitals.ai.breakdown_duration_ms",
+            durationMs,
+            {
+              unit: "millisecond",
+              attributes: {
+                success: "false",
+              },
+            }
+          );
+
+          Sentry.logger.error("Analysis breakdown generation failed", {
+            error: error instanceof Error ? error.message : "Unknown error",
+            durationMs,
+          });
+
+          Sentry.captureException(error, {
+            tags: {
+              component: "analysis-breakdown-tool",
+              operation: "generateObject",
+            },
+            extra: {
+              hasPerformanceData: !!performanceData?.hasData,
+              hasTechnologyData: !!technologyData,
+            },
+          });
+
+          throw error;
+        }
+      }
+    );
+>>>>>>> Stashed changes
   },
 });
