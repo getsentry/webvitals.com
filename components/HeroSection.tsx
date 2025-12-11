@@ -1,6 +1,7 @@
 "use client";
 
 import { useChat } from "@ai-sdk-tools/store";
+import { DefaultChatTransport } from "ai";
 import * as Sentry from "@sentry/nextjs";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect } from "react";
@@ -24,6 +25,9 @@ export default function HeroSection() {
   }, [setLoading]);
 
   const { messages, sendMessage, status } = useChat({
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+    }),
     onFinish: (message) => {
       Sentry.logger.info("Chat analysis completed", {
         messageCount: messages.length + 1,
