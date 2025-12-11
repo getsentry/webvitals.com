@@ -53,7 +53,7 @@
     "@types/canvas-confetti": "^1.9.0",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
-    "ai": "^5.0.32",
+    "ai": "^5.0.52",
     "botid": "^1.5.7",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",
