@@ -10,7 +10,7 @@ const followUpSuggestionsSchema = z.object({
       z.object({
         id: z.string().describe("Unique identifier for the action"),
         title: z.string().describe("Clear, actionable follow-up question"),
-      }),
+      })
     )
     .min(3)
     .max(6)
@@ -27,9 +27,13 @@ export async function POST(request: Request) {
   const startTime = Date.now();
 
   // Only check BotId when running on Vercel (OIDC tokens are only available there)
-  if (process.env.VERCEL) {
-    const { isBot } = await checkBotId();
-    if (isBot) {
+  if (process.env.VERCEL_ENV === "production") {
+    const botIdResult = await checkBotId();
+    if (botIdResult.isBot) {
+      Sentry.logger.warn("BotID check failed", {
+        isBot: botIdResult.isBot,
+        userAgent: request.headers.get("user-agent"),
+      });
       return new Response("Access Denied", { status: 403 });
     }
   }
@@ -154,7 +158,7 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
               success: "true",
               actions_count: String(result.object.actions.length),
             },
-          },
+          }
         );
 
         Sentry.logger.info("Follow-up suggestions generated successfully", {
@@ -187,7 +191,7 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
             attributes: {
               success: "false",
             },
-          },
+          }
         );
 
         Sentry.logger.error("Follow-up suggestions generation failed", {
@@ -238,6 +242,6 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
           error: error instanceof Error ? error.message : "Unknown error",
         });
       }
-    },
+    }
   );
 }

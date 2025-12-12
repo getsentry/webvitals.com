@@ -1,8 +1,8 @@
 "use client";
 
 import { useChat } from "@ai-sdk-tools/store";
-import { DefaultChatTransport } from "ai";
 import * as Sentry from "@sentry/nextjs";
+import { DefaultChatTransport } from "ai";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect } from "react";
 import useMeasure from "react-use-measure";

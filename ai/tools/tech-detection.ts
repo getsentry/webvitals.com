@@ -82,7 +82,9 @@ class CloudflareTechDetector {
           Sentry.logger.warn("Failed to parse error response", {
             status: response.status,
             error:
-              parseError instanceof Error ? parseError.message : "Unknown error",
+              parseError instanceof Error
+                ? parseError.message
+                : "Unknown error",
           });
           errorMessage = response.statusText;
         }
@@ -268,7 +270,8 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
           Sentry.logger.info("Search results", {
             url: normalizedUrl,
             resultCount: searchResults.results?.length || 0,
-            hasResults: searchResults.results && searchResults.results.length > 0,
+            hasResults:
+              searchResults.results && searchResults.results.length > 0,
           });
 
           if (searchResults.results?.length > 0) {
@@ -289,7 +292,8 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
               Sentry.logger.info("Retrieved existing scan result", {
                 scanId,
                 hasWappaData: !!scanResult?.meta?.processors?.wappa?.data,
-                techCount: scanResult?.meta?.processors?.wappa?.data?.length || 0,
+                techCount:
+                  scanResult?.meta?.processors?.wappa?.data?.length || 0,
               });
             } catch (fetchError) {
               Sentry.logger.warn("Failed to fetch scan result", {
@@ -408,7 +412,9 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
             }
           } catch (error) {
             if (error instanceof Error && error.message === "Scan not ready") {
-              Sentry.logger.info("Scan not ready, starting to poll", { scanId });
+              Sentry.logger.info("Scan not ready, starting to poll", {
+                scanId,
+              });
               span.addEvent("starting_poll");
 
               scanResult = await Sentry.startSpan(
@@ -518,7 +524,9 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
         techCount = technologies.length;
 
         const result: TechDetectionOutput = {
-          technologies: technologies.sort((a, b) => b.confidence - a.confidence),
+          technologies: technologies.sort(
+            (a, b) => b.confidence - a.confidence,
+          ),
         };
 
         const durationMs = Date.now() - startTime;

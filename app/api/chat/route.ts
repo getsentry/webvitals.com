@@ -23,9 +23,13 @@ export async function POST(request: Request) {
   const analysisStartTime = Date.now();
 
   // Only check BotId when running on Vercel (OIDC tokens are only available there)
-  if (process.env.VERCEL) {
-    const { isBot } = await checkBotId();
-    if (isBot) {
+  if (process.env.VERCEL_ENV === "production") {
+    const botIdResult = await checkBotId();
+    if (botIdResult.isBot) {
+      Sentry.logger.warn("BotID check failed", {
+        isBot: botIdResult.isBot,
+        userAgent: request.headers.get("user-agent"),
+      });
       return new Response("Access Denied", { status: 403 });
     }
   }

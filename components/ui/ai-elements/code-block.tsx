@@ -1,9 +1,9 @@
 "use client";
 
 import { CheckIcon, CopyIcon } from "lucide-react";
+import { useTheme } from "next-themes";
 import type { ComponentProps, HTMLAttributes, ReactNode } from "react";
 import { createContext, useContext, useEffect, useState } from "react";
-import { useTheme } from "next-themes";
 import { codeToHtml } from "shiki";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -58,9 +58,7 @@ export const CodeBlock = ({
               dangerouslySetInnerHTML={{ __html: html }}
             />
           ) : (
-            <pre className="overflow-auto p-4 font-mono text-sm">
-              {code}
-            </pre>
+            <pre className="overflow-auto p-4 font-mono text-sm">{code}</pre>
           )}
           {children && (
             <div className="absolute top-2 right-2 flex items-center gap-2">

@@ -290,9 +290,11 @@ const MessageRenderer = memo(function MessageRenderer({
           return (
             output?.hasData &&
             ((output.mobile?.fieldData?.metrics &&
-              Object.keys(output.mobile?.fieldData?.metrics || {}).length > 0) ||
+              Object.keys(output.mobile?.fieldData?.metrics || {}).length >
+                0) ||
               (output.desktop?.fieldData?.metrics &&
-                Object.keys(output.desktop?.fieldData?.metrics || {}).length > 0))
+                Object.keys(output.desktop?.fieldData?.metrics || {}).length >
+                  0))
           );
         });
 
