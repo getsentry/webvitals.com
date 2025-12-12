@@ -24,32 +24,20 @@ const followUpSuggestionsSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const startTime = Date.now();
-
-  // Only check BotId when running on Vercel (OIDC tokens are only available there)
-  if (process.env.VERCEL_ENV === "production") {
-    try {
-      const botIdResult = await checkBotId();
-      Sentry.logger.debug("BotID check result", {
-        isBot: botIdResult.isBot,
-        userAgent: request.headers.get("user-agent"),
-      });
-      if (botIdResult.isBot) {
-        Sentry.logger.warn("BotID check failed", {
-          isBot: botIdResult.isBot,
-          userAgent: request.headers.get("user-agent"),
-        });
-        return new Response("Access Denied", { status: 403 });
-      }
-    } catch (error) {
-      Sentry.logger.warn("BotID check threw exception", {
-        error: error instanceof Error ? error.message : String(error),
-        userAgent: request.headers.get("user-agent"),
-      });
-      // Allow the request to proceed when BotID check fails
-      // This handles cases where client-side verification headers are missing (e.g., Firefox with strict privacy settings)
-    }
+  const botIdResult = await checkBotId();
+  Sentry.logger.debug("BotID check result", {
+    isBot: botIdResult.isBot,
+    userAgent: request.headers.get("user-agent"),
+  });
+  if (botIdResult.isBot) {
+    Sentry.logger.warn("BotID check failed", {
+      isBot: botIdResult.isBot,
+      userAgent: request.headers.get("user-agent"),
+    });
+    return new Response("Access Denied", { status: 403 });
   }
+
+  const startTime = Date.now();
 
   let requestData: {
     performanceData?: any;
