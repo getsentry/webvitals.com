@@ -1,8 +1,8 @@
-# Internal Development Guide
+# Contributing Guide
 
-This guide covers development workflow and contribution patterns for the WebVitals.com team at Sentry.
+Thank you for your interest in contributing to WebVitals.com! This guide covers development workflow and contribution patterns.
 
-## 🎯 Development Areas
+## Development Areas
 
 ### 1. Core Platform
 - **Performance Analysis**: CrUX data integration and processing
@@ -14,15 +14,13 @@ This guide covers development workflow and contribution patterns for the WebVita
 - **Sentry Integration**: RUM setup and performance tracking
 - **Error Handling**: Comprehensive error tracking and alerting
 - **Performance Optimization**: Core Web Vitals improvements
-- **Usage Analytics**: Platform usage and adoption metrics
 
 ### 3. Documentation & Content
 - **Technical Documentation**: API references and guides
 - **Educational Content**: Performance best practices
-- **Integration Guides**: Sentry setup and configuration
-- **Case Studies**: Real-world performance optimization examples
+- **Integration Guides**: Setup and configuration
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -62,7 +60,7 @@ Before contributing, make sure you have:
    - Open [http://localhost:3000](http://localhost:3000)
    - Analyze a website to ensure everything works
 
-## 🔄 Development Workflow
+## Development Workflow
 
 ### 1. Create a Branch
 
@@ -76,7 +74,7 @@ git checkout -b fix/issue-description
 
 ### 2. Make Changes
 
-Follow our [code standards](./standards.md) and [UI guidelines](./ui-guidelines.md).
+Follow our code standards and ensure your changes are well-tested.
 
 ### 3. Test Your Changes
 
@@ -120,7 +118,7 @@ git push origin your-branch-name
 # Create pull request on GitHub
 ```
 
-## 📝 Pull Request Guidelines
+## Pull Request Guidelines
 
 ### Before Submitting
 
@@ -166,7 +164,7 @@ Include screenshots for UI changes
 3. **Feedback**: Address any requested changes
 4. **Approval**: Once approved, your PR will be merged
 
-## 🐛 Reporting Issues
+## Reporting Issues
 
 ### Bug Reports
 
@@ -188,7 +186,7 @@ Use the feature request template and include:
 - **Alternatives**: What other approaches have you considered?
 - **Use Cases**: Who would benefit from this feature?
 
-## 🎨 Design Contributions
+## Design Contributions
 
 ### UI/UX Improvements
 
@@ -206,7 +204,7 @@ When contributing design changes:
 - **Accessibility**: Include alt text and proper markup
 - **Consistency**: Match existing visual style
 
-## 🧪 Testing Guidelines
+## Testing Guidelines
 
 ### Running Tests
 
@@ -228,27 +226,7 @@ pnpm test --watch
 - **E2E Tests**: Test complete user workflows
 - **Performance Tests**: Test for performance regressions
 
-### Test Structure
-
-```typescript
-describe('ComponentName', () => {
-  beforeEach(() => {
-    // Setup
-  });
-
-  it('should handle expected behavior', () => {
-    // Arrange
-    // Act
-    // Assert
-  });
-
-  it('should handle edge cases', () => {
-    // Test error conditions and edge cases
-  });
-});
-```
-
-## 📚 Documentation Standards
+## Documentation Standards
 
 ### Writing Style
 
@@ -257,86 +235,16 @@ describe('ComponentName', () => {
 - **Cross-References**: Link to related documentation
 - **Up-to-Date**: Keep examples current with latest code
 
-### Documentation Types
-
-- **API Documentation**: Function signatures and usage
-- **Tutorials**: Step-by-step guides
-- **Explanations**: Conceptual overviews
-- **Reference**: Quick lookup information
-
-### Markdown Guidelines
-
-- Use heading hierarchy properly
-- Include code syntax highlighting
-- Add links for references
-- Use tables for structured data
-- Include diagrams when helpful
-
-## 🌟 Recognition
-
-### Team Contributions
-
-Team contributions are recognized through:
-
-- **Release Notes**: Major features and improvements highlighted
-- **Team Updates**: Engineering achievements shared in Sentry updates
-- **GitHub**: Contribution history and impact tracking
-
-### Types of Contributions
-
-- **Feature Development**: New capabilities and platform improvements
-- **Bug Fixes**: Platform stability and reliability improvements
-- **Documentation**: Technical documentation and user guides
-- **Performance Optimization**: Platform speed and efficiency improvements
-
-## 📞 Getting Help
-
-### Internal Support
-
-- **Sentry Slack**: #webvitals channel for real-time team discussions
-- **GitHub Issues**: Project tracking and bug reports
-- **Team Sync**: Weekly engineering sync meetings
-- **Direct Contact**: Reach out to project leads for complex technical questions
-
-### Internal Communication
-
-For project-related discussions:
-
-1. **Slack #webvitals**: Daily development discussions and quick questions
-2. **GitHub Issues**: Formal bug reports and feature tracking
-3. **Team Meetings**: Architecture decisions and roadmap planning
-4. **Engineering Docs**: Internal technical specifications and designs
-
-## 🚀 Advanced Contributions
-
-### Architecture Changes
-
-For significant architectural changes:
-
-1. **RFC Process**: Create Request for Comments
-2. **Community Discussion**: Get feedback before implementing
-3. **Phased Implementation**: Break large changes into phases
-4. **Migration Guide**: Document upgrade path
-
-### Performance Contributions
-
-When optimizing performance:
-
-1. **Benchmark First**: Establish baseline metrics
-2. **Measure Impact**: Quantify improvements
-3. **Test Thoroughly**: Ensure no functionality regressions
-4. **Document Changes**: Explain optimization techniques
-
-### Security Contributions
+## Security Contributions
 
 For security-related changes:
 
-1. **Private Disclosure**: Contact maintainers privately first
+1. **Private Disclosure**: Contact maintainers privately first (see SECURITY.md)
 2. **Coordinate Release**: Plan security release timeline
 3. **Documentation**: Update security documentation
 4. **Testing**: Verify security improvements
 
-## 📋 Contribution Checklist
+## Contribution Checklist
 
 Before submitting any contribution:
 
@@ -349,4 +257,10 @@ Before submitting any contribution:
 - [ ] Follow conventional commit format
 - [ ] Submit descriptive pull request
 
-Thank you for contributing to WebVitals.com! Your efforts help make web performance analysis more accessible and actionable for developers worldwide. 🙏
+## Getting Help
+
+- **Documentation**: Check these docs first
+- **GitHub Issues**: For bugs and technical problems
+- **GitHub Discussions**: For questions and general discussion
+
+Thank you for contributing to WebVitals.com! Your efforts help make web performance analysis more accessible and actionable for developers worldwide.

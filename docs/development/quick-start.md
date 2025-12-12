@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Get WebVitals.com running locally in under 5 minutes for Sentry team development.
+Get WebVitals.com running locally in under 5 minutes.
 
 ## 🚀 Prerequisites
 
@@ -179,8 +179,8 @@ pnpm check-types
 ### Getting Help
 
 - Check the [FAQ](../faq.md) for common questions
-- Browse GitHub Issues for existing problems
-- Ask in Sentry Slack #webvitals channel
+- Browse [GitHub Issues](https://github.com/getsentry/webvitals.com/issues) for existing problems
+- Open a new issue if you need help
 
 ## 🎉 You're Ready!
 

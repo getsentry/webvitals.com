@@ -198,7 +198,7 @@ Yes:
 
 ### Is WebVitals.com available publicly?
 
-WebVitals.com is a Sentry-hosted service available at [webvitals.com](https://webvitals.com). It's built and maintained by the Sentry team as part of our performance monitoring ecosystem.
+Yes! WebVitals.com is available at [webvitals.com](https://webvitals.com). It's an open-source project maintained by Sentry.
 
 ### Are there usage limits?
 
@@ -213,7 +213,7 @@ Yes! Any publicly accessible website can be analyzed. The platform provides valu
 
 ### Is there API access for integration?
 
-The current API is designed for the WebVitals.com interface. For enterprise integration needs or Sentry customer integration, contact the Sentry team to discuss requirements.
+The current API is designed for the WebVitals.com interface. For integration needs, check the [API documentation](./api/overview.md) or open a GitHub issue to discuss requirements.
 
 ## 🐛 Troubleshooting
 
@@ -277,9 +277,8 @@ Please help us improve:
 ### Where can I get support?
 
 - **Documentation**: Check these docs first
-- **Sentry Slack**: #webvitals channel for internal team support
 - **GitHub Issues**: For bugs and technical problems
-- **Team Sync**: Weekly engineering meetings for broader discussions
+- **GitHub Discussions**: For questions and general discussion
 
 ### How do I report a bug?
 
@@ -287,18 +286,16 @@ Please help us improve:
 2. **Gather information**: browser, analyzed domain, error messages
 3. **Check existing issues** to avoid duplicates
 4. **Create a detailed GitHub issue** with reproduction steps
-5. **Notify in Slack**: Tag the team in #webvitals for urgent issues
 
 ### Can I request new features?
 
-Yes! Feature requests are handled internally:
+Yes! Feature requests are welcome:
 
 1. **Create a GitHub issue** with the feature request template
-2. **Describe the business case** - how does it support Sentry's goals?
-3. **Provide technical details** - implementation considerations
-4. **Discuss in team sync** - get engineering team input
+2. **Describe the use case** - what problem does this solve?
+3. **Provide technical details** - implementation considerations if you have them
 
-Feature development is prioritized based on business impact and technical feasibility.
+Feature development is prioritized based on community impact and technical feasibility.
 
 ## 🗺️ Roadmap & Future Features
 
@@ -375,6 +372,6 @@ Our goal is to keep core analysis features available while adding value through 
 - **Enhanced Features**: Historical data, team collaboration, advanced analytics
 - **Enterprise**: Custom branding, SSO, advanced integrations, SLA monitoring
 
-### How does this align with Sentry's vision?
+### How does this complement Sentry?
 
-WebVitals.com serves as the entry point for performance optimization, naturally leading to Sentry's comprehensive Real User Monitoring platform. This creates a complete performance monitoring ecosystem from initial analysis to ongoing production monitoring.
+WebVitals.com provides initial performance analysis and recommendations, while Sentry's Real User Monitoring offers ongoing production monitoring. Together they create a complete performance monitoring workflow from analysis to continuous tracking.

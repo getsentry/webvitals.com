@@ -25,6 +25,10 @@ export async function POST(request: Request) {
   // Only check BotId when running on Vercel (OIDC tokens are only available there)
   if (process.env.VERCEL_ENV === "production") {
     const botIdResult = await checkBotId();
+    Sentry.logger.debug("BotID check result", {
+      isBot: botIdResult.isBot,
+      userAgent: request.headers.get("user-agent"),
+    });
     if (botIdResult.isBot) {
       Sentry.logger.warn("BotID check failed", {
         isBot: botIdResult.isBot,
