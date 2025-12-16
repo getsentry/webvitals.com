@@ -22,6 +22,7 @@ export const openai = createOpenAI({
     Sentry.logger.debug("OpenAI API request", {
       url: url.toString(),
       method: options?.method || "POST",
+      userAgent: headers.get("User-Agent"),
     });
 
     const response = await fetch(url, {
