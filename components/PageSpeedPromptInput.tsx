@@ -204,6 +204,7 @@ export default function PageSpeedPromptInput({
           <PromptInputSubmit
             disabled={!isValidUrl || disabled}
             status={status}
+            data-sentry-component="PageSpeedPromptInputSubmit"
           />
         </PromptInputToolbar>
       </PromptInput>
