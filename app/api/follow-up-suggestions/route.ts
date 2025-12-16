@@ -10,7 +10,7 @@ const followUpSuggestionsSchema = z.object({
       z.object({
         id: z.string().describe("Unique identifier for the action"),
         title: z.string().describe("Clear, actionable follow-up question"),
-      })
+      }),
     )
     .min(3)
     .max(6)
@@ -159,7 +159,7 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
               success: "true",
               actions_count: String(result.object.actions.length),
             },
-          }
+          },
         );
 
         Sentry.logger.info("Follow-up suggestions generated successfully", {
@@ -192,7 +192,7 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
             attributes: {
               success: "false",
             },
-          }
+          },
         );
 
         Sentry.logger.error("Follow-up suggestions generation failed", {
@@ -243,6 +243,6 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
           error: error instanceof Error ? error.message : "Unknown error",
         });
       }
-    }
+    },
   );
 }

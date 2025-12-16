@@ -64,7 +64,7 @@ export async function POST(request: Request) {
         if (!messages || messages.length === 0) {
           return Response.json(
             { error: "No messages provided" },
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -72,12 +72,12 @@ export async function POST(request: Request) {
         const firstUserMessage = messages.find((m) => m.role === "user");
         if (firstUserMessage?.parts) {
           const textPart = firstUserMessage.parts.find(
-            (p) => p.type === "text" && "text" in p
+            (p) => p.type === "text" && "text" in p,
           );
           if (textPart && "text" in textPart) {
             // Try to extract domain from message
             const domainMatch = (textPart.text as string).match(
-              /(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9-]+(?:\.[a-zA-Z]{2,})+)/
+              /(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9-]+(?:\.[a-zA-Z]{2,})+)/,
             );
             if (domainMatch) {
               analyzedDomain = domainMatch[1];
@@ -134,12 +134,12 @@ export async function POST(request: Request) {
         // Check if performance data is valid (not errored and has data)
         const hasValidPerformanceData = (step: StepResult<typeof tools>) => {
           const performanceCall = step.toolCalls?.find(
-            (call) => call.toolName === "getRealWorldPerformance"
+            (call) => call.toolName === "getRealWorldPerformance",
           );
           if (!performanceCall) return false;
 
           const performanceResult = step.toolResults?.find(
-            (result) => result.toolCallId === performanceCall.toolCallId
+            (result) => result.toolCallId === performanceCall.toolCallId,
           );
           if (!performanceResult) return false;
 
@@ -208,7 +208,7 @@ export async function POST(request: Request) {
                   for (const call of step.toolCalls) {
                     if (call.toolName === "getRealWorldPerformance") {
                       const result = step.toolResults?.find(
-                        (r) => r.toolCallId === call.toolCallId
+                        (r) => r.toolCallId === call.toolCallId,
                       );
                       if (result && !("error" in result)) {
                         const output = result.output as
@@ -219,7 +219,7 @@ export async function POST(request: Request) {
                     }
                     if (call.toolName === "detectTechnologies") {
                       const result = step.toolResults?.find(
-                        (r) => r.toolCallId === call.toolCallId
+                        (r) => r.toolCallId === call.toolCallId,
                       );
                       hasTechData = !!(result && !("error" in result));
                     }
@@ -243,7 +243,7 @@ export async function POST(request: Request) {
                       const errorResult = result as { error: unknown };
                       Sentry.captureException(
                         new Error(
-                          `Tool execution failed: ${String(errorResult.error)}`
+                          `Tool execution failed: ${String(errorResult.error)}`,
                         ),
                         {
                           tags: {
@@ -258,7 +258,7 @@ export async function POST(request: Request) {
                               toolError: step.toolCalls?.[index]?.error,
                             },
                           },
-                        }
+                        },
                       );
                     }
                   });
@@ -300,7 +300,7 @@ export async function POST(request: Request) {
                       has_performance_data: String(hasPerformanceData),
                       has_tech_data: String(hasTechData),
                     },
-                  }
+                  },
                 );
 
                 Sentry.logger.info("Chat analysis completed", {
@@ -347,7 +347,7 @@ Configuration: ${JSON.stringify(performanceConfig || {})}`,
             attributes: {
               outcome: "failed",
             },
-          }
+          },
         );
 
         Sentry.logger.error("Chat API error", {
@@ -374,9 +374,9 @@ Configuration: ${JSON.stringify(performanceConfig || {})}`,
             error: "Failed to process chat request",
             details: error instanceof Error ? error.message : "Unknown error",
           },
-          { status: 500 }
+          { status: 500 },
         );
       }
-    }
+    },
   );
 }
