@@ -1,8 +1,8 @@
-import { openai } from "@ai-sdk/openai";
 import * as Sentry from "@sentry/nextjs";
 import { generateObject } from "ai";
 import { checkBotId } from "botid/server";
 import { z } from "zod";
+import { openai } from "@/ai/providers";
 
 const followUpSuggestionsSchema = z.object({
   actions: z

@@ -1,4 +1,3 @@
-import { openai } from "@ai-sdk/openai";
 import * as Sentry from "@sentry/nextjs";
 import type { StepResult } from "ai";
 import {
@@ -13,6 +12,7 @@ import {
 } from "ai";
 import { checkBotId } from "botid/server";
 import { webAnalysisSystemPrompt } from "@/ai";
+import { openai } from "@/ai/providers";
 import {
   analysisBreakdownTool,
   realWorldPerformanceTool,

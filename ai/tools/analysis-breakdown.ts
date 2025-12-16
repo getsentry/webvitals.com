@@ -1,7 +1,7 @@
-import { openai } from "@ai-sdk/openai";
 import * as Sentry from "@sentry/nextjs";
 import { generateObject, tool } from "ai";
 import { z } from "zod";
+import { openai } from "@/ai/providers";
 import { AnalysisBreakdownSchema } from "@/types/analysis-breakdown";
 import type { RealWorldPerformanceOutput } from "@/types/real-world-performance";
 import type { TechnologyDetectionOutput } from "@/types/web-vitals";
@@ -90,7 +90,7 @@ Guidelines:
           const durationMs = Date.now() - startTime;
 
           const validationResult = AnalysisBreakdownSchema.safeParse(
-            result.object,
+            result.object
           );
           if (!validationResult.success) {
             Sentry.logger.error("Schema validation failed", {
@@ -99,8 +99,8 @@ Guidelines:
             });
             throw new Error(
               `Schema validation failed: ${JSON.stringify(
-                validationResult.error.issues,
-              )}`,
+                validationResult.error.issues
+              )}`
             );
           }
 
@@ -120,7 +120,7 @@ Guidelines:
                 success: "true",
                 points_count: String(result.object.points.length),
               },
-            },
+            }
           );
 
           Sentry.logger.info("Analysis breakdown generated", {
@@ -150,7 +150,7 @@ Guidelines:
               attributes: {
                 success: "false",
               },
-            },
+            }
           );
 
           Sentry.logger.error("Analysis breakdown generation failed", {
@@ -171,7 +171,7 @@ Guidelines:
 
           throw error;
         }
-      },
+      }
     );
   },
 });
