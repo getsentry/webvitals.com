@@ -15,12 +15,7 @@ const followUpSuggestionsSchema = z.object({
     .min(3)
     .max(6)
     .describe("Array of 3-6 follow-up questions"),
-  url: z.string().optional().describe("The analyzed URL if available"),
-  basedOnTools: z
-    .array(z.string())
-    .optional()
-    .default(["performance", "technology"])
-    .describe("Tools used for analysis"),
+  url: z.string().nullable().describe("The analyzed URL if available"),
 });
 
 export async function POST(request: Request) {
@@ -237,8 +232,7 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
               title: "What's the business impact of slow performance?",
             },
           ],
-          url: requestData.url || "",
-          basedOnTools: ["fallback"],
+          url: requestData.url || null,
           generatedAt: new Date().toISOString(),
           error: error instanceof Error ? error.message : "Unknown error",
         });
