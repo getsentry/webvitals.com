@@ -163,10 +163,10 @@ export async function POST(request: Request) {
         };
 
         const stream = createUIMessageStream({
-          execute: ({ writer }) => {
+          execute: async ({ writer }) => {
             const result = streamText({
               model: openai("gpt-4o"),
-              messages: convertToModelMessages(sanitizedMessages),
+              messages: await convertToModelMessages(sanitizedMessages),
               stopWhen: [stepCountIs(2), stopWhenNoData],
               tools,
               prepareStep: ({ stepNumber, steps }) => {
