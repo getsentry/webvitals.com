@@ -22,8 +22,7 @@ interface FollowUpAction {
 interface FollowUpSuggestionsData {
   success: boolean;
   actions: FollowUpAction[];
-  url?: string;
-  basedOnTools: string[];
+  url?: string | null;
   generatedAt: string;
   error?: string;
 }

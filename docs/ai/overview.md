@@ -1,35 +1,37 @@
 # AI System Overview
 
-WebVitals.com's AI system provides intelligent, context-aware web performance analysis through a sophisticated combination of tools, artifacts, and streaming capabilities.
+WebVitals.com's AI system provides intelligent, context-aware web performance analysis using the Vercel AI SDK with OpenAI.
 
 ## 🏗️ Architecture
 
-The AI system is organized into three main components:
-
 ```
 ai/
-├── tools/          # Data collection and analysis tools
-├── artifacts/      # Streaming UI components  
-└── context.ts      # Session and state management
+├── tools/              # Data collection and analysis tools
+│   ├── real-world-performance.ts
+│   ├── tech-detection.ts
+│   └── analysis-breakdown.ts
+├── system-prompts.ts   # AI system prompts
+└── index.ts            # Exports
+
+app/api/
+├── chat/               # Main analysis endpoint
+└── follow-up-suggestions/  # Follow-up question generation
 ```
 
 ### Design Philosophy
 
 - **Tool-First Analysis**: AI tools gather raw performance and technology data
-- **Streaming Artifacts**: Structured data streams to enhance the UI progressively
-- **Context Awareness**: Shared state across tools and artifacts for coherent analysis
-- **Progressive Enhancement**: Main analysis completes first, enhancements follow
+- **Step-Based Orchestration**: Tools execute in controlled steps with conditional logic
+- **Streaming Responses**: Real-time delivery for better UX
+- **Graceful Degradation**: Fallbacks when data is unavailable
 
 ## 🔧 AI Tools
-
-Tools are AI-powered functions that collect and analyze data during conversations.
 
 ### Real World Performance Tool
 
 Analyzes actual user performance using Chrome User Experience Report (CrUX):
 
 ```typescript
-// Tool interface
 getRealWorldPerformance({
   url: string;
   devices?: Array<'mobile' | 'desktop'>;
@@ -39,36 +41,14 @@ getRealWorldPerformance({
 **Capabilities:**
 - Fetches 28-day rolling CrUX data from Google PageSpeed Insights API
 - Supports configurable device analysis (mobile, desktop, or both)
-- Transforms raw API data into structured performance metrics
 - Provides Sentry-style performance categorization (Good/Needs Improvement/Poor)
-- Handles missing data gracefully with appropriate fallbacks
-
-**Data Output:**
-```typescript
-interface RealWorldPerformanceOutput {
-  url: string;
-  hasData: boolean;
-  mobile?: {
-    fieldData: {
-      overallCategory: PerformanceCategory;
-      metrics: FieldMetrics;
-    }
-  };
-  desktop?: {
-    fieldData: {
-      overallCategory: PerformanceCategory; 
-      metrics: FieldMetrics;
-    }
-  };
-}
-```
+- Handles missing data gracefully
 
 ### Technology Detection Tool
 
 Identifies website technologies using Cloudflare URL Scanner:
 
 ```typescript
-// Tool interface  
 detectTechnologies({
   url: string;
 }) → TechDetectionOutput
@@ -78,243 +58,120 @@ detectTechnologies({
 - Leverages Cloudflare's Wappa technology fingerprinting
 - Detects frameworks, CMS, hosting, CDN, analytics, and more
 - Provides confidence scores for each detected technology
-- Categorizes technologies for easier analysis
-- Handles scan queuing and completion waiting
 
-**Data Output:**
-```typescript
-interface TechDetectionOutput {
-  technologies: Array<{
-    name: string;        // "React"
-    confidence: number;  // 0-100
-    categories: string[]; // ["JavaScript Frameworks"]
-  }>;
-}
-```
+### Analysis Breakdown Tool
 
-### Tool Orchestration
-
-Tools are executed in parallel for optimal performance:
+Generates structured analysis from collected data:
 
 ```typescript
-// In the AI system
-tools: {
-  getRealWorldPerformance: realWorldPerformanceTool,
-  detectTechnologies: techDetectionTool,
-}
+generateAnalysisBreakdown({
+  performanceData: RealWorldPerformanceOutput;
+  technologyData: TechDetectionOutput;
+}) → AnalysisBreakdown
 ```
 
-## 🎯 AI Artifacts
+**Output:**
+- Overview summary
+- 2-5 prioritized analysis points with severity levels
+- Recommended next step
 
-Artifacts stream structured data to the UI after the main conversation completes, enabling progressive enhancement.
+## 🔄 Tool Orchestration
 
-### Follow-up Actions Artifact
-
-Generates contextual follow-up questions based on the complete analysis:
-
-```typescript
-// Artifact schema
-{
-  status: 'loading' | 'generating' | 'complete';
-  progress: number; // 0-1
-  url?: string;
-  actions: Array<{
-    id: string;
-    title: string; // Follow-up question
-  }>;
-  context?: {
-    generatedAt: string;
-    basedOnTools: string[];
-    conversationLength: number;
-  };
-}
-```
-
-**Generation Process:**
-1. **Loading State**: Artifact starts streaming with loading status
-2. **Data Collection**: Performance and technology data extracted from completed tools
-3. **Context Building**: Full conversation history assembled for context
-4. **AI Generation**: OpenAI generates relevant follow-up questions
-5. **Progressive Updates**: Status updates stream to UI in real-time
-6. **Completion**: Final artifact with generated actions
-
-**AI Prompt Strategy:**
-- Uses complete conversation history to avoid repetition
-- Considers detected technology stack for relevant suggestions
-- Always includes Sentry RUM suggestions unless already discussed
-- Focuses on actionable next steps and implementation details
-
-## 🔄 Streaming Architecture
-
-### Real-time Data Flow
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant API
-    participant AI
-    participant Tools
-    participant Artifacts
-    participant UI
-
-    User->>API: Submit analysis request
-    API->>AI: Start streaming analysis
-    AI->>Tools: Execute performance & tech tools
-    Tools-->>AI: Return analysis data
-    AI->>UI: Stream text analysis
-    AI->>Artifacts: Trigger follow-up generation
-    Artifacts->>UI: Stream progressive updates
-    Artifacts->>UI: Complete with final data
-```
-
-### Stream Management
-
-The system uses `createUIMessageStream` for coordinated streaming:
+Tools execute in a step-based flow controlled by `prepareStep`:
 
 ```typescript
 const stream = createUIMessageStream({
-  execute: ({ writer }) => {
-    // Set up context for artifacts
-    setContext({
-      writer,
-      sessionId: `session-${Date.now()}`,
-      analyzeUrl: performanceConfig ? "analysis-session" : undefined,
-    });
-
-    // Execute main analysis
+  execute: async ({ writer }) => {
     const result = streamText({
       model: openai("gpt-4o"),
-      tools: { getRealWorldPerformance, detectTechnologies },
-      onFinish: async ({ steps }) => {
-        // Generate artifacts after main analysis
-        await generateFollowUpArtifact(steps);
-      }
+      messages: await convertToModelMessages(messages),
+      stopWhen: [stepCountIs(2), stopWhenNoData],
+      tools,
+      prepareStep: ({ stepNumber, steps }) => {
+        // Step 0: Data collection tools only
+        if (stepNumber === 0) {
+          return {
+            activeTools: ["getRealWorldPerformance", "detectTechnologies"],
+          };
+        }
+        // Step 1: Analysis breakdown (only if performance data exists)
+        if (stepNumber === 1 && steps[0]) {
+          if (!hasValidPerformanceData(steps[0])) {
+            return { activeTools: [] };
+          }
+          return { activeTools: ["generateAnalysisBreakdown"] };
+        }
+        return {};
+      },
     });
-
     writer.merge(result.toUIMessageStream());
   },
 });
 ```
 
-## 🧠 Context Management
+**Step Flow:**
+1. **Step 0**: `getRealWorldPerformance` and `detectTechnologies` run in parallel
+2. **Step 1**: `generateAnalysisBreakdown` runs only if performance data exists
+3. **Stop Conditions**: Stops after 2 steps OR if no performance data available
 
-### Typed Context System
+## 🎯 Follow-up Suggestions
 
-Provides shared state across tools and artifacts:
+A separate endpoint generates contextual follow-up questions:
 
+**Endpoint:** `POST /api/follow-up-suggestions`
+
+**Request:**
 ```typescript
-interface WebVitalsChatContext extends BaseContext {
-  sessionId: string;
-  analyzeUrl?: string;
-  writer: ArtifactWriter; // For streaming artifacts
+{
+  performanceData: RealWorldPerformanceOutput;
+  technologyData: TechDetectionOutput;
+  conversationHistory: Array<{ role: string; content: string }>;
+  url?: string;
 }
 ```
 
-### Usage Patterns
-
-**Setting Context (API Routes):**
+**Response:**
 ```typescript
-import { setContext } from "@/ai/context";
-
-setContext({
-  writer,
-  sessionId: generateSessionId(),
-  analyzeUrl: config.url,
-});
-```
-
-**Accessing Context (Tools/Artifacts):**
-```typescript
-import { getCurrentSession } from "@/ai/context";
-
-const session = getCurrentSession();
-console.log(`Analysis session: ${session.sessionId}`);
-```
-
-## 🎨 AI Prompt Engineering
-
-### System Prompt Strategy
-
-The AI system uses carefully crafted prompts to ensure relevant, actionable analysis:
-
-```typescript
-export const webAnalysisSystemPrompt = `
-You are a web performance analyst. Analyze websites using real user data and provide clear, actionable insights.
-
-When analyzing a website (initial URL analysis):
-1. Run getRealWorldPerformance and detectTechnologies tools in parallel
-2. Use the device configuration from the request (mobile, desktop, or both)  
-3. Write a concise analysis (150-200 words max) explaining what the performance data reveals and why it matters for users
-
-Your responses should:
-- Provide high-level insights about overall performance without repeating specific metric values (the UI displays detailed data separately)
-- Explain user experience impact and business implications
-- Consider the detected technology stack and how it affects performance
-- Focus on interpretation and context rather than raw numbers
-- Categorize performance using general terms (fast, average, slow) rather than specific CrUX categories
-`;
-```
-
-### Follow-up Generation
-
-Contextual follow-up questions use advanced prompting:
-
-```typescript
-// Example follow-up generation prompt
-`You are analyzing web performance data and generating contextual follow-up questions.
-
-PERFORMANCE DATA: ${JSON.stringify(performanceData)}
-TECHNOLOGY DATA: ${JSON.stringify(technologyData)}
-CONVERSATION HISTORY: ${conversationHistory}
-
-Based on this data and conversation context, generate 3-6 practical follow-up questions that would be most valuable for the user to explore next.
-
-Guidelines:
-- Be specific to the actual performance issues found
-- Consider the technology stack detected and suggest relevant optimizations
-- Avoid repeating topics already covered in the conversation
-- Focus on actionable next steps and implementation details
-- ALWAYS include at least one suggestion about tracking Real User Metrics with Sentry performance monitoring unless RUM/Sentry has already been thoroughly discussed
-`
-```
-
-## 🔍 Error Handling & Resilience
-
-### Tool Error Recovery
-
-```typescript
-// Graceful degradation for tool failures
-try {
-  const performanceData = await getRealWorldPerformance(url);
-} catch (error) {
-  Sentry.captureException(error);
-  // Continue with available data or provide fallback analysis
+{
+  success: boolean;
+  actions: Array<{
+    id: string;
+    title: string;
+  }>;
+  url: string | null;
+  generatedAt: string;
 }
 ```
 
-### Artifact Fallbacks
+Uses OpenAI's Structured Outputs via `generateObject` with a Zod schema.
 
+## 🔍 Error Handling
+
+### Tool Failures
+- Performance and tech detection run via `Promise.allSettled`
+- Individual failures don't block the entire analysis
+- `hasData: false` signals when CrUX data is unavailable
+
+### Follow-up Fallbacks
+If AI generation fails, returns static fallback suggestions:
 ```typescript
-// Fallback follow-up actions if AI generation fails
 const fallbackActions = [
-  {
-    id: "sentry-rum-setup",
-    title: "How do I set up Sentry to track Real User Metrics for Core Web Vitals?",
-  },
-  {
-    id: "performance-basics", 
-    title: "What are Core Web Vitals and why do they matter?",
-  },
-  // Additional fallback suggestions...
+  { id: "sentry-rum-setup", title: "How do I set up Sentry RUM?" },
+  { id: "performance-basics", title: "What are Core Web Vitals?" },
+  // ...
 ];
 ```
 
-## 📊 Monitoring & Observability
+## 📊 Monitoring
 
-### AI System Telemetry
+### Sentry Integration
+- Tool execution tracking with custom spans
+- Performance metrics via `Sentry.metrics`
+- Structured logging via `Sentry.logger`
+- Error capture with rich context
 
+### AI SDK Telemetry
 ```typescript
-// Comprehensive tracking of AI operations
 experimental_telemetry: {
   isEnabled: true,
   functionId: "pagespeed-analysis-chat",
@@ -322,18 +179,3 @@ experimental_telemetry: {
   recordOutputs: true,
 }
 ```
-
-### Sentry Integration
-
-- **Tool Execution Tracking**: Monitor success/failure rates of AI tools
-- **Performance Metrics**: Track AI response times and tool execution duration
-- **Error Reporting**: Comprehensive error tracking with context
-- **Usage Analytics**: Track most common analysis patterns and follow-up questions
-
-### Performance Optimization
-
-- **Parallel Tool Execution**: Performance and technology detection run simultaneously
-- **Streaming Responses**: Real-time delivery improves perceived performance
-- **Caching Strategy**: Google API responses cached for 1 hour
-- **Error Boundaries**: Graceful degradation when individual components fail
-
