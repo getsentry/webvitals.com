@@ -7,6 +7,24 @@
   "formatter": {
     "indentStyle": "space"
   },
+  "css": {
+    "parser": {
+      "cssModules": true,
+      "tailwindDirectives": true
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "groups": [["@sentry/*"], ["PACKAGES"], ["ALIAS"], ["RELATIVE"]]
+          }
+        }
+      }
+    }
+  },
   "linter": {
     "rules": {
       "suspicious": {
