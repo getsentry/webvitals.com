@@ -13,10 +13,7 @@ Sentry.init({
   // Enable logs to be sent to Sentry
   enableLogs: true,
 
-  // Force Vercel AI integration to always register span processors.
-  // Without this, the integration may not activate on Vercel because the 'ai' package
-  // is bundled (not externalized), preventing OTEL from patching module loading.
-  integrations: [Sentry.vercelAIIntegration({ force: true })],
+  integrations: [Sentry.vercelAIIntegration()],
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
