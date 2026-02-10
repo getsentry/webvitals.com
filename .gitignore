@@ -37,4 +37,10 @@ next-env.d.ts
 
 # Sentry Config File
 .env.sentry-build-plugin
-  
+
+# Proprietary cursor rules and derived skills
+.cursor/rules/
+.agents/skills/motion/
+.agents/skills/tailwind/
+.claude/skills/motion
+.claude/skills/tailwind
