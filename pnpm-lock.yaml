@@ -4,12 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  mdast-util-to-hast: ^13.2.1
-  '@modelcontextprotocol/sdk': ^1.24.0
-  js-yaml: ^4.1.1
-  body-parser: ^2.2.1
-
 importers:
 
   .:
