@@ -1,95 +1,50 @@
 # WebVitals.com
 
-**From Score to Solution** - The most actionable web performance analysis tool.
+**From Score to Solution** — AI-powered web performance analysis that transforms Core Web Vitals into actionable insights.
 
-## What is WebVitals.com?
+## What it does
 
-WebVitals.com transforms confusing performance metrics into clear, implementable action items. Unlike traditional tools that just give you a score, we provide:
+Enter a URL, get real-world performance data from Chrome UX Report (CrUX), AI-powered analysis from Claude, and technology detection — all streamed in real time.
 
-- **Real-world performance data** from Chrome User Experience Report (CrUX)
-- **AI-powered insights** with contextual analysis of your site
-- **Technology detection** to identify your framework and hosting setup
-- **Sentry-style scoring** for actionable performance metrics
-
-## Key Features
-
-🎯 **Real User Data** - Chrome UX Report data from actual visitors  
-🤖 **AI-Powered Analysis** - Intelligent insights tailored to your site  
-📊 **Sentry-Style Scoring** - Performance metrics with actionable thresholds  
-🔧 **Technology Detection** - Automatic framework and platform identification  
-⚡ **Streamlined Experience** - Focus on what matters most for your site
+- Real user metrics (LCP, FCP, INP, CLS, TTFB) with Sentry-style scoring
+- Technology detection (framework, hosting, CDN)
+- AI-generated recommendations tailored to your detected stack
+- Per-metric educational pages with interactive animations
 
 ## Tech Stack
 
-- **Next.js 15** - React meta-framework with App Router and Turbopack
-- **React 19** - Interactive dashboard components with Server Components
-- **TailwindCSS 4** - Utility-first styling with PostCSS integration
-- **TypeScript** - Type-safe development with strict configuration
-- **Vercel** - Deployment platform with native Next.js support
-- **Sentry** - Error monitoring, performance tracking, and AI agent monitoring
-- **AI SDK** - OpenAI integration for intelligent web performance analysis
+- **Next.js 16** (App Router, Turbopack) + **React 19** + **TypeScript 5** (strict)
+- **Anthropic AI SDK** (`@ai-sdk/anthropic`) — Claude for streaming analysis
+- **Sentry** (`@sentry/nextjs`) — error monitoring, tracing, session replay, AI monitoring
+- **TailwindCSS 4** + **shadcn/ui** + **Motion** (animation)
+- **Biome 2** — formatting and linting
 
 ## Development
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Start development server with Turbopack
-pnpm dev
-
-# Build for production with Turbopack
-pnpm build
-
-# Start production server
-pnpm start
-
-# Type checking
-pnpm check-types
-
-# Format code
-pnpm format:fix
-
-# Lint code
-pnpm lint
+pnpm dev          # Start dev server (Turbopack)
+pnpm build        # Production build
+pnpm check-types  # Type checking
+pnpm lint         # Biome lint
 ```
+
+Requires `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`, and optionally Sentry env vars. See `.env.example`.
 
 ## Project Structure
 
 ```
-app/                     # Next.js App Router
-├── api/chat/           # API routes for AI analysis
-├── layout.tsx          # Root layout with theme provider
-├── page.tsx            # Homepage
-└── globals.css         # Global styles
-
-components/              # Reusable UI components
-├── ui/                 # shadcn/ui component library
-├── HeroSection.tsx     # Main hero with analysis interface
-├── ChatInterface.tsx   # AI conversation interface
-├── MessageRenderer.tsx # AI tool output rendering
-└── ThemeProvider.tsx   # Next.js theme management
-
-lib/                     # Utilities and services
-├── utils.ts            # Shared utility functions
-└── system-prompts.ts   # AI system prompts
-
-tools/                   # Analysis tools (simplified to 2 core tools)
-├── real-world-performance-tool.ts # Chrome UX Report data with Sentry scoring
-└── tech-detection-tool.ts # Cloudflare-based technology detection
-
-types/                   # TypeScript definitions
-├── real-world-performance.ts # CrUX data and Sentry scoring types
-└── cloudflare-tech.ts  # Technology detection types
-
-hooks/                   # React hooks
-├── use-mobile.ts       # Mobile detection hook
-└── useScrollFade.ts    # Scroll animation hook
-
-PRODUCT_SPEC.md          # Detailed product specification
-CLAUDE.md               # Development guidelines for Next.js
+app/
+  api/chat/                  # AI streaming endpoint (2-step tool orchestration)
+  api/follow-up-suggestions/ # Follow-up generation
+  [metric]/                  # LCP, FCP, INP, CLS, TTFB pages
+ai/tools/                    # AI tool definitions
+components/                  # UI components, animations, visualizations
+hooks/                       # Custom React hooks
+lib/                         # Utilities
+types/                       # TypeScript definitions
 ```
 
----
+## License
 
-_Building the future of actionable web performance analysis._
+Apache License 2.0 — see [LICENSE](LICENSE).
