@@ -17,7 +17,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## Stack
 
-- **Next.js 15** (App Router, Turbopack) + **React 19** + **TypeScript 5** (strict)
+- **Next.js 16** (App Router, Turbopack) + **React 19** + **TypeScript 5** (strict)
 - **Anthropic AI SDK** (`@ai-sdk/anthropic`) with `claude-sonnet-4-5` / `claude-haiku-4-5`
 - **Sentry** (`@sentry/nextjs`) — error monitoring, tracing, session replay, AI monitoring
 - **TailwindCSS 4** + **shadcn/ui** (New York style, Lucide icons) + **Motion** (animation)
@@ -83,6 +83,3 @@ hooks/                  # Custom React hooks
 - **Commit**: `.agents/skills/commit/SKILL.md` — Sentry commit conventions
 - **Create PR**: `.agents/skills/create-pr/SKILL.md` — PR conventions
 
-## Documentation
-
-Full docs in `docs/`: overview, architecture, API specs, AI integration, deployment guide.
