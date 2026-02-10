@@ -7,7 +7,13 @@ import { cn } from "@/lib/utils";
 function Accordion({
   ...props
 }: React.ComponentProps<typeof AccordionPrimitive.Root>) {
-  return <AccordionPrimitive.Root data-slot="accordion" {...props} />;
+  return (
+    <AccordionPrimitive.Root
+      suppressHydrationWarning
+      data-slot="accordion"
+      {...props}
+    />
+  );
 }
 
 function AccordionItem({
@@ -16,6 +22,7 @@ function AccordionItem({
 }: React.ComponentProps<typeof AccordionPrimitive.Item>) {
   return (
     <AccordionPrimitive.Item
+      suppressHydrationWarning
       data-slot="accordion-item"
       className={cn("border-b last:border-b-0", className)}
       {...props}
@@ -29,7 +36,7 @@ function AccordionTrigger({
   ...props
 }: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {
   return (
-    <AccordionPrimitive.Header className="flex">
+    <AccordionPrimitive.Header suppressHydrationWarning className="flex">
       <AccordionPrimitive.Trigger
         suppressHydrationWarning
         data-slot="accordion-trigger"
@@ -53,6 +60,7 @@ function AccordionContent({
 }: React.ComponentProps<typeof AccordionPrimitive.Content>) {
   return (
     <AccordionPrimitive.Content
+      suppressHydrationWarning
       data-slot="accordion-content"
       className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm"
       {...props}
