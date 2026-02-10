@@ -1,6 +1,6 @@
-import { openai } from "@ai-sdk/openai";
 import * as Sentry from "@sentry/nextjs";
-import { generateObject, tool } from "ai";
+import { anthropic } from "@ai-sdk/anthropic";
+import { generateText, Output, tool } from "ai";
 import { z } from "zod";
 import { AnalysisBreakdownSchema } from "@/types/analysis-breakdown";
 import type { RealWorldPerformanceOutput } from "@/types/real-world-performance";
@@ -8,10 +8,10 @@ import type { TechnologyDetectionOutput } from "@/types/web-vitals";
 
 const analysisBreakdownInputSchema = z.object({
   performanceData: z
-    .any()
+    .unknown()
     .describe("Real-world performance data from getRealWorldPerformance"),
   technologyData: z
-    .any()
+    .unknown()
     .describe("Technology detection data from detectTechnologies"),
 });
 
@@ -32,16 +32,16 @@ export const analysisBreakdownTool = tool({
         name: "webvitals.ai.generate_breakdown",
         op: "function",
         attributes: {
-          "webvitals.ai.model": "gpt-4o-mini",
+          "webvitals.ai.model": "claude-haiku-4-5",
           "webvitals.ai.has_performance_data": !!performanceData?.hasData,
           "webvitals.ai.has_technology_data": !!technologyData,
         },
       },
       async (span) => {
         try {
-          const result = await generateObject({
-            model: openai("gpt-4o-mini"),
-            schema: AnalysisBreakdownSchema,
+          const result = await generateText({
+            model: anthropic("claude-haiku-4-5-20251001"),
+            output: Output.object({ schema: AnalysisBreakdownSchema }),
             prompt: `You are an expert web performance consultant. Analyze the performance and technology data to create a structured breakdown.
 
 Performance Data:
@@ -89,13 +89,17 @@ Guidelines:
 
           const durationMs = Date.now() - startTime;
 
+          if (!result.output) {
+            throw new Error("AI model did not produce structured output");
+          }
+
           const validationResult = AnalysisBreakdownSchema.safeParse(
-            result.object,
+            result.output,
           );
           if (!validationResult.success) {
             Sentry.logger.error("Schema validation failed", {
               error: validationResult.error,
-              rawObject: result.object,
+              rawObject: result.output,
             });
             throw new Error(
               `Schema validation failed: ${JSON.stringify(
@@ -105,7 +109,7 @@ Guidelines:
           }
 
           span.setAttributes({
-            "webvitals.ai.points_generated": result.object.points.length,
+            "webvitals.ai.points_generated": result.output.points.length,
             "webvitals.ai.duration_ms": durationMs,
             "webvitals.ai.success": true,
           });
@@ -118,7 +122,7 @@ Guidelines:
               unit: "millisecond",
               attributes: {
                 success: "true",
-                points_count: String(result.object.points.length),
+                points_count: String(result.output.points.length),
               },
             },
           );
@@ -126,11 +130,11 @@ Guidelines:
           Sentry.logger.info("Analysis breakdown generated", {
             hasPerformanceData: !!performanceData?.hasData,
             hasTechnologyData: !!technologyData,
-            pointsGenerated: result.object.points.length,
+            pointsGenerated: result.output.points.length,
             durationMs,
           });
 
-          return result.object;
+          return result.output;
         } catch (error) {
           const durationMs = Date.now() - startTime;
 
@@ -161,7 +165,7 @@ Guidelines:
           Sentry.captureException(error, {
             tags: {
               component: "analysis-breakdown-tool",
-              operation: "generateObject",
+              operation: "generateText",
             },
             extra: {
               hasPerformanceData: !!performanceData?.hasData,

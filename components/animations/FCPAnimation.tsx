@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 export function FCPAnimation({
   color,
@@ -10,6 +11,7 @@ export function FCPAnimation({
   color: string;
   paused?: boolean;
 }) {
+  const reducedMotion = useReducedMotion();
   const [state, setState] = useState<{
     fcpReached: boolean; // First content painted at 75ms
     allLoaded: boolean; // All content loaded later
@@ -27,6 +29,11 @@ export function FCPAnimation({
         allLoaded: false,
         animationKey: 0,
       });
+      return;
+    }
+
+    if (reducedMotion) {
+      setState({ fcpReached: true, allLoaded: true, animationKey: 1 });
       return;
     }
 
@@ -74,7 +81,7 @@ export function FCPAnimation({
       if (interval) clearInterval(interval);
       timeouts.forEach(clearTimeout);
     };
-  }, [paused]);
+  }, [paused, reducedMotion]);
 
   const contentElements = [
     { id: 1, width: "70%", isFCP: true },
@@ -115,7 +122,7 @@ export function FCPAnimation({
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   />
                 )}
               </AnimatePresence>
@@ -136,7 +143,12 @@ export function FCPAnimation({
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ duration: 0.2, delay: 0.1 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 25,
+                          delay: 0.1,
+                        }}
                       >
                         75ms
                       </motion.div>

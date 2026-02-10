@@ -2,6 +2,7 @@
 
 import { motion, type Transition } from "motion/react";
 import { useEffect, useState } from "react";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 export function CLSAnimation({
   color,
@@ -17,10 +18,11 @@ export function CLSAnimation({
     `color-mix(in srgb, ${color} 90%, transparent)`,
   ];
 
+  const reducedMotion = useReducedMotion();
   const [order, setOrder] = useState(initialBoxes);
 
   useEffect(() => {
-    if (paused) {
+    if (paused || reducedMotion) {
       setOrder(initialBoxes);
       return;
     }
@@ -35,7 +37,7 @@ export function CLSAnimation({
       clearTimeout(initialInterval);
       clearInterval(interval);
     };
-  }, [paused]);
+  }, [paused, reducedMotion]);
 
   return (
     <div
@@ -55,6 +57,7 @@ export function CLSAnimation({
               style={{
                 ...item,
                 backgroundColor,
+                willChange: "transform",
               }}
             />
           ))}

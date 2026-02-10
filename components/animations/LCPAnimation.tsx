@@ -3,6 +3,7 @@
 import { Image } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 export function LCPAnimation({
   color,
@@ -11,6 +12,7 @@ export function LCPAnimation({
   color: string;
   paused?: boolean;
 }) {
+  const reducedMotion = useReducedMotion();
   const [state, setState] = useState<{
     showTimer: boolean;
     currentTime: number;
@@ -30,6 +32,16 @@ export function LCPAnimation({
         currentTime: 0,
         loadedElements: 0,
         animationKey: 0,
+      });
+      return;
+    }
+
+    if (reducedMotion) {
+      setState({
+        showTimer: false,
+        currentTime: 568,
+        loadedElements: 4,
+        animationKey: 1,
       });
       return;
     }
@@ -101,7 +113,7 @@ export function LCPAnimation({
       timeouts.forEach(clearTimeout);
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
-  }, [paused]);
+  }, [paused, reducedMotion]);
 
   const elements = [
     { id: 1, type: "text", width: "100%", height: "12px" },
@@ -125,7 +137,7 @@ export function LCPAnimation({
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.2 }}
+            transition={{ type: "spring", stiffness: 300, damping: 24 }}
             className="absolute top-4 left-1/2 transform -translate-x-1/2 px-2 py-1 rounded text-xs font-mono"
             style={{
               backgroundColor: `color-mix(in srgb, ${color} 20%, transparent)`,
@@ -156,7 +168,7 @@ export function LCPAnimation({
                     ? `color-mix(in srgb, ${color} 70%, transparent)`
                     : `color-mix(in srgb, ${color} 30%, transparent)`,
                 }}
-                transition={{ duration: 0.3 }}
+                transition={{ type: "spring", stiffness: 300, damping: 24 }}
               ></motion.div>
             );
           })}
@@ -178,7 +190,7 @@ export function LCPAnimation({
                 : `color-mix(in srgb, ${color} 15%, transparent)`,
             borderStyle: state.loadedElements >= 4 ? "solid" : "dashed",
           }}
-          transition={{ duration: 0.3 }}
+          transition={{ type: "spring", stiffness: 300, damping: 24 }}
         >
           <Image
             className="w-6 h-6"
