@@ -44,3 +44,4 @@ next-env.d.ts
 .agents/skills/tailwind/
 .claude/skills/motion
 .claude/skills/tailwind
+.claude/plans/
