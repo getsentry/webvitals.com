@@ -12,9 +12,7 @@ const followUpSuggestionsSchema = z.object({
         title: z.string().describe("Clear, actionable follow-up question"),
       }),
     )
-    .min(3)
-    .max(6)
-    .describe("Array of 3-6 follow-up questions"),
+    .describe("3-6 follow-up questions"),
   url: z.string().nullable().describe("The analyzed URL if available"),
 });
 
