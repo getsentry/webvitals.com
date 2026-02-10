@@ -1,6 +1,6 @@
-import { openai } from "@ai-sdk/openai";
 import * as Sentry from "@sentry/nextjs";
-import { generateObject } from "ai";
+import { anthropic } from "@ai-sdk/anthropic";
+import { generateText, Output } from "ai";
 import { checkBotId } from "botid/server";
 import { z } from "zod";
 
@@ -12,9 +12,7 @@ const followUpSuggestionsSchema = z.object({
         title: z.string().describe("Clear, actionable follow-up question"),
       }),
     )
-    .min(3)
-    .max(6)
-    .describe("Array of 3-6 follow-up questions"),
+    .describe("3-6 follow-up questions"),
   url: z.string().nullable().describe("The analyzed URL if available"),
 });
 
@@ -35,8 +33,8 @@ export async function POST(request: Request) {
   const startTime = Date.now();
 
   let requestData: {
-    performanceData?: any;
-    technologyData?: any;
+    performanceData?: Record<string, unknown>;
+    technologyData?: Record<string, unknown>;
     conversationHistory?: Array<{
       role: "user" | "assistant";
       content: string;
@@ -49,7 +47,7 @@ export async function POST(request: Request) {
       name: "webvitals.ai.follow_up_suggestions",
       op: "function",
       attributes: {
-        "webvitals.ai.model": "gpt-4o-mini",
+        "webvitals.ai.model": "claude-haiku-4-5",
         "http.method": "POST",
         "http.route": "/api/follow-up-suggestions",
       },
@@ -123,9 +121,9 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
     : ""
 }`;
 
-        const result = await generateObject({
-          model: openai("gpt-4o-mini"),
-          schema: followUpSuggestionsSchema,
+        const result = await generateText({
+          model: anthropic("claude-haiku-4-5-20251001"),
+          output: Output.object({ schema: followUpSuggestionsSchema }),
           system: systemPrompt,
           prompt: userPrompt,
           experimental_telemetry: {
@@ -138,8 +136,12 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
 
         const durationMs = Date.now() - startTime;
 
+        if (!result.output) {
+          throw new Error("AI model did not produce structured output");
+        }
+
         span.setAttributes({
-          "webvitals.ai.actions_generated": result.object.actions.length,
+          "webvitals.ai.actions_generated": result.output.actions.length,
           "webvitals.ai.duration_ms": durationMs,
           "webvitals.ai.success": true,
         });
@@ -152,20 +154,20 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
             unit: "millisecond",
             attributes: {
               success: "true",
-              actions_count: String(result.object.actions.length),
+              actions_count: String(result.output.actions.length),
             },
           },
         );
 
         Sentry.logger.info("Follow-up suggestions generated successfully", {
-          actionsCount: result.object.actions.length,
-          url: result.object.url,
+          actionsCount: result.output.actions.length,
+          url: result.output.url,
           durationMs,
         });
 
         return Response.json({
           success: true,
-          ...result.object,
+          ...result.output,
           generatedAt: new Date().toISOString(),
         });
       } catch (error) {

@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 export function INPAnimation({
   color,
@@ -10,6 +11,7 @@ export function INPAnimation({
   color: string;
   paused?: boolean;
 }) {
+  const reducedMotion = useReducedMotion();
   const [interactionState, setInteractionState] = useState<{
     cursorPosition: { x: number; y: number };
     isClicked: boolean;
@@ -29,6 +31,16 @@ export function INPAnimation({
         isClicked: false,
         isOpen: false,
         timerMs: 0,
+      });
+      return;
+    }
+
+    if (reducedMotion) {
+      setInteractionState({
+        cursorPosition: { x: 20, y: 5 },
+        isClicked: false,
+        isOpen: true,
+        timerMs: 500,
       });
       return;
     }
@@ -96,7 +108,7 @@ export function INPAnimation({
       if (timerInterval) clearInterval(timerInterval);
       timeouts.forEach(clearTimeout);
     };
-  }, [paused]);
+  }, [paused, reducedMotion]);
 
   return (
     <div
@@ -154,7 +166,7 @@ export function INPAnimation({
                   color: `color-mix(in srgb, ${color} 70%, transparent)`,
                 }}
                 animate={{ rotate: interactionState.isOpen ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
               >
                 ▼
               </motion.div>
@@ -192,8 +204,10 @@ export function INPAnimation({
                     opacity: interactionState.isOpen ? 1 : 0,
                   }}
                   transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 25,
                     delay: interactionState.isOpen ? index * 0.1 : 0,
-                    duration: 0.3,
                   }}
                 >
                   <div
@@ -224,7 +238,7 @@ export function INPAnimation({
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 >
                   {interactionState.timerMs}ms
                 </motion.div>
@@ -235,6 +249,7 @@ export function INPAnimation({
         {/* Animated Cursor */}
         <motion.div
           className="absolute w-4 h-4 pointer-events-none z-20"
+          style={{ willChange: "transform" }}
           animate={{
             left: `${interactionState.cursorPosition.x}%`,
             top: `${interactionState.cursorPosition.y}%`,

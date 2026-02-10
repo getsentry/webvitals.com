@@ -3,6 +3,7 @@
 import { Check, Server, Smartphone } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 export function TTFBAnimation({
   color,
@@ -11,6 +12,7 @@ export function TTFBAnimation({
   color: string;
   paused?: boolean;
 }) {
+  const reducedMotion = useReducedMotion();
   const [state, setState] = useState<{
     packetPosition: number; // 0-100
     showComplete: boolean;
@@ -35,6 +37,18 @@ export function TTFBAnimation({
         showTimer: false,
         currentTime: 0,
         animationKey: 0,
+        showPacket: false,
+      });
+      return;
+    }
+
+    if (reducedMotion) {
+      setState({
+        packetPosition: 100,
+        showComplete: true,
+        showTimer: false,
+        currentTime: 350,
+        animationKey: 1,
         showPacket: false,
       });
       return;
@@ -93,7 +107,7 @@ export function TTFBAnimation({
       clearTimeout(timeout);
       clearInterval(interval);
     };
-  }, [paused]);
+  }, [paused, reducedMotion]);
 
   return (
     <div
@@ -128,7 +142,7 @@ export function TTFBAnimation({
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
+                transition={{ type: "spring", stiffness: 200, damping: 20 }}
                 className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 rounded text-xs font-mono"
                 style={{
                   backgroundColor: `color-mix(in srgb, ${color} 20%, transparent)`,
@@ -164,7 +178,7 @@ export function TTFBAnimation({
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.6, opacity: 0 }}
-                transition={{ duration: 0.3 }}
+                transition={{ type: "spring", stiffness: 200, damping: 20 }}
               />
             )}
           </AnimatePresence>
@@ -188,7 +202,7 @@ export function TTFBAnimation({
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.8, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 20 }}
                   className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
                   style={{ backgroundColor: color }}
                 >

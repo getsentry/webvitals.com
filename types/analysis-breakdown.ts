@@ -13,9 +13,7 @@ export const AnalysisBreakdownSchema = z.object({
   overview: z.string().describe("Brief overall assessment (1-2 sentences)"),
   points: z
     .array(AnalysisPointSchema)
-    .min(2)
-    .max(5)
-    .describe("Main analysis points"),
+    .describe("2-5 main analysis points"),
   nextStep: z.string().describe("Key next step or recommendation (1 sentence)"),
 });
 

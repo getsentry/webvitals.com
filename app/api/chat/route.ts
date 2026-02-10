@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
-import { openai } from "@ai-sdk/openai";
+import { anthropic } from "@ai-sdk/anthropic";
 import type { StepResult } from "ai";
 import {
   convertToModelMessages,
@@ -165,7 +165,7 @@ export async function POST(request: Request) {
         const stream = createUIMessageStream({
           execute: async ({ writer }) => {
             const result = streamText({
-              model: openai("gpt-4o"),
+              model: anthropic("claude-sonnet-4-5-20250929"),
               messages: await convertToModelMessages(sanitizedMessages),
               stopWhen: [stepCountIs(2), stopWhenNoData],
               tools,
