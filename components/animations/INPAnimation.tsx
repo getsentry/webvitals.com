@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 export function INPAnimation({
@@ -12,6 +12,7 @@ export function INPAnimation({
   paused?: boolean;
 }) {
   const reducedMotion = useReducedMotion();
+  const containerRef = useRef<HTMLDivElement>(null);
   const [interactionState, setInteractionState] = useState<{
     cursorPosition: { x: number; y: number };
     isClicked: boolean;
@@ -118,6 +119,7 @@ export function INPAnimation({
       }}
     >
       <div
+        ref={containerRef}
         className="absolute inset-4 flex flex-col items-start"
         style={{ top: "15%", left: "10%" }}
       >
@@ -246,13 +248,16 @@ export function INPAnimation({
           </AnimatePresence>
         </div>
 
-        {/* Animated Cursor */}
+        {/* Animated Cursor — uses transform (x/y) instead of left/top for compositor-only animation */}
         <motion.div
           className="absolute w-4 h-4 pointer-events-none z-20"
-          style={{ willChange: "transform" }}
           animate={{
-            left: `${interactionState.cursorPosition.x}%`,
-            top: `${interactionState.cursorPosition.y}%`,
+            x:
+              (interactionState.cursorPosition.x / 100) *
+              (containerRef.current?.clientWidth ?? 0),
+            y:
+              (interactionState.cursorPosition.y / 100) *
+              (containerRef.current?.clientHeight ?? 0),
             scale: interactionState.isClicked ? 0.9 : 1,
           }}
           transition={{

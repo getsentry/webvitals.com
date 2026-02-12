@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { Loader } from "@/components/ui/ai-elements/loader";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 const WEB_VITALS_FACTS = [
   {
@@ -62,16 +63,17 @@ interface WebVitalsFactsProps {
 export default function WebVitalsFacts({ className }: WebVitalsFactsProps) {
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    if (isHovered) return;
+    if (isHovered || reducedMotion) return;
 
     const interval = setInterval(() => {
       setCurrentFactIndex((prev) => (prev + 1) % WEB_VITALS_FACTS.length);
-    }, 4000); // Change fact every 4 seconds (25% slower)
+    }, 4000);
 
     return () => clearInterval(interval);
-  }, [isHovered]);
+  }, [isHovered, reducedMotion]);
 
   const currentFact = WEB_VITALS_FACTS[currentFactIndex];
 

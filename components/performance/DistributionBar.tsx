@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
+import { useRef } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -120,21 +121,26 @@ export default function DistributionBar({
     </div>
   );
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const containerWidth = containerRef.current?.clientWidth ?? 0;
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="relative">
+        <div ref={containerRef} className="relative">
           <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted cursor-help">
             <AnimatePresence>
               {distributions.map((dist, i) => (
                 <motion.div
                   key={i}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${dist.proportion * 100}%` }}
-                  exit={{ width: 0 }}
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  exit={{ scaleX: 0 }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   style={{
+                    width: `${dist.proportion * 100}%`,
                     backgroundColor: COLOR_VARS[i],
+                    transformOrigin: "left",
                   }}
                 />
               ))}
@@ -143,15 +149,15 @@ export default function DistributionBar({
           <AnimatePresence>
             <motion.div
               className="absolute top-0 w-1 h-3 bg-foreground shadow-sm pointer-events-none"
-              initial={{ left: 0 }}
+              style={{ left: 0, marginLeft: -2 }}
+              initial={{ x: 0 }}
               animate={{
-                left: `${Math.min(Math.max(markerPosition, 0.5), 99.5)}%`,
+                x:
+                  containerWidth *
+                  (Math.min(Math.max(markerPosition, 0.5), 99.5) / 100),
               }}
-              exit={{ left: 0 }}
+              exit={{ x: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              style={{
-                transform: "translateX(-50%)",
-              }}
             />
           </AnimatePresence>
         </div>
