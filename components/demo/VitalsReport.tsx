@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Metric } from "web-vitals";
 import { onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
@@ -64,7 +65,7 @@ function VitalItem({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <a
+          <Link
             href={vital.href}
             className={`block p-3 rounded-lg border transition-colors ${
               isHighlighted
@@ -82,7 +83,7 @@ function VitalItem({
                 {formattedScore}
               </Badge>
             </div>
-          </a>
+          </Link>
         </TooltipTrigger>
         <TooltipContent className="max-w-sm text-pretty">
           {vital.tooltip}

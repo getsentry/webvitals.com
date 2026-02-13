@@ -4,6 +4,7 @@ import { useChatMessages, useChatStore } from "@ai-sdk-tools/store";
 import type { UIMessage } from "ai";
 import { RotateCcwIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   Suggestion,
@@ -71,6 +72,7 @@ function SuggestionSkeleton({ index }: { index: number }) {
 }
 
 export default function FollowUpSuggestions() {
+  const router = useRouter();
   const messages = useChatMessages();
   const { sendMessage, status, setMessages } = useChatStore();
   const [followUpData, setFollowUpData] =
@@ -216,11 +218,9 @@ export default function FollowUpSuggestions() {
   };
 
   const handleReset = () => {
-    // Clear chat messages
     setMessages([]);
-    // Remove URL parameter
-    history.replaceState(null, "", "/");
-    window.location.reload();
+    localStorage.removeItem("webvitals-run-id");
+    router.push("/");
   };
 
   return (

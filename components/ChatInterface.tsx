@@ -8,7 +8,7 @@ import {
 } from "@ai-sdk-tools/store";
 import { RotateCcwIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import {
   Conversation,
@@ -22,6 +22,7 @@ import MessageRenderer from "./MessageRenderer";
 import WebVitalsFacts from "./WebVitalsFacts";
 
 export default function ChatInterface() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const messages = useChatMessages();
 
@@ -46,11 +47,9 @@ export default function ChatInterface() {
   );
 
   const handleReset = () => {
-    // Clear chat messages
     setMessages([]);
-    // Remove URL parameter
-    history.replaceState(null, "", "/");
-    window.location.reload();
+    localStorage.removeItem("webvitals-run-id");
+    router.push("/");
   };
 
   return (

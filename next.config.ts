@@ -1,6 +1,7 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import { withBotId } from "botid/next/config";
 import type { NextConfig } from "next";
+import { withWorkflow } from "workflow/next";
 
 const { withPlausibleProxy } = require("next-plausible");
 
@@ -15,7 +16,7 @@ const nextConfig: NextConfig = {
   transpilePackages: ["streamdown"],
 };
 
-export default withSentryConfig(withBotId(withPlausibleProxy()(nextConfig)), {
+export default withWorkflow(withSentryConfig(withBotId(withPlausibleProxy()(nextConfig)), {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
@@ -37,4 +38,4 @@ export default withSentryConfig(withBotId(withPlausibleProxy()(nextConfig)), {
   // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
   // side errors will fail.
   tunnelRoute: "/monitoring",
-});
+}));

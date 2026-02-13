@@ -1,10 +1,10 @@
 "use client";
 
 import { useChat } from "@ai-sdk-tools/store";
+import { WorkflowChatTransport } from "@workflow/ai";
 import * as Sentry from "@sentry/nextjs";
-import { DefaultChatTransport } from "ai";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import useMeasure from "react-use-measure";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLoadState } from "@/hooks/useLoadState";
@@ -24,9 +24,30 @@ export default function HeroSection() {
     setLoading(false);
   }, [setLoading]);
 
+  const activeRunId = useMemo(() => {
+    if (typeof window === "undefined") return undefined;
+    return localStorage.getItem("webvitals-run-id") ?? undefined;
+  }, []);
+
   const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({
+    resume: Boolean(activeRunId),
+    transport: new WorkflowChatTransport({
       api: "/api/chat",
+      onChatSendMessage: (response) => {
+        const runId = response.headers.get("x-workflow-run-id");
+        if (runId) localStorage.setItem("webvitals-run-id", runId);
+      },
+      onChatEnd: () => {
+        localStorage.removeItem("webvitals-run-id");
+      },
+      prepareReconnectToStreamRequest: ({ api, ...rest }) => {
+        const runId = localStorage.getItem("webvitals-run-id");
+        if (!runId) throw new Error("No active workflow run ID");
+        return {
+          ...rest,
+          api: `/api/chat/${encodeURIComponent(runId)}/stream`,
+        };
+      },
     }),
     onFinish: (message) => {
       Sentry.logger.info("Chat analysis completed", {

@@ -1,6 +1,7 @@
 "use client";
 
 import { Clock, MousePointer, Move3D, Paintbrush, Server } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import {
   CLSAnimation,
@@ -101,7 +102,7 @@ export default function CoreWebVitalsSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:auto-rows-[26rem] lg:auto-rows-[24rem]">
           {metrics.map((metric) => {
             return (
-              <a
+              <Link
                 key={metric.id}
                 id={`metric-${metric.shortName.toLowerCase()}`}
                 href={metric.href}
@@ -154,7 +155,7 @@ export default function CoreWebVitalsSection() {
                     {metric.cta} →
                   </div>
                 </div>
-              </a>
+              </Link>
             );
           })}
         </div>
