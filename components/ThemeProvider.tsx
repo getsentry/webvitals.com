@@ -1,5 +1,6 @@
 "use client";
 
+import { MotionConfig } from "motion/react";
 import {
   ThemeProvider as NextThemesProvider,
   type ThemeProviderProps,
@@ -17,7 +18,7 @@ export default function ThemeProvider({
       disableTransitionOnChange
       {...props}
     >
-      {children}
+      <MotionConfig reducedMotion="user">{children}</MotionConfig>
     </NextThemesProvider>
   );
 }

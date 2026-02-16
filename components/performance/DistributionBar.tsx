@@ -120,6 +120,8 @@ export default function DistributionBar({
     </div>
   );
 
+  const clampedPosition = Math.min(Math.max(markerPosition, 0.5), 99.5);
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -129,12 +131,14 @@ export default function DistributionBar({
               {distributions.map((dist, i) => (
                 <motion.div
                   key={i}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${dist.proportion * 100}%` }}
-                  exit={{ width: 0 }}
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  exit={{ scaleX: 0 }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   style={{
+                    width: `${dist.proportion * 100}%`,
                     backgroundColor: COLOR_VARS[i],
+                    transformOrigin: "left",
                   }}
                 />
               ))}
@@ -143,15 +147,11 @@ export default function DistributionBar({
           <AnimatePresence>
             <motion.div
               className="absolute top-0 w-1 h-3 bg-foreground shadow-sm pointer-events-none"
-              initial={{ left: 0 }}
-              animate={{
-                left: `${Math.min(Math.max(markerPosition, 0.5), 99.5)}%`,
-              }}
-              exit={{ left: 0 }}
+              style={{ marginLeft: -2 }}
+              initial={{ left: "0%" }}
+              animate={{ left: `${clampedPosition}%` }}
+              exit={{ left: "0%" }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              style={{
-                transform: "translateX(-50%)",
-              }}
             />
           </AnimatePresence>
         </div>

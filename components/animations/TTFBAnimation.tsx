@@ -2,7 +2,7 @@
 
 import { Check, Server, Smartphone } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 export function TTFBAnimation({
@@ -13,15 +13,14 @@ export function TTFBAnimation({
   paused?: boolean;
 }) {
   const reducedMotion = useReducedMotion();
+  const lineRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<{
-    packetPosition: number; // 0-100
     showComplete: boolean;
     showTimer: boolean;
-    currentTime: number; // Current elapsed time in ms
-    animationKey: number; // For AnimatePresence
-    showPacket: boolean; // Controls packet visibility for fade out
+    currentTime: number;
+    animationKey: number;
+    showPacket: boolean;
   }>({
-    packetPosition: 0,
     showComplete: false,
     showTimer: false,
     currentTime: 0,
@@ -32,7 +31,6 @@ export function TTFBAnimation({
   useEffect(() => {
     if (paused) {
       setState({
-        packetPosition: 0,
         showComplete: false,
         showTimer: false,
         currentTime: 0,
@@ -44,7 +42,6 @@ export function TTFBAnimation({
 
     if (reducedMotion) {
       setState({
-        packetPosition: 100,
         showComplete: true,
         showTimer: false,
         currentTime: 350,
@@ -54,9 +51,11 @@ export function TTFBAnimation({
       return;
     }
 
+    let animationFrameId: number;
+    let resetTimeout: ReturnType<typeof setTimeout>;
+
     const runAnimation = () => {
       setState((prev) => ({
-        packetPosition: 0,
         showComplete: false,
         showTimer: true,
         currentTime: 0,
@@ -67,18 +66,18 @@ export function TTFBAnimation({
       const startTime = Date.now();
       const duration = 350;
 
-      const animate = () => {
+      // rAF only drives the timer counter — packet position is handled by Motion
+      const updateTimer = () => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / duration, 1);
 
         setState((prev) => ({
           ...prev,
-          packetPosition: progress * 100,
           currentTime: Math.round(elapsed),
         }));
 
         if (progress < 1) {
-          requestAnimationFrame(animate);
+          animationFrameId = requestAnimationFrame(updateTimer);
         } else {
           setState((prev) => ({
             ...prev,
@@ -86,7 +85,7 @@ export function TTFBAnimation({
             currentTime: 350,
           }));
 
-          setTimeout(() => {
+          resetTimeout = setTimeout(() => {
             setState((prev) => ({
               ...prev,
               showComplete: false,
@@ -97,7 +96,7 @@ export function TTFBAnimation({
         }
       };
 
-      animate();
+      updateTimer();
     };
 
     const timeout = setTimeout(runAnimation, 500);
@@ -106,8 +105,12 @@ export function TTFBAnimation({
     return () => {
       clearTimeout(timeout);
       clearInterval(interval);
+      cancelAnimationFrame(animationFrameId);
+      clearTimeout(resetTimeout);
     };
   }, [paused, reducedMotion]);
+
+  const lineWidth = lineRef.current?.clientWidth ?? 0;
 
   return (
     <div
@@ -133,7 +136,7 @@ export function TTFBAnimation({
         </div>
 
         {/* Connection line with packet */}
-        <div className="flex-1 relative mx-6 mt-5">
+        <div ref={lineRef} className="flex-1 relative mx-6 mt-5">
           {/* Timer */}
           <AnimatePresence mode="wait">
             {state.showTimer && (
@@ -165,20 +168,21 @@ export function TTFBAnimation({
             }}
           />
 
-          {/* Traveling packet */}
+          {/* Traveling packet — uses transform (x) instead of left for compositor-only animation */}
           <AnimatePresence>
             {state.showPacket && (
               <motion.div
                 key={`packet-${state.animationKey}`}
                 className="absolute -top-[6px] w-3 h-3 rounded-full shadow-sm"
-                style={{
-                  backgroundColor: color,
-                  left: `${Math.min(state.packetPosition, 95)}%`,
-                }}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
+                style={{ backgroundColor: color }}
+                initial={{ x: 0, scale: 0.8, opacity: 0 }}
+                animate={{ x: lineWidth * 0.95, scale: 1, opacity: 1 }}
                 exit={{ scale: 0.6, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                transition={{
+                  x: { duration: 0.35, ease: "linear" },
+                  scale: { type: "spring", stiffness: 200, damping: 20 },
+                  opacity: { type: "spring", stiffness: 200, damping: 20 },
+                }}
               />
             )}
           </AnimatePresence>
