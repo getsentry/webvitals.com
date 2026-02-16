@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useRef } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -121,13 +120,12 @@ export default function DistributionBar({
     </div>
   );
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const containerWidth = containerRef.current?.clientWidth ?? 0;
+  const clampedPosition = Math.min(Math.max(markerPosition, 0.5), 99.5);
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div ref={containerRef} className="relative">
+        <div className="relative">
           <div className="flex w-full h-3 rounded-full overflow-hidden bg-muted cursor-help">
             <AnimatePresence>
               {distributions.map((dist, i) => (
@@ -149,14 +147,10 @@ export default function DistributionBar({
           <AnimatePresence>
             <motion.div
               className="absolute top-0 w-1 h-3 bg-foreground shadow-sm pointer-events-none"
-              style={{ left: 0, marginLeft: -2 }}
-              initial={{ x: 0 }}
-              animate={{
-                x:
-                  containerWidth *
-                  (Math.min(Math.max(markerPosition, 0.5), 99.5) / 100),
-              }}
-              exit={{ x: 0 }}
+              style={{ marginLeft: -2 }}
+              initial={{ left: "0%" }}
+              animate={{ left: `${clampedPosition}%` }}
+              exit={{ left: "0%" }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
             />
           </AnimatePresence>
