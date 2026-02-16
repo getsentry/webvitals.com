@@ -51,6 +51,9 @@ export function TTFBAnimation({
       return;
     }
 
+    let animationFrameId: number;
+    let resetTimeout: ReturnType<typeof setTimeout>;
+
     const runAnimation = () => {
       setState((prev) => ({
         showComplete: false,
@@ -62,7 +65,6 @@ export function TTFBAnimation({
 
       const startTime = Date.now();
       const duration = 350;
-      let animationFrameId: number;
 
       // rAF only drives the timer counter — packet position is handled by Motion
       const updateTimer = () => {
@@ -83,7 +85,7 @@ export function TTFBAnimation({
             currentTime: 350,
           }));
 
-          setTimeout(() => {
+          resetTimeout = setTimeout(() => {
             setState((prev) => ({
               ...prev,
               showComplete: false,
@@ -95,8 +97,6 @@ export function TTFBAnimation({
       };
 
       updateTimer();
-
-      return () => cancelAnimationFrame(animationFrameId);
     };
 
     const timeout = setTimeout(runAnimation, 500);
@@ -105,6 +105,8 @@ export function TTFBAnimation({
     return () => {
       clearTimeout(timeout);
       clearInterval(interval);
+      cancelAnimationFrame(animationFrameId);
+      clearTimeout(resetTimeout);
     };
   }, [paused, reducedMotion]);
 
