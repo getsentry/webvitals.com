@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -123,10 +122,6 @@ export default function VitalsReport({
 } = {}) {
   const { loading } = useLoadState();
   const vitals = useVitalsStore();
-
-  useEffect(() => {
-    useVitalsStore.setState({ FCP: "n/a", LCP: "n/a", TTFB: "n/a", CLS: "n/a", INP: "n/a" });
-  }, [currentMetric]);
 
   const coreVitals: VitalData[] = [
     {
