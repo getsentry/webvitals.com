@@ -35,6 +35,7 @@ export async function POST(request: Request) {
   let requestData: {
     performanceData?: Record<string, unknown>;
     technologyData?: Record<string, unknown>;
+    analysisBreakdown?: Record<string, unknown>;
     conversationHistory?: Array<{
       role: "user" | "assistant";
       content: string;
@@ -55,12 +56,13 @@ export async function POST(request: Request) {
     async (span) => {
       try {
         requestData = await request.json();
-        const { performanceData, technologyData, conversationHistory, url } =
+        const { performanceData, technologyData, analysisBreakdown, conversationHistory, url } =
           requestData;
 
         span.setAttributes({
           "webvitals.ai.has_performance_data": !!performanceData,
           "webvitals.ai.has_technology_data": !!technologyData,
+          "webvitals.ai.has_analysis_breakdown": !!analysisBreakdown,
           "webvitals.ai.conversation_length": conversationHistory?.length || 0,
         });
 
@@ -91,6 +93,8 @@ Guidelines:
 - Keep titles under 8-12 words maximum
 - Be specific to actual performance issues found
 - Consider the detected technology stack
+- Reference the analysis breakdown's points and severity when generating follow-ups
+- Prioritize follow-ups for critical and warning items from the breakdown
 - Avoid repeating covered topics from the conversation history
 - Include one Sentry/RUM suggestion if not discussed
 - Use simple, direct language
@@ -109,6 +113,8 @@ ${JSON.stringify(performanceData, null, 2)}
 
 TECHNOLOGY DATA:
 ${JSON.stringify(technologyData, null, 2)}
+
+${analysisBreakdown ? `ANALYSIS BREAKDOWN:\n${JSON.stringify(analysisBreakdown, null, 2)}` : ""}
 
 ${
   sanitizedHistory && sanitizedHistory.length > 0

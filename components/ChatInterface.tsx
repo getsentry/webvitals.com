@@ -4,11 +4,10 @@ import {
   useChatError,
   useChatMessages,
   useChatStatus,
-  useChatStore,
 } from "@ai-sdk-tools/store";
 import { RotateCcwIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import {
   Conversation,
@@ -22,13 +21,11 @@ import MessageRenderer from "./MessageRenderer";
 import WebVitalsFacts from "./WebVitalsFacts";
 
 export default function ChatInterface() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const messages = useChatMessages();
 
   const status = useChatStatus();
   const error = useChatError();
-  const { setMessages } = useChatStore();
 
   const domain = searchParams.get("domain");
 
@@ -47,9 +44,8 @@ export default function ChatInterface() {
   );
 
   const handleReset = () => {
-    setMessages([]);
-    localStorage.removeItem("webvitals-run-id");
-    router.push("/");
+    try { localStorage.removeItem("webvitals-run-id"); } catch {}
+    window.location.href = "/";
   };
 
   return (

@@ -2,8 +2,8 @@ import { DurableAgent } from "@workflow/ai/agent";
 import { anthropic } from "@workflow/ai/anthropic";
 import {
   convertToModelMessages,
-  type StepResult,
   stepCountIs,
+  type StepResult,
   type ToolSet,
   type UIMessage,
   type UIMessageChunk,
@@ -22,7 +22,7 @@ const tools = {
   generateAnalysisBreakdown: analysisBreakdownTool,
 } satisfies ToolSet;
 
-function hasValidPerformanceData<T extends ToolSet>(
+export function hasValidPerformanceData<T extends ToolSet>(
   step: StepResult<T>,
 ): boolean {
   const performanceCall = step.toolCalls?.find(
@@ -62,35 +62,22 @@ export async function analysisWorkflow(
   await agent.stream({
     messages: await convertToModelMessages(sanitizedMessages),
     writable,
-    stopWhen: [
-      stepCountIs(2),
-      ({ steps }) => {
-        const firstStep = steps[0];
-        return firstStep ? !hasValidPerformanceData(firstStep) : false;
-      },
-    ],
-    prepareStep: ({ stepNumber, steps }) => {
+    stopWhen: stepCountIs(2),
+    prepareStep: ({ stepNumber }) => {
       if (stepNumber === 0) {
         return {
+          toolChoice: "required" as const,
           activeTools: [
             "getRealWorldPerformance",
             "detectTechnologies",
           ] as Array<keyof typeof tools>,
         };
       }
-
-      if (stepNumber === 1 && steps[0]) {
-        if (!hasValidPerformanceData(steps[0])) {
-          return { activeTools: [] as Array<keyof typeof tools> };
-        }
-        return {
-          activeTools: ["generateAnalysisBreakdown"] as Array<
-            keyof typeof tools
-          >,
-        };
-      }
-
-      return {};
+      return {
+        activeTools: ["generateAnalysisBreakdown"] as Array<
+          keyof typeof tools
+        >,
+      };
     },
   });
 }

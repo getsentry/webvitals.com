@@ -1,5 +1,6 @@
 import { createUIMessageStreamResponse } from "ai";
 import { getRun } from "workflow/api";
+import { WorkflowRunNotFoundError } from "workflow/internal/errors";
 
 export async function GET(
   request: Request,
@@ -11,7 +12,14 @@ export async function GET(
     ? Number.parseInt(searchParams.get("startIndex")!, 10)
     : undefined;
 
-  const run = getRun(id);
-  const stream = run.getReadable({ startIndex });
-  return createUIMessageStreamResponse({ stream });
+  try {
+    const run = getRun(id);
+    const stream = run.getReadable({ startIndex });
+    return createUIMessageStreamResponse({ stream });
+  } catch (error) {
+    if (WorkflowRunNotFoundError.is(error)) {
+      return new Response("Workflow run not found", { status: 404 });
+    }
+    throw error;
+  }
 }

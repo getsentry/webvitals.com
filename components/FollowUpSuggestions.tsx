@@ -4,7 +4,7 @@ import { useChatMessages, useChatStore } from "@ai-sdk-tools/store";
 import type { UIMessage } from "ai";
 import { RotateCcwIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useRouter } from "next/navigation";
+
 import { useEffect, useMemo, useState } from "react";
 import {
   Suggestion,
@@ -72,7 +72,6 @@ function SuggestionSkeleton({ index }: { index: number }) {
 }
 
 export default function FollowUpSuggestions() {
-  const router = useRouter();
   const messages = useChatMessages();
   const { sendMessage, status, setMessages } = useChatStore();
   const [followUpData, setFollowUpData] =
@@ -89,6 +88,7 @@ export default function FollowUpSuggestions() {
     if (lastMessage?.role === "assistant") {
       let performanceData: RealWorldPerformanceOutput | null = null;
       let technologyData: unknown = null;
+      let analysisBreakdown: unknown = null;
       let url: string | null = null;
 
       for (const part of lastMessage.parts) {
@@ -100,17 +100,19 @@ export default function FollowUpSuggestions() {
           }
         } else if (isToolPart(part, "detectTechnologies")) {
           technologyData = (part as any).output;
+        } else if (isToolPart(part, "generateAnalysisBreakdown")) {
+          analysisBreakdown = (part as any).output;
         }
       }
 
-      return { performanceData, technologyData, url };
+      return { performanceData, technologyData, analysisBreakdown, url };
     }
-    return { performanceData: null, technologyData: null, url: null };
+    return { performanceData: null, technologyData: null, analysisBreakdown: null, url: null };
   }, [messages]);
 
   // Generate follow-up suggestions when analysis data is available AND streaming is complete
   useEffect(() => {
-    const { performanceData, technologyData, url } = analysisData;
+    const { performanceData, technologyData, analysisBreakdown, url } = analysisData;
 
     // Check if performance data has meaningful metrics
     const hasPerformanceMetrics =
@@ -152,6 +154,7 @@ export default function FollowUpSuggestions() {
         body: JSON.stringify({
           performanceData,
           technologyData,
+          analysisBreakdown,
           conversationHistory,
           url,
         }),
@@ -219,8 +222,10 @@ export default function FollowUpSuggestions() {
 
   const handleReset = () => {
     setMessages([]);
-    localStorage.removeItem("webvitals-run-id");
-    router.push("/");
+    try {
+      localStorage.removeItem("webvitals-run-id");
+    } catch {}
+    window.location.href = "/";
   };
 
   return (

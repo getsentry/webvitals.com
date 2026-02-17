@@ -26,7 +26,11 @@ export default function HeroSection() {
 
   const activeRunId = useMemo(() => {
     if (typeof window === "undefined") return undefined;
-    return localStorage.getItem("webvitals-run-id") ?? undefined;
+    try {
+      return localStorage.getItem("webvitals-run-id") ?? undefined;
+    } catch {
+      return undefined;
+    }
   }, []);
 
   const { messages, sendMessage, status } = useChat({
@@ -35,10 +39,21 @@ export default function HeroSection() {
       api: "/api/chat",
       onChatSendMessage: (response) => {
         const runId = response.headers.get("x-workflow-run-id");
-        if (runId) localStorage.setItem("webvitals-run-id", runId);
+        if (runId) {
+          try {
+            localStorage.setItem("webvitals-run-id", runId);
+          } catch {
+            // localStorage unavailable (e.g. Safari private browsing)
+          }
+        }
       },
       prepareReconnectToStreamRequest: ({ api, ...rest }) => {
-        const runId = localStorage.getItem("webvitals-run-id");
+        let runId: string | null = null;
+        try {
+          runId = localStorage.getItem("webvitals-run-id");
+        } catch {
+          // localStorage unavailable
+        }
         if (!runId) throw new Error("No active workflow run ID");
         return {
           ...rest,
@@ -47,6 +62,9 @@ export default function HeroSection() {
       },
     }),
     onFinish: (message) => {
+      try {
+        localStorage.removeItem("webvitals-run-id");
+      } catch {}
       Sentry.logger.info("Chat analysis completed", {
         messageCount: messages.length + 1,
         hasToolCalls: message.message.parts?.some((part) =>
