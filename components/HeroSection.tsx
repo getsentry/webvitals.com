@@ -35,7 +35,7 @@ export default function HeroSection() {
 
   const hasResumedRef = useRef(false);
 
-  const { messages, sendMessage, status, stop, resumeStream } = useChat({
+  const { messages, sendMessage, status, resumeStream } = useChat({
     transport: new WorkflowChatTransport({
       api: "/api/chat",
       onChatSendMessage: (response) => {
@@ -99,14 +99,6 @@ export default function HeroSection() {
     }
   }, [status, messages.length]);
 
-  // Abort the client-side stream on unmount (server workflow continues).
-  const stopRef = useRef(stop);
-  stopRef.current = stop;
-  useEffect(() => {
-    return () => {
-      stopRef.current?.().catch(() => {});
-    };
-  }, []);
 
   useEffect(() => {
     if (activeRunId && !hasResumedRef.current) {
