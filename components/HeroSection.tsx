@@ -1,10 +1,10 @@
 "use client";
 
-import { useChat } from "@ai-sdk-tools/store";
 import * as Sentry from "@sentry/nextjs";
-import { DefaultChatTransport } from "ai";
+import { useChat } from "@ai-sdk-tools/store";
+import { WorkflowChatTransport } from "@workflow/ai";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import useMeasure from "react-use-measure";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLoadState } from "@/hooks/useLoadState";
@@ -24,9 +24,43 @@ export default function HeroSection() {
     setLoading(false);
   }, [setLoading]);
 
-  const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({
+  const activeRunId = useMemo(() => {
+    if (typeof window === "undefined") return undefined;
+    try {
+      return localStorage.getItem("webvitals-run-id") ?? undefined;
+    } catch {
+      return undefined;
+    }
+  }, []);
+
+  const hasResumedRef = useRef(false);
+
+  const { messages, sendMessage, status, resumeStream } = useChat({
+    transport: new WorkflowChatTransport({
       api: "/api/chat",
+      onChatSendMessage: (response) => {
+        const runId = response.headers.get("x-workflow-run-id");
+        if (runId) {
+          try {
+            localStorage.setItem("webvitals-run-id", runId);
+          } catch {
+            // localStorage unavailable (e.g. Safari private browsing)
+          }
+        }
+      },
+      prepareReconnectToStreamRequest: ({ api, ...rest }) => {
+        let runId: string | null = null;
+        try {
+          runId = localStorage.getItem("webvitals-run-id");
+        } catch {
+          // localStorage unavailable
+        }
+        if (!runId) throw new Error("No active workflow run ID");
+        return {
+          ...rest,
+          api: `/api/chat/${encodeURIComponent(runId)}/stream`,
+        };
+      },
     }),
     onFinish: (message) => {
       Sentry.logger.info("Chat analysis completed", {
@@ -53,6 +87,25 @@ export default function HeroSection() {
       });
     },
   });
+
+  // Clear run ID only when analysis completes while component is mounted.
+  // If the user navigated away mid-stream, this effect won't exist,
+  // so the run ID persists for resumeStream on return.
+  useEffect(() => {
+    if (status === "ready" && messages.length > 0) {
+      try {
+        localStorage.removeItem("webvitals-run-id");
+      } catch {}
+    }
+  }, [status, messages.length]);
+
+
+  useEffect(() => {
+    if (activeRunId && !hasResumedRef.current) {
+      hasResumedRef.current = true;
+      resumeStream();
+    }
+  }, [activeRunId, resumeStream]);
 
   const handlePerformanceSubmit = async (
     domain: string,

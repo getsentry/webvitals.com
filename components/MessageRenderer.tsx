@@ -304,8 +304,9 @@ const MessageRenderer = memo(function MessageRenderer({
           const hasToolParts = message.parts.some((p) =>
             p.type.startsWith("tool-"),
           );
-          // If this is the first analysis message (has tools), require performance data
-          if (hasToolParts && !hasPerformanceData) {
+          // If this is the first analysis message (has tools) AND it has performance data,
+          // suppress the text — the UI renders tool outputs instead
+          if (hasToolParts && hasPerformanceData) {
             return null;
           }
           // For follow-up messages (no tools), always render if there's text

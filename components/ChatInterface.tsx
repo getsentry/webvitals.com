@@ -4,7 +4,6 @@ import {
   useChatError,
   useChatMessages,
   useChatStatus,
-  useChatStore,
 } from "@ai-sdk-tools/store";
 import { RotateCcwIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -27,7 +26,6 @@ export default function ChatInterface() {
 
   const status = useChatStatus();
   const error = useChatError();
-  const { setMessages } = useChatStore();
 
   const domain = searchParams.get("domain");
 
@@ -46,11 +44,8 @@ export default function ChatInterface() {
   );
 
   const handleReset = () => {
-    // Clear chat messages
-    setMessages([]);
-    // Remove URL parameter
-    history.replaceState(null, "", "/");
-    window.location.reload();
+    try { localStorage.removeItem("webvitals-run-id"); } catch {}
+    window.location.href = "/";
   };
 
   return (
@@ -82,31 +77,32 @@ export default function ChatInterface() {
               ))}
 
               <AnimatePresence>
-                {status === "streaming" && !hasInitialAnalysis && (
-                  <motion.div
-                    key="streaming-facts"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                      transition: {
-                        duration: 0.25,
-                        ease: [0.25, 0.46, 0.45, 0.94], // ease-out-quad
-                      },
-                    }}
-                    exit={{
-                      opacity: 0,
-                      y: -5,
-                      transition: {
-                        duration: 0.2,
-                        ease: [0.55, 0.085, 0.68, 0.53], // ease-in-quad
-                      },
-                    }}
-                    className="p-4 bg-muted/30 rounded-lg border"
-                  >
-                    <WebVitalsFacts />
-                  </motion.div>
-                )}
+                {(status === "submitted" || status === "streaming") &&
+                  !hasInitialAnalysis && (
+                    <motion.div
+                      key="streaming-facts"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          duration: 0.25,
+                          ease: [0.25, 0.46, 0.45, 0.94], // ease-out-quad
+                        },
+                      }}
+                      exit={{
+                        opacity: 0,
+                        y: -5,
+                        transition: {
+                          duration: 0.2,
+                          ease: [0.55, 0.085, 0.68, 0.53], // ease-in-quad
+                        },
+                      }}
+                      className="p-4 bg-muted/30 rounded-lg border"
+                    >
+                      <WebVitalsFacts />
+                    </motion.div>
+                  )}
                 {status === "submitted" && hasInitialAnalysis && (
                   <motion.div
                     key="streaming-loader"

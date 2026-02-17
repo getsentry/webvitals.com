@@ -3,34 +3,11 @@
 import NumberFlow from "@number-flow/react";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import type { Metric } from "web-vitals";
-import { onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
+import { useVitalsStore } from "@/hooks/useVitalsStore";
 import { SENTRY_THRESHOLDS } from "@/types/real-world-performance";
 
 export default function LiveWebVitals() {
-  const [vitals, setVitals] = useState({
-    LCP: "0",
-    INP: "0",
-    CLS: "0",
-    FCP: "0",
-    TTFB: "0",
-  });
-
-  useEffect(() => {
-    const onMetric = (metric: Metric) => {
-      setVitals((prev) => ({
-        ...prev,
-        [metric.name]: String(metric.value),
-      }));
-    };
-
-    onLCP(onMetric, { reportAllChanges: true });
-    onINP(onMetric, { reportAllChanges: true });
-    onCLS(onMetric, { reportAllChanges: true });
-    onFCP(onMetric, { reportAllChanges: true });
-    onTTFB(onMetric, { reportAllChanges: true });
-  }, []);
+  const vitals = useVitalsStore();
 
   const scrollToMetric = (metricName: string) => {
     const element = document.getElementById(
@@ -111,7 +88,7 @@ export default function LiveWebVitals() {
                   {name}
                 </div>
                 <NumberFlow
-                  value={Number(vitals[name as keyof typeof vitals])}
+                  value={Number(vitals[name as keyof typeof vitals]) || 0}
                   suffix={name === "CLS" ? "" : "ms"}
                   format={{
                     minimumFractionDigits: name === "CLS" ? 3 : 0,
@@ -135,7 +112,7 @@ export default function LiveWebVitals() {
                   {name}
                 </div>
                 <NumberFlow
-                  value={Number(vitals[name as keyof typeof vitals])}
+                  value={Number(vitals[name as keyof typeof vitals]) || 0}
                   suffix="ms"
                   format={{
                     minimumFractionDigits: 0,
@@ -159,7 +136,7 @@ export default function LiveWebVitals() {
                   {name}
                 </div>
                 <NumberFlow
-                  value={Number(value)}
+                  value={Number(value) || 0}
                   suffix={name === "CLS" ? "" : "ms"}
                   format={{
                     minimumFractionDigits: name === "CLS" ? 3 : 0,

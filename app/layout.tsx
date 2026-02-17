@@ -5,6 +5,7 @@ import PlausibleProvider from "next-plausible";
 
 import ThemeProvider from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { VitalsNavigationReset } from "@/components/VitalsNavigationReset";
 
 const getBaseUrl = () => {
   if (process.env.VERCEL_ENV === "production") {
@@ -100,6 +101,7 @@ export default function RootLayout({
       <PlausibleProvider domain="webvitals.com">
         <body>
           <ThemeProvider>
+            <VitalsNavigationReset />
             <div className="absolute top-4 right-4 z-50">
               <ThemeToggle />
             </div>

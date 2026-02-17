@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { Metric } from "web-vitals";
-import { onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -12,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useLoadState } from "@/hooks/useLoadState";
+import { useVitalsStore } from "@/hooks/useVitalsStore";
 import { SENTRY_THRESHOLDS } from "@/types/real-world-performance";
 
 interface VitalData {
@@ -24,6 +23,8 @@ interface VitalData {
   };
   tooltip: string;
   formatter?: (score: string) => string;
+  /** Force a full page navigation (needed for metrics like TTFB that require a server round-trip) */
+  hardNav?: boolean;
 }
 
 function formatScore(
@@ -64,25 +65,47 @@ function VitalItem({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <a
-            href={vital.href}
-            className={`block p-3 rounded-lg border transition-colors ${
-              isHighlighted
-                ? "border-primary bg-primary/5 shadow-sm"
-                : "border-border hover:bg-accent"
-            }`}
-          >
-            <div className="flex justify-between items-center">
-              <span
-                className={`text-sm font-medium ${isHighlighted ? "text-primary" : "text-foreground"}`}
-              >
-                {vital.name}
-              </span>
-              <Badge variant="outline" className={scoreColor}>
-                {formattedScore}
-              </Badge>
-            </div>
-          </a>
+          {vital.hardNav ? (
+            <a
+              href={vital.href}
+              className={`block p-3 rounded-lg border transition-colors ${
+                isHighlighted
+                  ? "border-primary bg-primary/5 shadow-sm"
+                  : "border-border hover:bg-accent"
+              }`}
+            >
+              <div className="flex justify-between items-center">
+                <span
+                  className={`text-sm font-medium ${isHighlighted ? "text-primary" : "text-foreground"}`}
+                >
+                  {vital.name}
+                </span>
+                <Badge variant="outline" className={scoreColor}>
+                  {formattedScore}
+                </Badge>
+              </div>
+            </a>
+          ) : (
+            <Link
+              href={vital.href}
+              className={`block p-3 rounded-lg border transition-colors ${
+                isHighlighted
+                  ? "border-primary bg-primary/5 shadow-sm"
+                  : "border-border hover:bg-accent"
+              }`}
+            >
+              <div className="flex justify-between items-center">
+                <span
+                  className={`text-sm font-medium ${isHighlighted ? "text-primary" : "text-foreground"}`}
+                >
+                  {vital.name}
+                </span>
+                <Badge variant="outline" className={scoreColor}>
+                  {formattedScore}
+                </Badge>
+              </div>
+            </Link>
+          )}
         </TooltipTrigger>
         <TooltipContent className="max-w-sm text-pretty">
           {vital.tooltip}
@@ -98,29 +121,7 @@ export default function VitalsReport({
   currentMetric?: string;
 } = {}) {
   const { loading } = useLoadState();
-
-  const [vitals, setVitals] = useState({
-    FCP: "n/a",
-    TTFB: "n/a",
-    LCP: "n/a",
-    INP: "n/a",
-    CLS: "n/a",
-  });
-
-  useEffect(() => {
-    const onMetric = (metric: Metric) => {
-      setVitals((vitals) => ({
-        ...vitals,
-        [metric.name]: String(metric.value),
-      }));
-    };
-
-    onFCP(onMetric, { reportAllChanges: true });
-    onLCP(onMetric, { reportAllChanges: true });
-    onTTFB(onMetric, { reportAllChanges: true });
-    onCLS(onMetric, { reportAllChanges: true });
-    onINP(onMetric, { reportAllChanges: true });
-  }, []);
+  const vitals = useVitalsStore();
 
   const coreVitals: VitalData[] = [
     {
@@ -159,6 +160,7 @@ export default function VitalsReport({
       thresholds: SENTRY_THRESHOLDS.mobile["first-contentful-paint"],
       tooltip:
         "Measures the time from when a page starts loading to when any part of the page's content is first displayed.",
+      hardNav: true,
     },
     {
       name: "Time to First Byte",
@@ -167,6 +169,7 @@ export default function VitalsReport({
       thresholds: SENTRY_THRESHOLDS.mobile["time-to-first-byte"],
       tooltip:
         "Measures the duration from when a page starts loading to when the first byte of content is received from the server.",
+      hardNav: true,
     },
   ];
 

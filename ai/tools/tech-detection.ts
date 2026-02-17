@@ -616,15 +616,18 @@ async function detectTechnologies(url: string): Promise<TechDetectionOutput> {
   );
 }
 
+async function executeTechDetection(input: { url: string }) {
+  "use step";
+  const { url } = input;
+  if (!url) {
+    throw new Error("URL is required for technology detection");
+  }
+  return detectTechnologies(url);
+}
+
 export const techDetectionTool = tool({
   description:
     "Detect website technologies using Cloudflare's fingerprinting. Returns all detected technologies with confidence scores and categories directly from the API. No hardcoded mappings.",
   inputSchema: techDetectionInputSchema,
-  execute: async (input) => {
-    const { url } = input;
-    if (!url) {
-      throw new Error("URL is required for technology detection");
-    }
-    return detectTechnologies(url);
-  },
+  execute: executeTechDetection,
 });
