@@ -1,8 +1,8 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useChat } from "@ai-sdk-tools/store";
 import { WorkflowChatTransport } from "@workflow/ai";
-import * as Sentry from "@sentry/nextjs";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo } from "react";
 import useMeasure from "react-use-measure";
@@ -36,9 +36,6 @@ export default function HeroSection() {
       onChatSendMessage: (response) => {
         const runId = response.headers.get("x-workflow-run-id");
         if (runId) localStorage.setItem("webvitals-run-id", runId);
-      },
-      onChatEnd: () => {
-        localStorage.removeItem("webvitals-run-id");
       },
       prepareReconnectToStreamRequest: ({ api, ...rest }) => {
         const runId = localStorage.getItem("webvitals-run-id");

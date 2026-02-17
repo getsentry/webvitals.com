@@ -116,11 +116,11 @@ export default function VitalsReport({
       }));
     };
 
-    onFCP(onMetric, { reportAllChanges: true });
-    onLCP(onMetric, { reportAllChanges: true });
-    onTTFB(onMetric, { reportAllChanges: true });
-    onCLS(onMetric, { reportAllChanges: true });
-    onINP(onMetric, { reportAllChanges: true });
+    onFCP(onMetric, { reportAllChanges: true, reportSoftNavs: true });
+    onLCP(onMetric, { reportAllChanges: true, reportSoftNavs: true });
+    onTTFB(onMetric, { reportAllChanges: true, reportSoftNavs: true });
+    onCLS(onMetric, { reportAllChanges: true, reportSoftNavs: true });
+    onINP(onMetric, { reportAllChanges: true, reportSoftNavs: true });
   }, []);
 
   const coreVitals: VitalData[] = [

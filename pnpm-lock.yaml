@@ -231,8 +231,8 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@19.2.3(@types/react@19.2.13))(@types/react@19.2.13)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       web-vitals:
-        specifier: ^5.1.0
-        version: 5.1.0
+        specifier: 5.1.0-soft-navs-2
+        version: 5.1.0-soft-navs-2
       workflow:
         specifier: 4.1.0-beta.57
         version: 4.1.0-beta.57(@aws-sdk/client-sts@3.990.0)(@nestjs/common@11.1.13(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.13(@nestjs/common@11.1.13(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))(@opentelemetry/api@1.9.0)(@swc/cli@0.8.0(@swc/core@1.15.3)(chokidar@5.0.0))(@swc/core@1.15.3)(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-router@7.13.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(typescript@5.9.3)
@@ -6526,8 +6526,8 @@ packages:
     resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
     engines: {node: '>= 8'}
 
-  web-vitals@5.1.0:
-    resolution: {integrity: sha512-ArI3kx5jI0atlTtmV0fWU3fjpLmq/nD3Zr1iFFlJLaqa5wLBkUSzINwBPySCX/8jRyjlmy1Volw1kz1g9XE4Jg==}
+  web-vitals@5.1.0-soft-navs-2:
+    resolution: {integrity: sha512-4ziqUOplBVDDfnN/2AqoMISlqGZHEF/M52XrOAeHvOYMbIOSeA29jq/f/kq86a4yURQe2esD04r5RAmTZXAJcg==}
 
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
@@ -13992,7 +13992,7 @@ snapshots:
 
   web-streams-polyfill@3.3.3: {}
 
-  web-vitals@5.1.0: {}
+  web-vitals@5.1.0-soft-navs-2: {}
 
   webidl-conversions@3.0.1: {}
 
