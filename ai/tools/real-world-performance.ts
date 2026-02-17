@@ -385,15 +385,21 @@ async function getRealWorldPerformance(
   );
 }
 
+async function executeRealWorldPerformance(input: {
+  url: string;
+  devices?: ("mobile" | "desktop")[];
+}) {
+  "use step";
+  const { url, devices } = input;
+  if (!url) {
+    throw new Error("URL is required for real-world performance analysis");
+  }
+  return getRealWorldPerformance(url, devices);
+}
+
 export const realWorldPerformanceTool = tool({
   description:
     "Get real-world performance data (Core Web Vitals) from actual users via Chrome User Experience Report (CrUX). Supports configurable device analysis (mobile, desktop, or both). Returns field data with Sentry-style performance scores. No synthetic/lab tests.",
   inputSchema: realWorldPerformanceInputSchema,
-  execute: async (input) => {
-    const { url, devices } = input;
-    if (!url) {
-      throw new Error("URL is required for real-world performance analysis");
-    }
-    return getRealWorldPerformance(url, devices);
-  },
+  execute: executeRealWorldPerformance,
 });

@@ -15,34 +15,31 @@ const analysisBreakdownInputSchema = z.object({
     .describe("Technology detection data from detectTechnologies"),
 });
 
-export const analysisBreakdownTool = tool({
-  description:
-    "Generate structured analysis breakdown with main points and supporting details based on performance and technology data",
-  inputSchema: analysisBreakdownInputSchema,
-  execute: async (input) => {
-    const { performanceData, technologyData } = input as {
-      performanceData: RealWorldPerformanceOutput;
-      technologyData: TechnologyDetectionOutput;
-    };
+async function executeAnalysisBreakdown(input: unknown) {
+  "use step";
+  const { performanceData, technologyData } = input as {
+    performanceData: RealWorldPerformanceOutput;
+    technologyData: TechnologyDetectionOutput;
+  };
 
-    const startTime = Date.now();
+  const startTime = Date.now();
 
-    return Sentry.startSpan(
-      {
-        name: "webvitals.ai.generate_breakdown",
-        op: "function",
-        attributes: {
-          "webvitals.ai.model": "claude-haiku-4-5",
-          "webvitals.ai.has_performance_data": !!performanceData?.hasData,
-          "webvitals.ai.has_technology_data": !!technologyData,
-        },
+  return Sentry.startSpan(
+    {
+      name: "webvitals.ai.generate_breakdown",
+      op: "function",
+      attributes: {
+        "webvitals.ai.model": "claude-haiku-4-5",
+        "webvitals.ai.has_performance_data": !!performanceData?.hasData,
+        "webvitals.ai.has_technology_data": !!technologyData,
       },
-      async (span) => {
-        try {
-          const result = await generateText({
-            model: anthropic("claude-haiku-4-5-20251001"),
-            output: Output.object({ schema: AnalysisBreakdownSchema }),
-            prompt: `You are an expert web performance consultant. Analyze the performance and technology data to create a structured breakdown.
+    },
+    async (span) => {
+      try {
+        const result = await generateText({
+          model: anthropic("claude-haiku-4-5-20251001"),
+          output: Output.object({ schema: AnalysisBreakdownSchema }),
+          prompt: `You are an expert web performance consultant. Analyze the performance and technology data to create a structured breakdown.
 
 Performance Data:
 ${JSON.stringify(performanceData, null, 2)}
@@ -79,103 +76,109 @@ Guidelines:
 - Connect issues to user frustrations and business impact
 - Consider mobile vs desktop differences when significant
 - Suggest specific, actionable improvements`,
-            experimental_telemetry: {
-              isEnabled: true,
-              recordInputs: true,
-              recordOutputs: true,
-              functionId: "analysis-breakdown-tool",
-            },
+          experimental_telemetry: {
+            isEnabled: true,
+            recordInputs: true,
+            recordOutputs: true,
+            functionId: "analysis-breakdown-tool",
+          },
+        });
+
+        const durationMs = Date.now() - startTime;
+
+        if (!result.output) {
+          throw new Error("AI model did not produce structured output");
+        }
+
+        const validationResult = AnalysisBreakdownSchema.safeParse(
+          result.output,
+        );
+        if (!validationResult.success) {
+          Sentry.logger.error("Schema validation failed", {
+            error: validationResult.error,
+            rawObject: result.output,
           });
-
-          const durationMs = Date.now() - startTime;
-
-          if (!result.output) {
-            throw new Error("AI model did not produce structured output");
-          }
-
-          const validationResult = AnalysisBreakdownSchema.safeParse(
-            result.output,
+          throw new Error(
+            `Schema validation failed: ${JSON.stringify(
+              validationResult.error.issues,
+            )}`,
           );
-          if (!validationResult.success) {
-            Sentry.logger.error("Schema validation failed", {
-              error: validationResult.error,
-              rawObject: result.output,
-            });
-            throw new Error(
-              `Schema validation failed: ${JSON.stringify(
-                validationResult.error.issues,
-              )}`,
-            );
-          }
+        }
 
-          span.setAttributes({
-            "webvitals.ai.points_generated": result.output.points.length,
-            "webvitals.ai.duration_ms": durationMs,
-            "webvitals.ai.success": true,
-          });
+        span.setAttributes({
+          "webvitals.ai.points_generated": result.output.points.length,
+          "webvitals.ai.duration_ms": durationMs,
+          "webvitals.ai.success": true,
+        });
 
-          // Track AI generation latency
-          Sentry.metrics.distribution(
-            "webvitals.ai.breakdown_duration_ms",
-            durationMs,
-            {
-              unit: "millisecond",
-              attributes: {
-                success: "true",
-                points_count: String(result.output.points.length),
-              },
+        // Track AI generation latency
+        Sentry.metrics.distribution(
+          "webvitals.ai.breakdown_duration_ms",
+          durationMs,
+          {
+            unit: "millisecond",
+            attributes: {
+              success: "true",
+              points_count: String(result.output.points.length),
             },
-          );
+          },
+        );
 
-          Sentry.logger.info("Analysis breakdown generated", {
+        Sentry.logger.info("Analysis breakdown generated", {
+          hasPerformanceData: !!performanceData?.hasData,
+          hasTechnologyData: !!technologyData,
+          pointsGenerated: result.output.points.length,
+          durationMs,
+        });
+
+        return result.output;
+      } catch (error) {
+        const durationMs = Date.now() - startTime;
+
+        span.setAttributes({
+          "webvitals.ai.success": false,
+          "webvitals.ai.duration_ms": durationMs,
+          "webvitals.ai.error":
+            error instanceof Error ? error.message : "Unknown",
+        });
+
+        // Track failed AI generation
+        Sentry.metrics.distribution(
+          "webvitals.ai.breakdown_duration_ms",
+          durationMs,
+          {
+            unit: "millisecond",
+            attributes: {
+              success: "false",
+            },
+          },
+        );
+
+        Sentry.logger.error("Analysis breakdown generation failed", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          durationMs,
+        });
+
+        Sentry.captureException(error, {
+          tags: {
+            component: "analysis-breakdown-tool",
+            operation: "generateText",
+          },
+          extra: {
             hasPerformanceData: !!performanceData?.hasData,
             hasTechnologyData: !!technologyData,
-            pointsGenerated: result.output.points.length,
-            durationMs,
-          });
+          },
+        });
 
-          return result.output;
-        } catch (error) {
-          const durationMs = Date.now() - startTime;
+        throw error;
+      }
+    },
+  );
+}
 
-          span.setAttributes({
-            "webvitals.ai.success": false,
-            "webvitals.ai.duration_ms": durationMs,
-            "webvitals.ai.error":
-              error instanceof Error ? error.message : "Unknown",
-          });
-
-          // Track failed AI generation
-          Sentry.metrics.distribution(
-            "webvitals.ai.breakdown_duration_ms",
-            durationMs,
-            {
-              unit: "millisecond",
-              attributes: {
-                success: "false",
-              },
-            },
-          );
-
-          Sentry.logger.error("Analysis breakdown generation failed", {
-            error: error instanceof Error ? error.message : "Unknown error",
-            durationMs,
-          });
-
-          Sentry.captureException(error, {
-            tags: {
-              component: "analysis-breakdown-tool",
-              operation: "generateText",
-            },
-            extra: {
-              hasPerformanceData: !!performanceData?.hasData,
-              hasTechnologyData: !!technologyData,
-            },
-          });
-
-          throw error;
-        }
-      },
-    );
-  },
+export const analysisBreakdownTool = tool({
+  description:
+    "Generate structured analysis breakdown with main points and supporting details based on performance and technology data",
+  inputSchema: analysisBreakdownInputSchema,
+  execute: executeAnalysisBreakdown,
 });
