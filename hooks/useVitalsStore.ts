@@ -21,9 +21,9 @@ if (typeof window !== "undefined") {
   const onMetric = (m: { name: string; value: number }) => {
     useVitalsStore.setState({ [m.name]: String(m.value) });
   };
-  onFCP(onMetric, { reportAllChanges: true, reportSoftNavs: true });
+  onFCP(onMetric, { reportAllChanges: true });
   onLCP(onMetric, { reportAllChanges: true, reportSoftNavs: true });
-  onTTFB(onMetric, { reportAllChanges: true, reportSoftNavs: true });
+  onTTFB(onMetric, { reportAllChanges: true });
   onCLS(onMetric, { reportAllChanges: true, reportSoftNavs: true });
   onINP(onMetric, { reportAllChanges: true, reportSoftNavs: true });
 }
