@@ -65,6 +65,7 @@ const metrics = [
     BackgroundComponent: FCPAnimation,
     href: "/fcp",
     cta: "Watch blank page",
+    hardNav: true,
   },
   {
     id: 4,
@@ -78,6 +79,7 @@ const metrics = [
     BackgroundComponent: TTFBAnimation,
     href: "/ttfb",
     cta: "Test server delays",
+    hardNav: true,
   },
 ];
 
@@ -101,17 +103,9 @@ export default function CoreWebVitalsSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:auto-rows-[26rem] lg:auto-rows-[24rem]">
           {metrics.map((metric) => {
-            return (
-              <Link
-                key={metric.id}
-                id={`metric-${metric.shortName.toLowerCase()}`}
-                href={metric.href}
-                className={`group ${metric.className} rounded-xl cursor-pointer overflow-hidden transition-[box-shadow,transform] duration-300 shadow-sm hover:shadow-lg active:scale-[0.98] outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px] focus-visible:border-ring relative flex flex-col text-left`}
-                onMouseEnter={() => setHoveredCard(metric.id)}
-                onMouseLeave={() => setHoveredCard(null)}
-                onFocus={() => setFocusedCard(metric.id)}
-                onBlur={() => setFocusedCard(null)}
-              >
+            const cardClassName = `group ${metric.className} rounded-xl cursor-pointer overflow-hidden transition-[box-shadow,transform] duration-300 shadow-sm hover:shadow-lg active:scale-[0.98] outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px] focus-visible:border-ring relative flex flex-col text-left`;
+            const cardContent = (
+              <>
                 {/* Background */}
                 <div className="flex-1 relative min-h-[12rem] md:min-h-[14rem] lg:min-h-[16rem]">
                   <metric.BackgroundComponent
@@ -126,7 +120,7 @@ export default function CoreWebVitalsSection() {
 
                 {/* Card Info */}
                 <div
-                  className="flex flex-col gap-1 p-3 bg-card mt-0 
+                  className="flex flex-col gap-1 p-3 bg-card mt-0
                                md:static md:mt-0 md:p-3
                                lg:absolute lg:bottom-0 lg:left-0 lg:right-0 lg:mt-auto lg:min-h-43 lg:p-4 lg:transition-all lg:duration-300 lg:group-hover:translate-y-0 lg:group-focus:translate-y-0 lg:translate-y-10"
                 >
@@ -155,6 +149,38 @@ export default function CoreWebVitalsSection() {
                     {metric.cta} →
                   </div>
                 </div>
+              </>
+            );
+
+            if (metric.hardNav) {
+              return (
+                <a
+                  key={metric.id}
+                  id={`metric-${metric.shortName.toLowerCase()}`}
+                  href={metric.href}
+                  className={cardClassName}
+                  onMouseEnter={() => setHoveredCard(metric.id)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                  onFocus={() => setFocusedCard(metric.id)}
+                  onBlur={() => setFocusedCard(null)}
+                >
+                  {cardContent}
+                </a>
+              );
+            }
+
+            return (
+              <Link
+                key={metric.id}
+                id={`metric-${metric.shortName.toLowerCase()}`}
+                href={metric.href}
+                className={cardClassName}
+                onMouseEnter={() => setHoveredCard(metric.id)}
+                onMouseLeave={() => setHoveredCard(null)}
+                onFocus={() => setFocusedCard(metric.id)}
+                onBlur={() => setFocusedCard(null)}
+              >
+                {cardContent}
               </Link>
             );
           })}

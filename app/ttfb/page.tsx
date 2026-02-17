@@ -35,9 +35,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function TTFBPage() {
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-
+export default function TTFBPage() {
   return (
     <DemoLayout currentMetric="TTFB">
       <DemoHeader
