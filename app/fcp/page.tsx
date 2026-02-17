@@ -31,6 +31,8 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default function FCPPage() {
+export default async function FCPPage() {
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+
   return <FCPClient />;
 }

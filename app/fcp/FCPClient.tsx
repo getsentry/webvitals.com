@@ -13,19 +13,14 @@ import { SENTRY_THRESHOLDS } from "@/types/real-world-performance";
 const FCP_DELAY = 2000; // ms
 
 export default function FCPClient() {
-  const { setLoading, loading } = useLoadState();
+  const { setLoading } = useLoadState();
 
   useEffect(() => {
-    setTimeout(() => {
-      setLoading(false);
-      // Need to wait 100ms or vitals calculations won't be ready
-      setTimeout(() => {
-        triggerVisibilityChange(document, true);
-      }, 100);
-    }, FCP_DELAY);
+    setLoading(false);
+    triggerVisibilityChange(document, true);
   }, [setLoading]);
 
-  return loading ? null : (
+  return (
     <DemoLayout currentMetric="FCP">
       <DemoHeader
         vitalName="FCP"
