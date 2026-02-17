@@ -104,7 +104,7 @@ export default function HeroSection() {
   stopRef.current = stop;
   useEffect(() => {
     return () => {
-      stopRef.current?.();
+      stopRef.current?.().catch(() => {});
     };
   }, []);
 
