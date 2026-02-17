@@ -4,7 +4,7 @@ import * as Sentry from "@sentry/nextjs";
 import { useChat } from "@ai-sdk-tools/store";
 import { WorkflowChatTransport } from "@workflow/ai";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import useMeasure from "react-use-measure";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLoadState } from "@/hooks/useLoadState";
@@ -33,8 +33,9 @@ export default function HeroSection() {
     }
   }, []);
 
-  const { messages, sendMessage, status } = useChat({
-    resume: Boolean(activeRunId),
+  const hasResumedRef = useRef(false);
+
+  const { messages, sendMessage, status, stop, resumeStream } = useChat({
     transport: new WorkflowChatTransport({
       api: "/api/chat",
       onChatSendMessage: (response) => {
@@ -62,9 +63,6 @@ export default function HeroSection() {
       },
     }),
     onFinish: (message) => {
-      try {
-        localStorage.removeItem("webvitals-run-id");
-      } catch {}
       Sentry.logger.info("Chat analysis completed", {
         messageCount: messages.length + 1,
         hasToolCalls: message.message.parts?.some((part) =>
@@ -89,6 +87,33 @@ export default function HeroSection() {
       });
     },
   });
+
+  // Clear run ID only when analysis completes while component is mounted.
+  // If the user navigated away mid-stream, this effect won't exist,
+  // so the run ID persists for resumeStream on return.
+  useEffect(() => {
+    if (status === "ready" && messages.length > 0) {
+      try {
+        localStorage.removeItem("webvitals-run-id");
+      } catch {}
+    }
+  }, [status, messages.length]);
+
+  // Abort the client-side stream on unmount (server workflow continues).
+  const stopRef = useRef(stop);
+  stopRef.current = stop;
+  useEffect(() => {
+    return () => {
+      stopRef.current?.();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (activeRunId && !hasResumedRef.current) {
+      hasResumedRef.current = true;
+      resumeStream();
+    }
+  }, [activeRunId, resumeStream]);
 
   const handlePerformanceSubmit = async (
     domain: string,
