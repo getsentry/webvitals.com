@@ -45,3 +45,5 @@ next-env.d.ts
 .claude/skills/motion
 .claude/skills/tailwind
 .claude/plans/
+
+excalidraw.log
