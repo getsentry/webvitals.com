@@ -310,11 +310,15 @@ async function getRealWorldPerformance(
         const requestedOnlyDesktop =
           !devices.includes("mobile") && devices.includes("desktop");
 
-        // Only throw if we had actual API errors (not just empty metrics)
-        const hasActualErrors = errors.length > 0;
+        // Treat upstream failures as fatal only when every requested fetch
+        // actually failed. Mixed "error + no CrUX data" responses should
+        // degrade to hasData=false so the UI can show the empty-state path.
+        const requestedDeviceCount = deviceOrder.length;
+        const allRequestedDevicesErrored =
+          requestedDeviceCount > 0 && errors.length === requestedDeviceCount;
 
         if (
-          hasActualErrors &&
+          allRequestedDevicesErrored &&
           ((requestedBothDevices && !hasMobileData && !hasDesktopData) ||
             (requestedOnlyMobile && !hasMobileData) ||
             (requestedOnlyDesktop && !hasDesktopData))
