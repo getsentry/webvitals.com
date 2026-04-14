@@ -7,6 +7,22 @@ import type {
   RealWorldPerformanceOutput,
 } from "@/types/real-world-performance";
 
+class RecoverableCruxApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "RecoverableCruxApiError";
+  }
+}
+
+function isRecoverableCruxApiError(
+  error: unknown,
+): error is RecoverableCruxApiError {
+  return error instanceof RecoverableCruxApiError;
+}
+
 const realWorldPerformanceInputSchema = z.object({
   url: z.string().describe("The URL to analyze for real-world performance"),
   devices: z
@@ -68,6 +84,12 @@ async function fetchPerformanceData(
           if (response.status === 400) {
             throw new Error(
               `CrUX API failed for ${strategy} (${response.status}): URL may be invalid, not in CrUX dataset, or contains query parameters. URL: ${url}`,
+            );
+          }
+          if (response.status >= 500) {
+            throw new RecoverableCruxApiError(
+              `CrUX API failed for ${strategy}: ${response.status} ${response.statusText}`,
+              response.status,
             );
           }
           throw new Error(
@@ -188,7 +210,8 @@ async function getRealWorldPerformance(
         const results = await Promise.allSettled(promises);
 
         // Track errors for better error messages
-        const errors: { device: string; error: string }[] = [];
+        const errors: { device: string; error: string; recoverable: boolean }[] =
+          [];
 
         const mobileData = deviceOrder.includes("mobile")
           ? (() => {
@@ -205,19 +228,29 @@ async function getRealWorldPerformance(
                 mobileResult.reason instanceof Error
                   ? mobileResult.reason.message
                   : "Unknown error";
-              errors.push({ device: "mobile", error: errorMessage });
+              const isRecoverableError = isRecoverableCruxApiError(
+                mobileResult.reason,
+              );
+              errors.push({
+                device: "mobile",
+                error: errorMessage,
+                recoverable: isRecoverableError,
+              });
               Sentry.logger.warn("Mobile CrUX data fetch failed", {
                 url: normalizedUrl,
                 error: errorMessage,
+                recoverable: isRecoverableError,
               });
-              Sentry.captureException(mobileResult.reason, {
-                tags: {
-                  component: "real-world-performance-tool",
-                  operation: "fetchPerformanceData",
-                  strategy: "mobile",
-                },
-                extra: { url: normalizedUrl },
-              });
+              if (!isRecoverableError) {
+                Sentry.captureException(mobileResult.reason, {
+                  tags: {
+                    component: "real-world-performance-tool",
+                    operation: "fetchPerformanceData",
+                    strategy: "mobile",
+                  },
+                  extra: { url: normalizedUrl },
+                });
+              }
               return null;
             })()
           : null;
@@ -237,19 +270,29 @@ async function getRealWorldPerformance(
                 desktopResult.reason instanceof Error
                   ? desktopResult.reason.message
                   : "Unknown error";
-              errors.push({ device: "desktop", error: errorMessage });
+              const isRecoverableError = isRecoverableCruxApiError(
+                desktopResult.reason,
+              );
+              errors.push({
+                device: "desktop",
+                error: errorMessage,
+                recoverable: isRecoverableError,
+              });
               Sentry.logger.warn("Desktop CrUX data fetch failed", {
                 url: normalizedUrl,
                 error: errorMessage,
+                recoverable: isRecoverableError,
               });
-              Sentry.captureException(desktopResult.reason, {
-                tags: {
-                  component: "real-world-performance-tool",
-                  operation: "fetchPerformanceData",
-                  strategy: "desktop",
-                },
-                extra: { url: normalizedUrl },
-              });
+              if (!isRecoverableError) {
+                Sentry.captureException(desktopResult.reason, {
+                  tags: {
+                    component: "real-world-performance-tool",
+                    operation: "fetchPerformanceData",
+                    strategy: "desktop",
+                  },
+                  extra: { url: normalizedUrl },
+                });
+              }
               return null;
             })()
           : null;
@@ -310,11 +353,11 @@ async function getRealWorldPerformance(
         const requestedOnlyDesktop =
           !devices.includes("mobile") && devices.includes("desktop");
 
-        // Only throw if we had actual API errors (not just empty metrics)
-        const hasActualErrors = errors.length > 0;
+        // Only block the workflow on non-recoverable CrUX failures.
+        const hasBlockingErrors = errors.some((error) => !error.recoverable);
 
         if (
-          hasActualErrors &&
+          hasBlockingErrors &&
           ((requestedBothDevices && !hasMobileData && !hasDesktopData) ||
             (requestedOnlyMobile && !hasMobileData) ||
             (requestedOnlyDesktop && !hasDesktopData))
