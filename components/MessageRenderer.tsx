@@ -15,7 +15,10 @@ import {
 
 import { useWebVitalsScore } from "@/contexts/WebVitalsScoreContext";
 import { calculateLighthouseScore } from "@/lib/web-vitals";
-import type { AnalysisBreakdown } from "@/types/analysis-breakdown";
+import {
+  AnalysisBreakdownSchema,
+  type AnalysisBreakdown,
+} from "@/types/analysis-breakdown";
 import type {
   LighthouseScoreData,
   RealWorldPerformanceOutput,
@@ -49,6 +52,23 @@ type AnalysisBreakdownToolUIPart = ToolUIPart<{
 
 interface MessageRendererProps {
   message: UIMessage;
+}
+
+function isAnalysisBreakdownOutput(
+  output: unknown,
+): output is AnalysisBreakdown {
+  return AnalysisBreakdownSchema.safeParse(output).success;
+}
+
+function isRealWorldPerformanceOutput(
+  output: unknown,
+): output is RealWorldPerformanceOutput {
+  return (
+    typeof output === "object" &&
+    output !== null &&
+    "hasData" in output &&
+    typeof output.hasData === "boolean"
+  );
 }
 
 const MessageRenderer = memo(function MessageRenderer({
@@ -135,6 +155,27 @@ const MessageRenderer = memo(function MessageRenderer({
     messages.findIndex((m) => m.role === "user") ===
       messages.findIndex((m) => m.id === message.id);
 
+  const hasCompletedPerformanceResult = useMemo(
+    () =>
+      performanceParts.some(
+        (part) =>
+          part.state === "output-available" &&
+          isRealWorldPerformanceOutput(part.output),
+      ),
+    [performanceParts],
+  );
+
+  const hasRenderablePerformanceData = useMemo(
+    () =>
+      performanceParts.some(
+        (part) =>
+          part.state === "output-available" &&
+          isRealWorldPerformanceOutput(part.output) &&
+          part.output.hasData,
+      ),
+    [performanceParts],
+  );
+
   // Extract domain from first user message
   const getDomainFromFirstMessage = () => {
     if (!isFirstUserMessage) return null;
@@ -155,9 +196,17 @@ const MessageRenderer = memo(function MessageRenderer({
   // Check if all tools have completed successfully
   const allToolsComplete = useMemo(() => {
     if (toolParts.length < 3) return false; // Wait for all 3 tools before hiding
-    return toolParts.every(
-      (tool) => tool.state === "output-available" && !tool.errorText,
-    );
+    return toolParts.every((tool) => {
+      if (tool.state !== "output-available" || tool.errorText) {
+        return false;
+      }
+
+      if (tool.type === "tool-generateAnalysisBreakdown") {
+        return isAnalysisBreakdownOutput(tool.output);
+      }
+
+      return true;
+    });
   }, [toolParts]);
 
   // Show tools during loading or if there are errors
@@ -268,7 +317,9 @@ const MessageRenderer = memo(function MessageRenderer({
       {analysisBreakdownParts.map((breakdownTool, i) => {
         if (
           breakdownTool.state === "output-available" &&
-          breakdownTool.output
+          breakdownTool.output &&
+          isAnalysisBreakdownOutput(breakdownTool.output) &&
+          (!hasCompletedPerformanceResult || hasRenderablePerformanceData)
         ) {
           return (
             <div key={`analysis-breakdown-${message.id}-${i}`}>
