@@ -83,3 +83,14 @@ hooks/                  # Custom React hooks
 - **Commit**: `.agents/skills/commit/SKILL.md` — Sentry commit conventions
 - **Create PR**: `.agents/skills/create-pr/SKILL.md` — PR conventions
 
+## Cursor Cloud specific instructions
+
+- **No database, no Docker**: This is a stateless Next.js app. All external dependencies are third-party SaaS APIs — no local database or Docker setup needed.
+- **Dev server**: `pnpm dev` starts on port 3000 (Turbopack). Hot reload works without restarts.
+- **Lint**: `pnpm lint` runs Biome. The repo has pre-existing formatting diagnostics — do not treat those as regressions from your changes.
+- **Tests**: `pnpm test` runs vitest. E2E tests in `tests/e2e/` hit live Anthropic/Google APIs and take ~60s. Integration tests in `tests/integration/` are similar. Both require `ANTHROPIC_API_KEY` and `GOOGLE_API_KEY` to be set.
+- **Type-check**: `pnpm check-types` — runs cleanly.
+- **Build scripts**: `pnpm.onlyBuiltDependencies` in `package.json` approves native build scripts (esbuild, sharp, swc, sentry-cli, etc.) so `pnpm install` runs non-interactively.
+- **Required env vars for full functionality**: `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`. Sentry vars (`NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`) are optional — the app runs without them.
+- **`.env.local`**: Must be created from `.env.example` with actual values. Not committed to the repo.
+
