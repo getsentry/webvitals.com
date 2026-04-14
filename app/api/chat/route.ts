@@ -5,17 +5,27 @@ import { start } from "workflow/api";
 import { analysisWorkflow } from "@/workflows/analysis";
 
 export async function POST(request: Request) {
-  const botIdResult = await checkBotId();
-  Sentry.logger.debug("BotID check result", {
-    isBot: botIdResult.isBot,
-    userAgent: request.headers.get("user-agent"),
-  });
-  if (botIdResult.isBot) {
-    Sentry.logger.warn("BotID check failed", {
-      isBot: botIdResult.isBot,
-      userAgent: request.headers.get("user-agent"),
-    });
-    return new Response("Access Denied", { status: 403 });
+  if (process.env.VERCEL_ENV === "production") {
+    try {
+      const botIdResult = await checkBotId();
+      Sentry.logger.debug("BotID check result", {
+        isBot: botIdResult.isBot,
+        userAgent: request.headers.get("user-agent"),
+      });
+      if (botIdResult.isBot) {
+        Sentry.logger.warn("BotID check failed", {
+          isBot: botIdResult.isBot,
+          userAgent: request.headers.get("user-agent"),
+        });
+        return new Response("Access Denied", { status: 403 });
+      }
+    } catch (error) {
+      Sentry.logger.warn("BotID check threw exception", {
+        error: error instanceof Error ? error.message : String(error),
+        userAgent: request.headers.get("user-agent"),
+      });
+      // Missing verification headers should not crash the request path.
+    }
   }
 
   const analysisStartTime = Date.now();
