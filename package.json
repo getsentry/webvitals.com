@@ -106,6 +106,16 @@
     "vitest": "^4.0.18"
   },
   "pnpm": {
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@sentry-internal/node-cpu-profiler",
+      "@sentry/cli",
+      "@swc/core",
+      "cbor-extract",
+      "esbuild",
+      "msw",
+      "sharp"
+    ],
     "overrides": {
       "devalue": ">=5.6.2"
     }
