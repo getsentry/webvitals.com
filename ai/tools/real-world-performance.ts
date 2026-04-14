@@ -201,8 +201,11 @@ async function getRealWorldPerformance(
         const results = await Promise.allSettled(promises);
 
         // Track errors for better error messages
-        const errors: { device: string; error: string; recoverable: boolean }[] =
-          [];
+        const errors: {
+          device: string;
+          error: string;
+          recoverable: boolean;
+        }[] = [];
 
         const mobileData = deviceOrder.includes("mobile")
           ? (() => {
