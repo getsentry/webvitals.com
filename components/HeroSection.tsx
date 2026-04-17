@@ -143,30 +143,30 @@ export default function HeroSection() {
   return (
     <section className="relative min-h-screen lg:min-h-[70vh] flex flex-col">
       <Background />
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          className="z-10"
-          animate={{
-            height: bounds.height,
-            translateY: hasMessages ? 0 : "min(300px, 20vh)",
-          }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-        >
-          <div ref={ref} className="px-4 py-12">
-            <motion.div
-              animate={{
-                scale: hasMessages ? (isMobile ? 1 : 0.5) : 1,
-              }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+      <motion.div
+        className="z-10"
+        animate={{
+          height: bounds.height,
+          translateY: hasMessages ? 0 : "min(300px, 20vh)",
+        }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
+        <div ref={ref} className="px-4 py-12">
+          <motion.div
+            animate={{
+              scale: hasMessages ? (isMobile ? 1 : 0.5) : 1,
+            }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
+            <Heading
+              level={1}
+              size="4xl"
+              className="bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent text-center mb-8"
             >
-              <Heading
-                level={1}
-                size="4xl"
-                className="bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent text-center mb-8"
-              >
-                Core Web Vitals Analysis Tool
-              </Heading>
-            </motion.div>
+              Core Web Vitals Analysis Tool
+            </Heading>
+          </motion.div>
+          <AnimatePresence mode="wait" initial={false}>
             {!hasMessages ? (
               <motion.div
                 key="hero-content"
@@ -196,15 +196,16 @@ export default function HeroSection() {
                 key="chat-content"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 className="flex-1"
               >
                 <ChatInterface />
               </motion.div>
             )}
-          </div>
-        </motion.div>
-      </AnimatePresence>
+          </AnimatePresence>
+        </div>
+      </motion.div>
     </section>
   );
 }
