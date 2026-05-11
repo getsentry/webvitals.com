@@ -134,8 +134,7 @@ export async function POST(request: Request) {
         span.setAttributes({
           "webvitals.outcome": "failed",
           "webvitals.duration_ms": durationMs,
-          "webvitals.error":
-            error instanceof Error ? error.message : "Unknown",
+          "webvitals.error": error instanceof Error ? error.message : "Unknown",
         });
 
         Sentry.metrics.count("webvitals.analysis.completed", 1, {
@@ -179,8 +178,7 @@ export async function POST(request: Request) {
         return Response.json(
           {
             error: "Failed to process chat request",
-            details:
-              error instanceof Error ? error.message : "Unknown error",
+            details: error instanceof Error ? error.message : "Unknown error",
           },
           { status: 500 },
         );
