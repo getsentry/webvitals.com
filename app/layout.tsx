@@ -98,8 +98,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <PlausibleProvider domain="webvitals.com">
-        <body>
+      <body>
+        <PlausibleProvider domain="webvitals.com">
           <ThemeProvider>
             <VitalsNavigationReset />
             <div className="absolute top-4 right-4 z-50">
@@ -108,8 +108,8 @@ export default function RootLayout({
             {children}
           </ThemeProvider>
           {process.env.NODE_ENV === "development" && <AIDevtools />}
-        </body>
-      </PlausibleProvider>
+        </PlausibleProvider>
+      </body>
     </html>
   );
 }
