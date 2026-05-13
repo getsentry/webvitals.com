@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AIDevtools } from "@ai-sdk-tools/devtools";
 import PlausibleProvider from "next-plausible";
-
 import ThemeProvider from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { VitalsNavigationReset } from "@/components/VitalsNavigationReset";
