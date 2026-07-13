@@ -1,0 +1,11 @@
+allowBuilds:
+  '@nestjs/core': true
+  '@sentry/cli': true
+  '@sentry/node-cpu-profiler': true
+  '@swc/core': true
+  cbor-extract: true
+  esbuild: true
+  msw: true
+  sharp: true
+overrides:
+  devalue: '>=5.6.2'
