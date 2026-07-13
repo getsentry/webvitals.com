@@ -8,4 +8,4 @@ allowBuilds:
   msw: true
   sharp: true
 overrides:
-  devalue: '>=5.6.2'
+  devalue: '>=5.6.4'
