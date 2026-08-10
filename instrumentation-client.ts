@@ -26,10 +26,6 @@ Sentry.init({
     Sentry.replayIntegration(),
     Sentry.browserTracingIntegration({
       idleTimeout: 3000,
-      _experiments: {
-        enableStandaloneLcpSpans: true,
-        enableStandaloneClsSpans: true,
-      },
     }),
   ],
   tracesSampleRate: 1,
