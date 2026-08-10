@@ -40,7 +40,6 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 
   debug: false,
-  sendDefaultPii: true,
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
