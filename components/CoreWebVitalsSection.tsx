@@ -10,7 +10,6 @@ import {
   LCPAnimation,
   TTFBAnimation,
 } from "@/components/animations";
-
 import Heading from "@/components/ui/heading";
 import { useIsMobile } from "@/hooks/use-mobile";
 

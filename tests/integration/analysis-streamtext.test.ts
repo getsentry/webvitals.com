@@ -1,5 +1,5 @@
 import { openrouter } from "@openrouter/ai-sdk-provider";
-import { type StepResult, stepCountIs, streamText, type ToolSet } from "ai";
+import { stepCountIs, streamText, type ToolSet } from "ai";
 import { describe, expect, it } from "vitest";
 import { webAnalysisSystemPrompt } from "@/ai";
 import {
@@ -44,7 +44,7 @@ describe("analysis via streamText (integration)", () => {
       messages: [{ role: "user", content: "Please analyze sentry.io" }],
       tools,
       stopWhen: stepCountIs(2),
-      prepareStep: ({ stepNumber, steps }) => {
+      prepareStep: ({ stepNumber }) => {
         if (stepNumber === 0) {
           return {
             toolChoice: "required" as const,
@@ -123,7 +123,7 @@ describe("analysis via streamText (integration)", () => {
       messages: [{ role: "user", content: "Please analyze localhost" }],
       tools,
       stopWhen: stepCountIs(2),
-      prepareStep: ({ stepNumber, steps }) => {
+      prepareStep: ({ stepNumber }) => {
         if (stepNumber === 0) {
           return {
             toolChoice: "required" as const,

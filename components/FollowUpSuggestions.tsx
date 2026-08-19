@@ -4,7 +4,6 @@ import { useChatMessages, useChatStore } from "@ai-sdk-tools/store";
 import type { UIMessage } from "ai";
 import { RotateCcwIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-
 import { useEffect, useMemo, useState } from "react";
 import {
   Suggestion,
@@ -107,12 +106,18 @@ export default function FollowUpSuggestions() {
 
       return { performanceData, technologyData, analysisBreakdown, url };
     }
-    return { performanceData: null, technologyData: null, analysisBreakdown: null, url: null };
+    return {
+      performanceData: null,
+      technologyData: null,
+      analysisBreakdown: null,
+      url: null,
+    };
   }, [messages]);
 
   // Generate follow-up suggestions when analysis data is available AND streaming is complete
   useEffect(() => {
-    const { performanceData, technologyData, analysisBreakdown, url } = analysisData;
+    const { performanceData, technologyData, analysisBreakdown, url } =
+      analysisData;
 
     // Check if performance data has meaningful metrics
     const hasPerformanceMetrics =

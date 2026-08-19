@@ -1,7 +1,13 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { useVitalsStore } from "@/hooks/useVitalsStore";
 
-const INITIAL_STATE = { FCP: "n/a", LCP: "n/a", TTFB: "n/a", CLS: "n/a", INP: "n/a" };
+const INITIAL_STATE = {
+  FCP: "n/a",
+  LCP: "n/a",
+  TTFB: "n/a",
+  CLS: "n/a",
+  INP: "n/a",
+};
 
 describe("useVitalsStore", () => {
   beforeEach(() => {
@@ -23,7 +29,13 @@ describe("useVitalsStore", () => {
 
   it("full reset clears all populated metrics", () => {
     // Simulate metrics being populated
-    useVitalsStore.setState({ FCP: "100", LCP: "370", TTFB: "50", CLS: "0.02", INP: "56" });
+    useVitalsStore.setState({
+      FCP: "100",
+      LCP: "370",
+      TTFB: "50",
+      CLS: "0.02",
+      INP: "56",
+    });
     // Simulate navigation reset
     useVitalsStore.setState(INITIAL_STATE);
     expect(useVitalsStore.getState()).toMatchObject(INITIAL_STATE);

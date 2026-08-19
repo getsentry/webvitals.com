@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import type { StepResult, ToolSet } from "ai";
+import { describe, expect, it } from "vitest";
 import { hasValidPerformanceData } from "@/workflows/analysis";
 
 /**

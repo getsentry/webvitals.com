@@ -75,7 +75,7 @@ export async function POST(request: Request) {
           role: msg.role,
           // Remove control characters, limit length, trim whitespace
           content: msg.content
-            // biome-ignore lint/suspicious/noControlCharactersInRegex: Intentionally removing control characters for security
+            // oxlint-disable-next-line no-control-regex -- intentionally removing control characters for security
             .replace(/[\x00-\x1F\x7F-\x9F]/g, "")
             .slice(0, 2000)
             .trim(),

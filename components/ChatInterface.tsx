@@ -44,7 +44,9 @@ export default function ChatInterface() {
   );
 
   const handleReset = () => {
-    try { localStorage.removeItem("webvitals-run-id"); } catch {}
+    try {
+      localStorage.removeItem("webvitals-run-id");
+    } catch {}
     window.location.href = "/";
   };
 

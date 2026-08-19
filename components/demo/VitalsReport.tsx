@@ -191,7 +191,7 @@ export default function VitalsReport({
                   vital={vital}
                   isHighlighted={Boolean(
                     currentMetric &&
-                      vital.href === `/${currentMetric.toLowerCase()}`,
+                    vital.href === `/${currentMetric.toLowerCase()}`,
                   )}
                 />
               ))}
@@ -209,7 +209,7 @@ export default function VitalsReport({
                   vital={vital}
                   isHighlighted={Boolean(
                     currentMetric &&
-                      vital.href === `/${currentMetric.toLowerCase()}`,
+                    vital.href === `/${currentMetric.toLowerCase()}`,
                   )}
                 />
               ))}
