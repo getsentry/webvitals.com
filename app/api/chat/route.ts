@@ -24,6 +24,9 @@ export async function POST(request: Request) {
         error: error instanceof Error ? error.message : String(error),
         userAgent: request.headers.get("user-agent"),
       });
+      // Fail closed: BotID is the only abuse control in front of the paid
+      // analysis workflow, so an unverifiable caller must not start a run.
+      return new Response("Access Denied", { status: 403 });
     }
   }
 
