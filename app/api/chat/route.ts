@@ -1,21 +1,13 @@
 import * as Sentry from "@sentry/nextjs";
 import { createUIMessageStreamResponse, type UIMessage } from "ai";
-import { checkBotId } from "botid/server";
 import { start } from "workflow/api";
+import { denyBots } from "@/lib/botid-gate";
 import { analysisWorkflow } from "@/workflows/analysis";
 
 export async function POST(request: Request) {
-  const botIdResult = await checkBotId();
-  Sentry.logger.debug("BotID check result", {
-    isBot: botIdResult.isBot,
-    userAgent: request.headers.get("user-agent"),
-  });
-  if (botIdResult.isBot) {
-    Sentry.logger.warn("BotID check failed", {
-      isBot: botIdResult.isBot,
-      userAgent: request.headers.get("user-agent"),
-    });
-    return new Response("Access Denied", { status: 403 });
+  const botDenial = await denyBots(request);
+  if (botDenial) {
+    return botDenial;
   }
 
   const analysisStartTime = Date.now();
@@ -113,19 +105,19 @@ export async function POST(request: Request) {
           "webvitals.run_id": run.runId,
         });
 
-        const response = createUIMessageStreamResponse({
+        return createUIMessageStreamResponse({
+          headers: {
+            "x-workflow-run-id": run.runId,
+          },
           stream: run.readable,
         });
-        response.headers.set("x-workflow-run-id", run.runId);
-        return response;
       } catch (error) {
         const durationMs = Date.now() - analysisStartTime;
 
         span.setAttributes({
           "webvitals.outcome": "failed",
           "webvitals.duration_ms": durationMs,
-          "webvitals.error":
-            error instanceof Error ? error.message : "Unknown",
+          "webvitals.error": error instanceof Error ? error.message : "Unknown",
         });
 
         Sentry.metrics.count("webvitals.analysis.completed", 1, {
@@ -169,8 +161,7 @@ export async function POST(request: Request) {
         return Response.json(
           {
             error: "Failed to process chat request",
-            details:
-              error instanceof Error ? error.message : "Unknown error",
+            details: error instanceof Error ? error.message : "Unknown error",
           },
           { status: 500 },
         );

@@ -18,7 +18,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## Stack
 
 - **Next.js 16** (App Router, Turbopack) + **React 19** + **TypeScript 5** (strict)
-- **Anthropic AI SDK** (`@ai-sdk/anthropic`) with `claude-sonnet-4-5` / `claude-haiku-4-5`
+- **Vercel AI SDK** with **OpenRouter** (`@openrouter/ai-sdk-provider`) using `anthropic/claude-sonnet-4.5` / `anthropic/claude-haiku-4.5`
 - **Sentry** (`@sentry/nextjs`) — error monitoring, tracing, session replay, AI monitoring
 - **TailwindCSS 4** + **shadcn/ui** (New York style, Lucide icons) + **Motion** (animation)
 - **Biome 2** — formatting (space indent, double quotes) and linting
@@ -43,7 +43,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 | Variable | Scope | Purpose |
 |----------|-------|---------|
-| `ANTHROPIC_API_KEY` | Server | Anthropic API for AI analysis |
+| `OPENROUTER_API_KEY` | Server | OpenRouter API for AI analysis |
 | `GOOGLE_API_KEY` | Server | PageSpeed Insights / CrUX data |
 | `SENTRY_AUTH_TOKEN` | Server | Source map uploads |
 | `NEXT_PUBLIC_SENTRY_DSN` | Client | Sentry error reporting |

@@ -14,7 +14,7 @@ Enter a URL, get real-world performance data from Chrome UX Report (CrUX), AI-po
 ## Tech Stack
 
 - **Next.js 16** (App Router, Turbopack) + **React 19** + **TypeScript 5** (strict)
-- **Anthropic AI SDK** (`@ai-sdk/anthropic`) — Claude for streaming analysis
+- **Vercel AI SDK** with **OpenRouter** (`@openrouter/ai-sdk-provider`) — Claude for streaming analysis
 - **Sentry** (`@sentry/nextjs`) — error monitoring, tracing, session replay, AI monitoring
 - **TailwindCSS 4** + **shadcn/ui** + **Motion** (animation)
 - **Biome 2** — formatting and linting
@@ -29,7 +29,7 @@ pnpm check-types  # Type checking
 pnpm lint         # Biome lint
 ```
 
-Requires `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`, and optionally Sentry env vars. See `.env.example`.
+Requires `OPENROUTER_API_KEY`, `GOOGLE_API_KEY`, and optionally Sentry env vars. See `.env.example`.
 
 ## Project Structure
 
