@@ -89,12 +89,9 @@ async function fetchPerformanceData(
               response.status,
             );
           }
-          if (response.status >= 500) {
-            throw new RecoverableCruxApiError(
-              `CrUX API failed for ${strategy}: ${response.status} ${response.statusText}`,
-              response.status,
-            );
-          }
+          // 5xx and other statuses stay non-recoverable: an upstream outage
+          // must surface as a blocking, retryable failure — not as a
+          // misleading "no data" result that hides the outage from operators.
           throw new Error(
             `CrUX API failed for ${strategy}: ${response.status} ${response.statusText}`,
           );
