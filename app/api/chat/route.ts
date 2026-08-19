@@ -1,33 +1,13 @@
 import * as Sentry from "@sentry/nextjs";
 import { createUIMessageStreamResponse, type UIMessage } from "ai";
-import { checkBotId } from "botid/server";
 import { start } from "workflow/api";
+import { denyBots } from "@/lib/botid-gate";
 import { analysisWorkflow } from "@/workflows/analysis";
 
 export async function POST(request: Request) {
-  if (process.env.VERCEL_ENV === "production") {
-    try {
-      const botIdResult = await checkBotId();
-      Sentry.logger.debug("BotID check result", {
-        isBot: botIdResult.isBot,
-        userAgent: request.headers.get("user-agent"),
-      });
-      if (botIdResult.isBot) {
-        Sentry.logger.warn("BotID check failed", {
-          isBot: botIdResult.isBot,
-          userAgent: request.headers.get("user-agent"),
-        });
-        return new Response("Access Denied", { status: 403 });
-      }
-    } catch (error) {
-      Sentry.logger.warn("BotID check threw exception", {
-        error: error instanceof Error ? error.message : String(error),
-        userAgent: request.headers.get("user-agent"),
-      });
-      // Fail closed: BotID is the only abuse control in front of the paid
-      // analysis workflow, so an unverifiable caller must not start a run.
-      return new Response("Access Denied", { status: 403 });
-    }
+  const botDenial = await denyBots(request);
+  if (botDenial) {
+    return botDenial;
   }
 
   const analysisStartTime = Date.now();

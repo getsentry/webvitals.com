@@ -1,8 +1,8 @@
 import * as Sentry from "@sentry/nextjs";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import { generateText, Output } from "ai";
-import { checkBotId } from "botid/server";
 import { z } from "zod";
+import { denyBots } from "@/lib/botid-gate";
 
 const followUpSuggestionsSchema = z.object({
   actions: z
@@ -17,29 +17,9 @@ const followUpSuggestionsSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  if (process.env.VERCEL_ENV === "production") {
-    try {
-      const botIdResult = await checkBotId();
-      Sentry.logger.debug("BotID check result", {
-        isBot: botIdResult.isBot,
-        userAgent: request.headers.get("user-agent"),
-      });
-      if (botIdResult.isBot) {
-        Sentry.logger.warn("BotID check failed", {
-          isBot: botIdResult.isBot,
-          userAgent: request.headers.get("user-agent"),
-        });
-        return new Response("Access Denied", { status: 403 });
-      }
-    } catch (error) {
-      Sentry.logger.warn("BotID check threw exception", {
-        error: error instanceof Error ? error.message : String(error),
-        userAgent: request.headers.get("user-agent"),
-      });
-      // Fail closed: this route also spends OpenRouter tokens and has no
-      // other rate or quota control, so unverifiable callers are denied.
-      return new Response("Access Denied", { status: 403 });
-    }
+  const botDenial = await denyBots(request);
+  if (botDenial) {
+    return botDenial;
   }
 
   const startTime = Date.now();
