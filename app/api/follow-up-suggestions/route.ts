@@ -36,7 +36,9 @@ export async function POST(request: Request) {
         error: error instanceof Error ? error.message : String(error),
         userAgent: request.headers.get("user-agent"),
       });
-      // Missing verification headers should not crash the request path.
+      // Fail closed: this route also spends OpenRouter tokens and has no
+      // other rate or quota control, so unverifiable callers are denied.
+      return new Response("Access Denied", { status: 403 });
     }
   }
 
