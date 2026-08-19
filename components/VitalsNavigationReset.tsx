@@ -13,7 +13,13 @@ export function VitalsNavigationReset() {
     if (prevPathRef.current !== pathname) {
       prevPathRef.current = pathname;
       useLoadState.setState({ loading: true });
-      useVitalsStore.setState({ FCP: "n/a", LCP: "n/a", TTFB: "n/a", CLS: "n/a", INP: "n/a" });
+      useVitalsStore.setState({
+        FCP: "n/a",
+        LCP: "n/a",
+        TTFB: "n/a",
+        CLS: "n/a",
+        INP: "n/a",
+      });
     }
   }, [pathname]);
 

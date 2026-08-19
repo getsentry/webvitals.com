@@ -48,7 +48,7 @@ export default function HeroSection() {
           }
         }
       },
-      prepareReconnectToStreamRequest: ({ api, ...rest }) => {
+      prepareReconnectToStreamRequest: ({ api: _api, ...rest }) => {
         let runId: string | null = null;
         try {
           runId = localStorage.getItem("webvitals-run-id");
@@ -98,7 +98,6 @@ export default function HeroSection() {
       } catch {}
     }
   }, [status, messages.length]);
-
 
   useEffect(() => {
     if (activeRunId && !hasResumedRef.current) {

@@ -59,7 +59,6 @@ export default function Home() {
       <WebVitalsScoreProvider>
         <script
           type="application/ld+json"
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: it's a valid use case
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c"),
           }}

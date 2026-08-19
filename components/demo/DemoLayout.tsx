@@ -1,6 +1,5 @@
 import type React from "react";
 import Footer from "@/components/Footer";
-
 import VitalsReport from "./VitalsReport";
 
 export default function DemoLayout({

@@ -1,5 +1,5 @@
-import { create } from "zustand";
 import { onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
+import { create } from "zustand";
 
 interface VitalsState {
   FCP: string;

@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react", "nextjs", "unicorn", "oxc", "import"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "react/exhaustive-deps": "off",
+    "react/no-array-index-key": "off",
+    "react/set-state-in-effect": "off",
+    "react/refs": "off",
+    "react/purity": "off",
+    "react/immutability": "off",
+    "import/namespace": "off"
+  },
+  "overrides": [
+    {
+      "files": ["components/ui/**"],
+      "rules": {
+        "no-unused-vars": "off",
+        "nextjs/no-img-element": "off"
+      }
+    }
+  ],
+  "ignorePatterns": [".next", "next-env.d.ts"]
+}

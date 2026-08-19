@@ -7,7 +7,6 @@ import {
   MonitorIcon,
   SmartphoneIcon,
 } from "lucide-react";
-
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
@@ -18,7 +17,6 @@ import {
   PromptInputToolbar,
   PromptInputTools,
 } from "@/components/ui/ai-elements/prompt-input";
-
 import { ComboboxTrigger } from "@/components/ui/combobox-trigger";
 import {
   Command,
@@ -32,7 +30,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-
 import { cn } from "@/lib/utils";
 import type { DeviceType, PerformanceConfig } from "@/types/performance-config";
 import {

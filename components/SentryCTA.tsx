@@ -2,8 +2,8 @@
 
 import { useChatMessages } from "@ai-sdk-tools/store";
 import { motion } from "motion/react";
-import Image from "next/image";
 import { useTheme } from "next-themes";
+import Image from "next/image";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {

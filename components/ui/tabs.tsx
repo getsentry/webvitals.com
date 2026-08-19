@@ -66,7 +66,8 @@ const useTabsContext = () => {
 };
 
 interface TabsProps
-  extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Tabs>,
+  extends
+    React.ComponentPropsWithoutRef<typeof TabsPrimitive.Tabs>,
     VariantProps<typeof tabsVariants> {}
 
 const Tabs = ({ value: activeValue, variant, ...rest }: TabsProps) => {
@@ -85,8 +86,9 @@ const Tabs = ({ value: activeValue, variant, ...rest }: TabsProps) => {
   );
 };
 
-interface TabsListProps
-  extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> {}
+interface TabsListProps extends React.ComponentPropsWithoutRef<
+  typeof TabsPrimitive.List
+> {}
 
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
@@ -105,8 +107,9 @@ const TabsList = React.forwardRef<
   );
 });
 
-interface TabsTriggerProps
-  extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> {}
+interface TabsTriggerProps extends React.ComponentPropsWithoutRef<
+  typeof TabsPrimitive.Trigger
+> {}
 
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,

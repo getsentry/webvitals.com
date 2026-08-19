@@ -16,7 +16,7 @@ const BrowserIcons: React.FC<BrowserIconsProps> = ({
     chrome: true,
     firefox: true,
     safari: true,
-    ...(supportedBrowsers || {}),
+    ...supportedBrowsers,
   };
 
   return (

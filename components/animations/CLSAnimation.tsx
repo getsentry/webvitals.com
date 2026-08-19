@@ -48,7 +48,7 @@ export function CLSAnimation({
     >
       <div className="absolute inset-4 p-2">
         <div style={container}>
-          {order.map((backgroundColor, index) => (
+          {order.map((backgroundColor) => (
             <motion.div
               key={backgroundColor}
               layout
