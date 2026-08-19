@@ -6,6 +6,9 @@ overrides:
   # undici 5.x has two high-severity WebSocket CVEs with no patched 5.x
   # release; the only consumer is the ai@5 subtree under @ai-sdk-tools/*.
   "undici@5": ">=6.28.0"
+  # undici <7.29 has a high-severity cache-directive parsing CVE; pulled
+  # in at 7.28.0 by @workflow/world-local.
+  "undici@7": ">=7.29.0"
 
 allowBuilds:
   "@nestjs/core": true
