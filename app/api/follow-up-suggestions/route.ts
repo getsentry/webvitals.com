@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
-import { anthropic } from "@ai-sdk/anthropic";
+import { openrouter } from "@openrouter/ai-sdk-provider";
 import { generateText, Output } from "ai";
 import { checkBotId } from "botid/server";
 import { z } from "zod";
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
       name: "webvitals.ai.follow_up_suggestions",
       op: "function",
       attributes: {
-        "webvitals.ai.model": "claude-haiku-4-5",
+        "webvitals.ai.model": "anthropic/claude-haiku-4.5",
         "http.method": "POST",
         "http.route": "/api/follow-up-suggestions",
       },
@@ -56,8 +56,13 @@ export async function POST(request: Request) {
     async (span) => {
       try {
         requestData = await request.json();
-        const { performanceData, technologyData, analysisBreakdown, conversationHistory, url } =
-          requestData;
+        const {
+          performanceData,
+          technologyData,
+          analysisBreakdown,
+          conversationHistory,
+          url,
+        } = requestData;
 
         span.setAttributes({
           "webvitals.ai.has_performance_data": !!performanceData,
@@ -128,7 +133,7 @@ IMPORTANT: Review the conversation history carefully. DO NOT suggest topics that
 }`;
 
         const result = await generateText({
-          model: anthropic("claude-haiku-4-5-20251001"),
+          model: openrouter("anthropic/claude-haiku-4.5"),
           output: Output.object({ schema: followUpSuggestionsSchema }),
           system: systemPrompt,
           prompt: userPrompt,

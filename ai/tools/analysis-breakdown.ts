@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
-import { anthropic } from "@ai-sdk/anthropic";
+import { openrouter } from "@openrouter/ai-sdk-provider";
 import { generateText, Output, tool } from "ai";
 import { z } from "zod";
 import { AnalysisBreakdownSchema } from "@/types/analysis-breakdown";
@@ -29,7 +29,7 @@ async function executeAnalysisBreakdown(input: unknown) {
       name: "webvitals.ai.generate_breakdown",
       op: "function",
       attributes: {
-        "webvitals.ai.model": "claude-haiku-4-5",
+        "webvitals.ai.model": "anthropic/claude-haiku-4.5",
         "webvitals.ai.has_performance_data": !!performanceData?.hasData,
         "webvitals.ai.has_technology_data": !!technologyData,
       },
@@ -37,7 +37,7 @@ async function executeAnalysisBreakdown(input: unknown) {
     async (span) => {
       try {
         const result = await generateText({
-          model: anthropic("claude-haiku-4-5-20251001"),
+          model: openrouter("anthropic/claude-haiku-4.5"),
           output: Output.object({ schema: AnalysisBreakdownSchema }),
           prompt: `You are an expert web performance consultant. Analyze the performance and technology data to create a structured breakdown.
 

@@ -1,9 +1,9 @@
+import { openrouter as openrouterProvider } from "@openrouter/ai-sdk-provider";
 import { DurableAgent } from "@workflow/ai/agent";
-import { anthropic } from "@workflow/ai/anthropic";
 import {
   convertToModelMessages,
-  stepCountIs,
   type StepResult,
+  stepCountIs,
   type ToolSet,
   type UIMessage,
   type UIMessageChunk,
@@ -15,6 +15,16 @@ import {
   realWorldPerformanceTool,
   techDetectionTool,
 } from "@/ai/tools";
+
+// Mirrors @workflow/ai's provider wrappers (e.g. @workflow/ai/anthropic):
+// DurableAgent needs the model as a step-wrapped async factory so the
+// provider instantiates inside the workflow runtime, not at define time.
+export function openrouter(...args: Parameters<typeof openrouterProvider>) {
+  return async () => {
+    "use step";
+    return openrouterProvider(...args);
+  };
+}
 
 const tools = {
   getRealWorldPerformance: realWorldPerformanceTool,
@@ -50,7 +60,7 @@ export async function analysisWorkflow(
   const writable = getWritable<UIMessageChunk>();
 
   const agent = new DurableAgent({
-    model: anthropic("claude-sonnet-4-5-20250929"),
+    model: openrouter("anthropic/claude-sonnet-4.5"),
     system: `${webAnalysisSystemPrompt}\n\nConfiguration: ${JSON.stringify(performanceConfig || {})}`,
     tools,
     experimental_telemetry: {
@@ -74,9 +84,7 @@ export async function analysisWorkflow(
         };
       }
       return {
-        activeTools: ["generateAnalysisBreakdown"] as Array<
-          keyof typeof tools
-        >,
+        activeTools: ["generateAnalysisBreakdown"] as Array<keyof typeof tools>,
       };
     },
   });
