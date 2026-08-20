@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/ai-elements/conversation";
 import { Loader } from "@/components/ui/ai-elements/loader";
 import { Button } from "@/components/ui/button";
+import { isBotDetectedError } from "@/lib/bot-denial";
 import FollowUpSuggestions from "./FollowUpSuggestions";
 import MessageRenderer from "./MessageRenderer";
 import WebVitalsFacts from "./WebVitalsFacts";
@@ -142,7 +143,9 @@ export default function ChatInterface() {
                     }}
                     className="text-center text-sm text-red-500 py-4"
                   >
-                    Analysis failed: {error.message}
+                    {isBotDetectedError(error)
+                      ? "We could not verify this browser, so the request was blocked. Reload and try again \u2014 if it keeps happening, allow scripts from this site in your browser extensions."
+                      : `Analysis failed: ${error.message}`}
                   </motion.div>
                 )}
               </AnimatePresence>
