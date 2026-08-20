@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef } from "react";
 import useMeasure from "react-use-measure";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLoadState } from "@/hooks/useLoadState";
+import { isBotDetectedError } from "@/lib/bot-denial";
 import type { PerformanceConfig } from "@/types/performance-config";
 import Background from "./Background";
 import ChatInterface from "./ChatInterface";
@@ -73,6 +74,16 @@ export default function HeroSection() {
       });
     },
     onError: (error) => {
+      if (isBotDetectedError(error)) {
+        Sentry.logger.warn("Chat request blocked by bot protection", {
+          area: "frontend-chat",
+          component: "HeroSection",
+          messageCount: messages.length,
+          status,
+        });
+        return;
+      }
+
       Sentry.captureException(error, {
         tags: {
           area: "frontend-chat",
