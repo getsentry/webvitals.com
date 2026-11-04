@@ -16,8 +16,12 @@ const nextConfig: NextConfig = {
   transpilePackages: ["streamdown"],
 };
 
-export default withWorkflow(
-  withSentryConfig(withBotId(withPlausibleProxy()(nextConfig)), {
+// withSentryConfig must be the outermost wrapper. Passing an object into it
+// inside withWorkflow evaluated bundler detection at module load, before
+// TURBOPACK is set, so production Turbopack builds skipped sourcemap upload.
+export default withSentryConfig(
+  withWorkflow(withBotId(withPlausibleProxy()(nextConfig))),
+  {
     // For all available options, see:
     // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
@@ -41,5 +45,9 @@ export default withWorkflow(
     // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
     // side errors will fail.
     tunnelRoute: "/monitoring",
-  }),
+
+    // Turbopack has no webpack plugin; upload maps after compile. Explicit so a
+    // webpack misdetect still uploads instead of skipping maps entirely.
+    useRunAfterProductionCompileHook: true,
+  },
 );
